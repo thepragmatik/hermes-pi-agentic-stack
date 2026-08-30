@@ -1,0 +1,6 @@
+# Install only the adapters you are benchmarking.
+sentence-transformers>=3
+semantic-router[local]>=0.1.16
+transformers>=4.48
+torch>=2.5
+# routellm is intentionally not pinned here; validate its current dependency set in a separate venv.
