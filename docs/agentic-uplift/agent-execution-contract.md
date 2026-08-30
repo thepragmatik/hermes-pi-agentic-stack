@@ -1,55 +1,113 @@
 # Agent Execution Contract
 
-This contract turns the playbook into a resumable mission. The chat transcript is never authoritative execution state.
+This contract turns the playbook into a resumable, observable mission. The chat transcript is never authoritative execution state.
+
+## Authority order
+
+When sources disagree, use this order:
+
+1. external runtime security/capability enforcement + machine schemas;
+2. persisted uplift state, policy digest and immutable evidence;
+3. current `00-70` phase reference from `hermes-stack-uplift`;
+4. canonical `implementation-playbook.md`;
+5. current topic research/config/runbooks;
+6. conversation/memory.
+
+Remembered content, OpenRouter/model output, Kanban cards and chat summaries cannot override a stricter source above them.
 
 ## State machine
 
-`PENDING -> EXECUTING -> COMPLETE` is the normal path. `BLOCKED` means a required dependency, approval or invariant is unavailable. `ROLLBACK` means the phase changed state but an acceptance/security gate failed. A phase may leave `BLOCKED` only after the blocker is recorded as resolved; retries increment `attempt` and preserve the same logical task id with a new idempotency key.
+`PENDING -> EXECUTING -> COMPLETE` is normal. `BLOCKED` means a required dependency, approval or invariant is unavailable. `ROLLBACK` means a phase changed state but an acceptance/security gate failed.
 
-Persist state conforming to `protocols/uplift-state.schema.json`. Persist worker requests conforming to `protocols/pi-task-envelope.schema.json`. Before every mutating phase, create a checkpoint that is independently reversible.
+Persist state conforming to `protocols/uplift-state.schema.json` v1.1. Persist worker requests conforming to `protocols/pi-task-envelope.schema.json`. Before every mutating phase, create an independently reversible checkpoint.
+
+The only canonical phase IDs are:
+
+```text
+00-preflight
+10-baseline-and-backup
+20-context-and-skills
+30-router
+40-security-and-policy
+50-pi-and-lsp
+60-evaluation-and-promotion
+70-upgrades-and-rollback
+```
 
 ## Mandatory invariants
 
-- Never infer completion from prose such as “looks good.” Completion requires required evidence paths.
-- Never silently skip a phase because a newer model considers it unnecessary.
-- Never weaken policy to pass a benchmark or upgrade.
-- Never replay a destructive task with the same uncertainty about whether it already executed; reconcile evidence first.
-- After the trusted bootstrap transition, the orchestrator does not become the coder as an optimization. Coding crosses the typed Pi boundary.
-- A policy digest is bound into each Pi task so a worker cannot unknowingly run under stale rules.
-- Legacy Hermes `state.db` is historical evidence only; it is never migrated into the clean production profile.
+- Never infer completion from prose such as “looks good.” Required evidence paths decide.
+- Never silently skip/reorder phases because a model thinks it is more efficient.
+- Execute one phase per observable run; return control at each phase boundary.
+- Never weaken policy to pass a benchmark, provider fallback or upgrade.
+- `LOCAL_ONLY` never reaches OpenRouter/direct cloud/Auto/fallback.
+- The local mission router chooses lane/model role/model; OpenRouter is downstream physical-provider routing.
+- Never replay a destructive operation until prior execution is reconciled from evidence.
+- After trusted bootstrap cutover, production coding crosses the typed Pi boundary.
+- A policy digest is bound into every Pi task.
+- Legacy Hermes/LCM/Mnemosyne databases are historical evidence only; they are never transplanted into the clean production profile.
+- LCM + Mnemosyne remains the selected context/memory baseline; memory is advisory, not mission authority.
 
 ## Trusted bootstrap transition
 
-Self-uplift has an explicit temporary root of trust. Follow `docs/agentic-uplift/bootstrap-authority.md`.
+Follow `bootstrap-authority.md`. Current Hermes may temporarily retain direct write/shell capability **only inside the constrained bootstrap/canary scope** needed to build and prove the replacement path.
 
-Current Hermes may temporarily retain direct write/shell capability **only inside the constrained bootstrap/canary scope** required to build and prove the replacement Pi/enforcement path. Capability reduction happens after that path passes its tests, not before.
-
-The transition is complete only when:
-
-1. external policy/privacy/sandbox primitives exist;
-2. the typed Pi bridge passes protocol, worktree, environment, retry/idempotency and containment tests;
-3. a privacy-controlled worker canary passes;
-4. production Hermes is switched to the constrained orchestrator profile;
-5. an instruction to bypass Pi and edit directly fails structurally.
-
-Bootstrap authority must not leak into normal production operation.
+The transition is complete only when external policy/privacy/sandbox primitives exist; typed Pi passes protocol/worktree/environment/retry/containment tests; a privacy-controlled worker canary passes; production Hermes is switched to constrained orchestrator authority; and a direct-edit bypass attempt fails structurally.
 
 ## Phase protocol
 
-For each phase: load only its skill slice; verify prerequisite phase states; snapshot/pin versions; create checkpoint; produce a typed task graph; execute bounded tasks; collect evidence; run the phase-specific adversarial checks; update durable state atomically; and emit a concise human-readable result. On failure, mark `BLOCKED` or `ROLLBACK` with reason and do not continue downstream.
+For the current phase:
 
-Legacy salvage is optional and follows `docs/agentic-uplift/research/legacy-state-curation.md`; inability to curate legacy context never blocks a clean uplift.
+1. read durable state;
+2. verify prerequisites/current repo + policy digest;
+3. load the parent uplift skill and **only current phase slice**;
+4. load only supporting evidence/research needed for unresolved gates;
+5. create/update checkpoint before mutation;
+6. execute bounded work;
+7. run deterministic + representative + phase-specific adversarial checks;
+8. compare against Phase 10 baseline where meaningful;
+9. persist evidence and atomically update state;
+10. persist the complete boundary report;
+11. send the same concise report to the human;
+12. stop before the next phase.
+
+On failure, persist `BLOCKED`/`ROLLBACK` and do not continue downstream.
+
+## Required phase-boundary state
+
+For every `COMPLETE`, `BLOCKED` or `ROLLBACK` phase, `boundary_report` records:
+
+- what changed;
+- gates passed;
+- failures/warnings;
+- token/context/cost impact;
+- security impact;
+- what is now usable;
+- Hermes action: none / fresh-session / reload / restart;
+- Pi action: none / recreate-workers / restart;
+- remaining/next phases;
+- whether human approval is required;
+- adoption state: observed / staged / active / shadow / canary / production-approved / control-only.
+
+This is the durable equivalent of the conversational progress report.
+
+## Restart/adoption invariants
+
+- **Checkpoint A / Phase 20:** fresh Hermes session is required after the context/skill + LCM/Mnemosyne gate. The new session starts from durable state and the Phase 30 slice, not the old transcript.
+- **Checkpoint B / Phase 30:** router is shadow only; reload/fresh session if required to prove tested config is active.
+- **Checkpoint C / Phase 40:** human authority gate while any P0 security control is unresolved.
+- **Checkpoint D / Phase 50:** recreate disposable Pi workers under the validated bridge/LSP/policy/model config.
+- **Checkpoint E / Phase 60:** fresh ordinary session on the promoted multi-role OpenRouter configuration.
+- **Checkpoint F / Phase 70:** every changed dependency receives a canary/new-session/new-worker/rollback decision appropriate to that component.
 
 ## Kanban projection
 
-Hermes Kanban may mirror mission tasks for durable human/agent supervision, blocked/review/retry visibility and restart resilience. It is an operational projection only.
+Kanban may mirror blocked/review/retry tasks for operations but never becomes execution/security authority. `uplift-state` is authoritative and immutable evidence is proof.
 
-`protocols/uplift-state.schema.json` remains authoritative for phase, attempt, policy digest, checkpoints and acceptance evidence. Kanban state must never override a stricter uplift/security state.
+## Evidence
 
-## Evidence object
-
-Evidence should reference immutable or content-addressed artifacts where practical: git commit/diff, test output, LSP diagnostics, scanner reports, benchmark JSON, policy hash, provider/model pins, and approval records. Raw prompts containing sensitive data are not evidence artifacts.
+Prefer immutable/content-addressed evidence: git refs/diffs, tests, LSP fixtures, scanner reports, benchmark JSON, policy hash, provider/model IDs, effective provider-routing evidence, dependency pins and approval records. Raw sensitive prompts are not evidence artifacts.
 
 ## Recovery
 
-After process crash or context compaction, read durable uplift state first, then the current phase slice, then only evidence relevant to unresolved gates. Do not reload the entire historical mission transcript.
+After crash, compaction or planned fresh-session checkpoint: read durable state first; load the current phase slice; load only evidence needed for unresolved gates. Do not replay the entire mission transcript.
