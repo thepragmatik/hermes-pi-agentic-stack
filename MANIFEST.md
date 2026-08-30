@@ -13,6 +13,7 @@ configs/
   models.example.yaml
   hermes-local-context-memory.example.yaml
   mnemosyne-local.example.yaml
+  lcm-baseline.env.example
 protocols/
   pi-task-envelope.schema.json
   uplift-state.schema.json
@@ -38,6 +39,7 @@ docs/agentic-uplift/
   architecture.graph.json
   agent-execution-contract.md
   bootstrap-authority.md
+  local-context-memory-setup.md
   validation-report.md
   site-publishing.md
   implementation-playbook.md
@@ -80,7 +82,14 @@ Git/ADR/spec -> project truth
 Kanban       -> optional operational projection
 ```
 
-LCM + Mnemosyne is the preferred **canary target**, not a claim that the components are already installed or production-qualified. The implementation playbook requires comparison against simpler built-in profiles and promotes the simplest profile that passes.
+**LCM + Mnemosyne is the selected baseline architecture.** Built-in-only, LCM-only and Mnemosyne-only profiles are diagnostic controls and rollback aids, not automatic production alternatives. Runtime promotion remains blocked until the required pair passes target-Mac exact-recovery, memory-relevance, local-only, resource, backup and rollback gates.
+
+Canonical baseline setup/configuration:
+
+- `docs/agentic-uplift/local-context-memory-setup.md`
+- `configs/hermes-local-context-memory.example.yaml`
+- `configs/lcm-baseline.env.example`
+- `configs/mnemosyne-local.example.yaml`
 
 ## Generated GitHub Pages surface
 
@@ -94,6 +103,7 @@ architecture.html
 playbook.html
 execution-contract.html
 bootstrap.html
+context-memory-setup.html
 skills.html
 artifact-review.html
 adversarial-review.html
@@ -107,6 +117,7 @@ agent/architecture.graph.json
 agent/protocols/pi-task-envelope.schema.json
 agent/protocols/uplift-state.schema.json
 agent/configs/hermes-local-context-memory.example.yaml
+agent/configs/lcm-baseline.env.example
 agent/configs/mnemosyne-local.example.yaml
 agent/skills/hermes-stack-uplift/**
 ```
@@ -131,7 +142,7 @@ python3 tools/router-bench/router_bench.py \
   --output /tmp/router-smoke.json
 
 # Implement one gated uplift phase at a time.
-# Run the relevant validation and adversarial checks.
+# Phase 30 follows docs/agentic-uplift/local-context-memory-setup.md.
 git add -A
 git commit
 git push -u origin HEAD
@@ -147,4 +158,4 @@ Generated Python bytecode, local benchmark outputs, logs, databases, credentials
 
 ## Upstream relationship
 
-Hermes, Pi, LCM and Mnemosyne should normally be installed/pinned independently and updated from their upstream projects. This repository integrates with them through documented configuration, skills/extensions, RPC/headless interfaces, launchers, policies and narrow adapters. Any unavoidable upstream patch should be feature-flagged, covered by an integration test, and tracked for upstreaming or removal.
+Hermes, Pi, LCM and Mnemosyne should normally be installed/pinned independently and updated from their upstream projects. This repository integrates with them through documented configuration, skills/extensions, RPC/headless interfaces, profile launchers, side venvs, policies and narrow adapters. Any unavoidable upstream patch should be feature-flagged, covered by an integration test, and tracked for upstreaming or removal.
