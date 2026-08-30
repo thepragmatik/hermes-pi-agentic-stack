@@ -4,11 +4,79 @@
   "title": "Hermes Stack Uplift Execution State",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version","mission_id","status","current_phase","policy_sha256","checkpoints","phases","updated_at"],
+  "required": ["version","mission_id","status","current_phase","policy_sha256","runtime","checkpoints","phases","updated_at"],
+  "$defs": {
+    "phaseId": {"enum":["00-preflight","10-baseline-and-backup","20-context-and-skills","30-router","40-security-and-policy","50-pi-and-lsp","60-evaluation-and-promotion","70-upgrades-and-rollback"]},
+    "phaseStatus": {"enum":["PENDING","EXECUTING","BLOCKED","ROLLBACK","COMPLETE"]},
+    "maturity": {"enum":["researched","designed","prototype","smoke-tested","target-Mac-validated","shadow","canary","production-approved"]},
+    "boundaryReport": {
+      "type":"object","additionalProperties":false,
+      "required":["what_changed","gates_passed","failures_warnings","token_context_cost_impact","security_impact","usable_now","hermes_action","pi_action","remaining_phases","next_phase","human_approval_required","adoption_state"],
+      "properties":{
+        "what_changed":{"type":"array","items":{"type":"string"}},
+        "gates_passed":{"type":"array","items":{"type":"string"}},
+        "failures_warnings":{"type":"array","items":{"type":"string"}},
+        "token_context_cost_impact":{"type":"string"},
+        "security_impact":{"type":"string"},
+        "usable_now":{"type":"array","items":{"type":"string"}},
+        "hermes_action":{"enum":["none","fresh-session","reload","restart"]},
+        "pi_action":{"enum":["none","recreate-workers","restart"]},
+        "remaining_phases":{"type":"array","items":{"$ref":"#/$defs/phaseId"}},
+        "next_phase":{"anyOf":[{"$ref":"#/$defs/phaseId"},{"type":"null"}]},
+        "human_approval_required":{"type":"boolean"},
+        "adoption_state":{"enum":["observed","staged","active","shadow","canary","production-approved","control-only"]}
+      }
+    }
+  },
   "properties": {
-    "version":{"const":"1.0"},"mission_id":{"type":"string"},"status":{"enum":["PENDING","EXECUTING","BLOCKED","ROLLBACK","COMPLETE"]},"current_phase":{"type":"string"},"policy_sha256":{"type":"string","pattern":"^[a-f0-9]{64}$"},
-    "checkpoints":{"type":"array","items":{"type":"object","required":["id","git_ref","created_at"],"properties":{"id":{"type":"string"},"git_ref":{"type":"string"},"created_at":{"type":"string","format":"date-time"}}}},
-    "phases":{"type":"array","minItems":1,"items":{"type":"object","additionalProperties":false,"required":["id","status","attempts","evidence"],"properties":{"id":{"type":"string"},"status":{"enum":["PENDING","EXECUTING","BLOCKED","ROLLBACK","COMPLETE"]},"attempts":{"type":"integer","minimum":0},"evidence":{"type":"array","items":{"type":"string"}},"blocker":{"type":["string","null"]}}}},
+    "version":{"const":"1.1"},
+    "mission_id":{"type":"string","minLength":1},
+    "status":{"$ref":"#/$defs/phaseStatus"},
+    "current_phase":{"$ref":"#/$defs/phaseId"},
+    "policy_sha256":{"type":"string","pattern":"^[a-f0-9]{64}$"},
+    "runtime":{
+      "type":"object","additionalProperties":false,
+      "required":["repository_sha","profile","gateway","bootstrap_model_id","context_engine","memory_provider","router_mode","maturity"],
+      "properties":{
+        "repository_sha":{"type":"string","pattern":"^[a-f0-9]{40}$"},
+        "profile":{"type":"string","minLength":1},
+        "gateway":{"enum":["openrouter","local","direct-provider","none"]},
+        "bootstrap_model_id":{"type":["string","null"]},
+        "context_engine":{"type":"string"},
+        "memory_provider":{"type":"string"},
+        "router_mode":{"enum":["bootstrap-single-model","disabled","shadow","canary","authoritative"]},
+        "maturity":{"$ref":"#/$defs/maturity"}
+      }
+    },
+    "checkpoints":{
+      "type":"array","items":{
+        "type":"object","additionalProperties":false,
+        "required":["id","kind","git_ref","created_at"],
+        "properties":{
+          "id":{"type":"string"},
+          "kind":{"enum":["baseline","restart-A","router-B","authority-C","worker-D","promotion-E","upgrade-F","rollback"]},
+          "git_ref":{"type":"string"},
+          "created_at":{"type":"string","format":"date-time"},
+          "evidence":{"type":"array","items":{"type":"string"}}
+        }
+      }
+    },
+    "phases":{
+      "type":"array","minItems":8,"maxItems":8,
+      "items":{
+        "type":"object","additionalProperties":false,
+        "required":["id","status","attempts","evidence","blocker"],
+        "properties":{
+          "id":{"$ref":"#/$defs/phaseId"},
+          "status":{"$ref":"#/$defs/phaseStatus"},
+          "attempts":{"type":"integer","minimum":0},
+          "evidence":{"type":"array","items":{"type":"string"}},
+          "blocker":{"type":["string","null"]},
+          "boundary_report":{"$ref":"#/$defs/boundaryReport"}
+        },
+        "allOf":[{"if":{"properties":{"status":{"enum":["COMPLETE","BLOCKED","ROLLBACK"]}},"required":["status"]},"then":{"required":["boundary_report"]}}]
+      }
+    },
     "updated_at":{"type":"string","format":"date-time"}
   }
 }
