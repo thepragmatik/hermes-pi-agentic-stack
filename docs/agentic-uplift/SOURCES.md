@@ -1,10 +1,31 @@
 # Research Sources — snapshot 2026-08-30
 
-Primary/authoritative sources are preferred; volatile model/provider/plugin details must be re-verified before implementation.
+Primary/authoritative sources are preferred. Volatile model/provider/plugin details must be re-verified before implementation; model IDs and prices are evidence snapshots, not architecture constants.
 
-## Hermes / sessions / skills / context
+## Hermes — fresh install, profiles, config and provider routing
+- https://hermes-agent.nousresearch.com/docs/
+- https://hermes-agent.nousresearch.com/docs/getting-started/quickstart
+- https://hermes-agent.nousresearch.com/docs/user-guide/features/profiles
+- https://hermes-agent.nousresearch.com/docs/user-guide/configuration
+- https://hermes-agent.nousresearch.com/docs/integrations/providers
+- https://hermes-agent.nousresearch.com/docs/user-guide/features/provider-routing
+- https://hermes-agent.nousresearch.com/docs/user-guide/features/tool-search
 - https://github.com/NousResearch/hermes-agent
-- https://hermes-agent.nousresearch.com/docs
+
+Current design uses the documented profile/Blank-Slate/model/config/query-file mechanisms. A Hermes profile isolates config/state but is not treated as a filesystem sandbox.
+
+## OpenRouter — gateway, provider routing, privacy and model snapshots
+- https://openrouter.ai/docs/features/provider-routing
+- https://openrouter.ai/docs/features/privacy-and-logging
+- https://openrouter.ai/docs/features/presets
+- https://openrouter.ai/docs/features/routers
+- https://openrouter.ai/z-ai/glm-5.3-flash
+- https://openrouter.ai/deepseek/deepseek-v4-flash-0731
+- https://openrouter.ai/compare/z-ai/glm-5.3-flash/deepseek/deepseek-v4-flash-0731
+
+OpenRouter is the default external gateway. Local deterministic privacy/security policy and the local mission router remain upstream of OpenRouter. Direct providers are benchmarked exceptions.
+
+## Hermes sessions / skills / context
 - https://hermes-agent.nousresearch.com/docs/user-guide/sessions
 - https://hermes-agent.nousresearch.com/docs/developer-guide/session-storage
 - https://hermes-agent.nousresearch.com/docs/developer-guide/prompt-assembly
@@ -12,13 +33,12 @@ Primary/authoritative sources are preferred; volatile model/provider/plugin deta
 - https://hermes-agent.nousresearch.com/docs/developer-guide/context-engine-plugin
 - https://hermes-agent.nousresearch.com/docs/developer-guide/memory-provider-plugin/
 - https://hermes-agent.nousresearch.com/docs/user-guide/features/memory-providers/
-- https://hermes-agent.nousresearch.com/docs/user-guide/features/tool-search
 - https://hermes-agent.nousresearch.com/docs/user-guide/features/memory/
 - https://hermes-agent.nousresearch.com/docs/user-guide/features/built-in-plugins
 - https://hermes-agent.nousresearch.com/docs/user-guide/features/kanban
-- https://github.com/NousResearch/hermes-agent/blob/main/plugins/memory/holographic/README.md
 - https://hermes-agent.nousresearch.com/docs/reference/tools-reference/
 - https://hermes-agent.nousresearch.com/docs/user-guide/features/curator
+- https://github.com/NousResearch/hermes-agent/blob/main/plugins/memory/holographic/README.md
 - https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills
 
 ## Local context / memory
