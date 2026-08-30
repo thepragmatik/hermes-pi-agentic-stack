@@ -1,48 +1,65 @@
-# Mnemosyne local-only CANARY configuration.
-# Merge into the Mnemosyne/Hermes canary profile only after checking the pinned release.
+# Mnemosyne subconfiguration for the LCM + Mnemosyne BASELINE.
+# The complete Hermes composition lives in configs/hermes-local-context-memory.example.yaml.
 # No credentials or remote endpoints belong in this file.
 
 memory:
   mnemosyne:
-    # Explicit curated writes only; do not mirror whole conversations into durable memory.
+    # Explicit curated writes only; do not mirror whole conversations.
     sync_roles: []
 
-    # Local FastEmbed/ONNX embeddings. Do not route embeddings through an API.
+    # Local FastEmbed/ONNX embeddings only.
     embeddings_via_api: false
     embedding_model: BAAI/bge-small-en-v1.5
+    vec_type: int8
 
-    # Initial correctness/token canary deliberately avoids LLM-backed memory synthesis.
+    # Durable explicit memories should normally survive sessions. A caller can still
+    # request scope=session for genuinely temporary conversational memory.
+    default_scope: global
+    cross_session: false
+
+    # Reject low-value/noisy explicit writes rather than accumulating and cleaning later.
+    write_classifier: strict
+
+    # Keep all LLM-backed/autonomous memory synthesis paths OFF in the baseline.
     host_llm_enabled: false
     llm_enabled: false
     llm_conflict_detection: false
     auto_sleep_enabled: false
     persona_enabled: false
-
-    # Start with the simpler hybrid recall path. Qualify richer features separately.
     enhanced_recall: false
     fact_recall_enabled: false
     polyphonic_recall: false
     proactive_linking: false
+    query_intent: false
+    recall_diagnostics: false
 
-    # Reject low-value/noisy explicit writes rather than cleaning them later.
-    write_classifier: strict
-
-    # Cross-session search is required for durable memory, while default writes remain
-    # session-scoped unless the caller intentionally promotes a reviewed item to global.
-    cross_session: true
-    default_scope: session
-
-    # Bounded working/prefetch footprint for the initial token-cost canary.
+    # Bound provider-prefetched memory until precision is proven on real missions.
     wm_ttl_hours: 168
-    prefetch_content_chars: 1200
+    prefetch_content_chars: 800
 
-# Process-environment invariant for the local-only profile:
+    # No remote sync target.
+    sync_remote: ""
+
+    # Minimal non-destructive/curation-oriented agent tool surface.
+    tools:
+      - mnemosyne_remember
+      - mnemosyne_recall
+      - mnemosyne_remember_canonical
+      - mnemosyne_recall_canonical
+      - mnemosyne_forget_canonical
+      - mnemosyne_get
+      - mnemosyne_update
+      - mnemosyne_invalidate
+      - mnemosyne_stats
+      - mnemosyne_diagnose
+
+# Process/runtime invariants for the local-only baseline:
 # - no remote Mnemosyne sync endpoint;
-# - no remote embedding endpoint;
+# - no remote embedding endpoint/API key;
 # - no remote Mnemosyne LLM endpoint/fallback;
 # - no Hermes host-LLM adapter for Mnemosyne;
-# - tool-call auto logging remains disabled;
-# - consolidated context injection remains disabled.
+# - no transcript/tool-call autosave;
+# - no automatic persona/sleep/fact synthesis.
 #
-# After provisioning package/model artifacts, prove this profile works with outbound
-# network denied before production promotion.
+# After provisioning package + embedding-model artifacts, deny outbound network and
+# prove remember/recall/restart/backup operations still work before promotion.
