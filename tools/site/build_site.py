@@ -21,6 +21,7 @@ PAGES = {
     'research/router-training.html': ('Router Training & Control', 'docs/agentic-uplift/research/router-training-control.md'),
     'research/context.html': ('Context & Token Optimization', 'docs/agentic-uplift/research/context-token-optimization.md'),
     'research/mission-context.html': ('Mission Context Architecture', 'docs/agentic-uplift/research/mission-context-architecture.md'),
+    'research/local-context-memory.html': ('Local Context & Memory — LCM + Mnemosyne', 'docs/agentic-uplift/research/local-context-memory-stack.md'),
     'research/legacy-state.html': ('Legacy Hermes State Curation', 'docs/agentic-uplift/research/legacy-state-curation.md'),
     'research/pi-lsp.html': ('Hermes, Pi & LSP', 'docs/agentic-uplift/research/hermes-pi-lsp.md'),
     'research/security.html': ('Zero Trust, PII & Secrets', 'docs/agentic-uplift/research/security-zero-trust-pii.md'),
@@ -31,6 +32,7 @@ PAGES = {
 PUBLIC_FILES = [
     'README.md', 'HERMES_AGENTIC_UPLIFT_PLAYBOOK.md', 'MANIFEST.md',
     'configs/policy.example.yaml', 'configs/models.example.yaml',
+    'configs/hermes-local-context-memory.example.yaml', 'configs/mnemosyne-local.example.yaml',
     'protocols/pi-task-envelope.schema.json', 'protocols/uplift-state.schema.json',
     'protocols/examples/pi-task-envelope.example.json', 'protocols/examples/uplift-state.example.json',
     'docs/agentic-uplift/README.md', 'docs/agentic-uplift/SOURCES.md',
@@ -44,6 +46,7 @@ PUBLIC_FILES = [
     'docs/agentic-uplift/research/router-training-control.md',
     'docs/agentic-uplift/research/context-token-optimization.md',
     'docs/agentic-uplift/research/mission-context-architecture.md',
+    'docs/agentic-uplift/research/local-context-memory-stack.md',
     'docs/agentic-uplift/research/legacy-state-curation.md',
     'docs/agentic-uplift/research/hermes-pi-lsp.md',
     'docs/agentic-uplift/research/security-zero-trust-pii.md',
@@ -78,21 +81,16 @@ def rewrite_href(href: str, page: str) -> str:
 def render_inline(text: str, page: str) -> str:
     value = html.escape(text)
     value = re.sub(r'`([^`]+)`', r'<code>\1</code>', value)
-
     def link(match):
-        label = match.group(1)
-        href = html.unescape(match.group(2))
+        label, href = match.group(1), html.unescape(match.group(2))
         return f'<a href="{html.escape(rewrite_href(href, page), quote=True)}">{label}</a>'
-
     value = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', link, value)
-    value = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', value)
-    return value
+    return re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', value)
 
 
 def render_md(text: str, page: str) -> str:
     out, code = [], []
-    in_code = False
-    list_open = False
+    in_code = list_open = False
     for line in text.splitlines():
         if line.startswith('```'):
             if in_code:
@@ -100,44 +98,34 @@ def render_md(text: str, page: str) -> str:
                 code, in_code = [], False
             else:
                 if list_open:
-                    out.append('</ul>')
-                    list_open = False
+                    out.append('</ul>'); list_open = False
                 in_code = True
             continue
         if in_code:
-            code.append(line)
-            continue
+            code.append(line); continue
         if not line.strip():
             if list_open:
-                out.append('</ul>')
-                list_open = False
+                out.append('</ul>'); list_open = False
             continue
         if line.startswith('#'):
             if list_open:
-                out.append('</ul>')
-                list_open = False
+                out.append('</ul>'); list_open = False
             level = min(6, len(line) - len(line.lstrip('#')))
             out.append(f'<h{level}>' + render_inline(line[level:].strip(), page) + f'</h{level}>')
-            continue
-        if line.startswith('- '):
+        elif line.startswith('- '):
             if not list_open:
-                out.append('<ul>')
-                list_open = True
+                out.append('<ul>'); list_open = True
             out.append('<li>' + render_inline(line[2:].strip(), page) + '</li>')
-            continue
-        if line.startswith('> '):
+        elif line.startswith('> '):
             if list_open:
-                out.append('</ul>')
-                list_open = False
+                out.append('</ul>'); list_open = False
             out.append('<blockquote>' + render_inline(line[2:].strip(), page) + '</blockquote>')
-            continue
-        if line.startswith('|'):
+        elif line.startswith('|'):
             if list_open:
-                out.append('</ul>')
-                list_open = False
+                out.append('</ul>'); list_open = False
             out.append('<pre>' + html.escape(line) + '</pre>')
-            continue
-        out.append('<p>' + render_inline(line, page) + '</p>')
+        else:
+            out.append('<p>' + render_inline(line, page) + '</p>')
     if in_code:
         out.append('<pre><code>' + html.escape('\n'.join(code)) + '</code></pre>')
     if list_open:
@@ -153,91 +141,61 @@ def layout(title: str, body: str, page: str, raw: str) -> str:
 
 
 def svg_arch() -> str:
-    return '''<svg viewBox="0 0 960 360" role="img" aria-labelledby="arch-title arch-desc" xmlns="http://www.w3.org/2000/svg"><title id="arch-title">Hermes and Pi agentic stack trust boundaries</title><desc id="arch-desc">Mission enters Hermes, passes policy and local routing, then uses research cloud execution or a typed Pi worker boundary. Evidence and independent review gate merge.</desc><defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs><style>.b{fill:#fff;stroke:#20252b;stroke-width:2}.t{font:15px system-ui}.e{stroke:#20252b;stroke-width:2;marker-end:url(#a)}</style><rect class="b" x="20" y="140" width="120" height="55" rx="8"/><text class="t" x="80" y="172" text-anchor="middle">Hermes</text><rect class="b" x="190" y="140" width="145" height="55" rx="8"/><text class="t" x="262" y="164" text-anchor="middle">Policy + privacy</text><text class="t" x="262" y="183" text-anchor="middle">gate</text><rect class="b" x="385" y="140" width="130" height="55" rx="8"/><text class="t" x="450" y="172" text-anchor="middle">Local router</text><rect class="b" x="580" y="45" width="155" height="55" rx="8"/><text class="t" x="658" y="77" text-anchor="middle">Research role</text><rect class="b" x="580" y="225" width="155" height="55" rx="8"/><text class="t" x="658" y="249" text-anchor="middle">Typed Pi bridge</text><text class="t" x="658" y="268" text-anchor="middle">+ sandbox worker</text><rect class="b" x="800" y="140" width="135" height="55" rx="8"/><text class="t" x="867" y="164" text-anchor="middle">Evidence + review</text><text class="t" x="867" y="183" text-anchor="middle">merge gate</text><line class="e" x1="140" y1="168" x2="190" y2="168"/><line class="e" x1="335" y1="168" x2="385" y2="168"/><line class="e" x1="515" y1="155" x2="580" y2="85"/><line class="e" x1="515" y1="181" x2="580" y2="240"/><line class="e" x1="735" y1="73" x2="825" y2="140"/><line class="e" x1="735" y1="253" x2="825" y2="195"/></svg>'''
+    return '''<svg viewBox="0 0 960 360" role="img" aria-labelledby="arch-title arch-desc" xmlns="http://www.w3.org/2000/svg"><title id="arch-title">Hermes and Pi agentic stack trust boundaries</title><desc id="arch-desc">Mission enters Hermes, passes policy and local routing, then uses specialist execution or a typed Pi worker boundary. Local context and memory remain advisory. Evidence and independent review gate merge.</desc><defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs><style>.b{fill:#fff;stroke:#20252b;stroke-width:2}.t{font:15px system-ui}.e{stroke:#20252b;stroke-width:2;marker-end:url(#a)}</style><rect class="b" x="20" y="140" width="120" height="55" rx="8"/><text class="t" x="80" y="172" text-anchor="middle">Hermes</text><rect class="b" x="190" y="140" width="145" height="55" rx="8"/><text class="t" x="262" y="164" text-anchor="middle">Policy + privacy</text><text class="t" x="262" y="183" text-anchor="middle">gate</text><rect class="b" x="385" y="140" width="130" height="55" rx="8"/><text class="t" x="450" y="172" text-anchor="middle">Local router</text><rect class="b" x="580" y="45" width="155" height="55" rx="8"/><text class="t" x="658" y="77" text-anchor="middle">Research role</text><rect class="b" x="580" y="225" width="155" height="55" rx="8"/><text class="t" x="658" y="249" text-anchor="middle">Typed Pi bridge</text><text class="t" x="658" y="268" text-anchor="middle">+ sandbox worker</text><rect class="b" x="800" y="140" width="135" height="55" rx="8"/><text class="t" x="867" y="164" text-anchor="middle">Evidence + review</text><text class="t" x="867" y="183" text-anchor="middle">merge gate</text><line class="e" x1="140" y1="168" x2="190" y2="168"/><line class="e" x1="335" y1="168" x2="385" y2="168"/><line class="e" x1="515" y1="155" x2="580" y2="85"/><line class="e" x1="515" y1="181" x2="580" y2="240"/><line class="e" x1="735" y1="73" x2="825" y2="140"/><line class="e" x1="735" y1="253" x2="825" y2="195"/></svg>'''
 
 
 def write_agent_surface(out: Path, manifest: list[dict]) -> None:
-    agent = out / 'agent'
-    agent.mkdir()
+    agent = out / 'agent'; agent.mkdir()
     (agent / 'START.md').write_text(
-        '# Agent Start\n\n'
-        'Do not ingest the entire site. Read `../llms.txt`, then select the smallest canonical source/slice needed. '
-        'For uplift execution, read the execution contract and trusted bootstrap document, validate/persist '
-        '`protocols/uplift-state.schema.json`, load `skills/hermes-stack-uplift/SKILL.md`, then load only the current phase reference. '
-        'Security controls are external to prompts. Legacy `state.db` is evidence, never migrated memory.\n',
-        encoding='utf-8')
-    (agent / 'manifest.json').write_text(json.dumps({
-        'version': 2,
-        'generated_from': 'canonical repository sources',
-        'progressive_disclosure': True,
-        'files': manifest,
-    }, indent=2) + '\n', encoding='utf-8')
+        '# Agent Start\n\nDo not ingest the entire site. Read `../llms.txt`, then select the smallest canonical source/slice needed. '
+        'For uplift execution, read the execution contract and trusted bootstrap document, validate/persist `protocols/uplift-state.schema.json`, '
+        'load `skills/hermes-stack-uplift/SKILL.md`, then load only the current phase reference. Security controls are external to prompts/context/memory. '
+        'Legacy databases are evidence, never migrated authority.\n', encoding='utf-8')
+    (agent / 'manifest.json').write_text(json.dumps({'version': 3, 'generated_from': 'canonical repository sources',
+        'progressive_disclosure': True, 'files': manifest}, indent=2) + '\n', encoding='utf-8')
     shutil.copy2(ROOT / 'docs/agentic-uplift/architecture.graph.json', agent / 'architecture.graph.json')
     for src in ['protocols/pi-task-envelope.schema.json', 'protocols/uplift-state.schema.json',
-                'configs/policy.example.yaml', 'configs/models.example.yaml']:
-        dst = agent / src
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ROOT / src, dst)
+                'configs/policy.example.yaml', 'configs/models.example.yaml',
+                'configs/hermes-local-context-memory.example.yaml', 'configs/mnemosyne-local.example.yaml']:
+        dst = agent / src; dst.parent.mkdir(parents=True, exist_ok=True); shutil.copy2(ROOT / src, dst)
     shutil.copytree(ROOT / 'skills/hermes-stack-uplift', agent / 'skills/hermes-stack-uplift')
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser()
-    ap.add_argument('--output', default='_site')
-    args = ap.parse_args()
+    ap = argparse.ArgumentParser(); ap.add_argument('--output', default='_site'); args = ap.parse_args()
     out = ROOT / args.output
-    if out.exists():
-        shutil.rmtree(out)
-    out.mkdir(parents=True)
-    (out / 'raw').mkdir()
+    if out.exists(): shutil.rmtree(out)
+    out.mkdir(parents=True); (out / 'raw').mkdir()
 
     manifest = []
     for src in PUBLIC_FILES:
         path = ROOT / src
-        if not path.exists():
-            raise SystemExit(f'missing public source: {src}')
-        dst = out / 'raw' / src
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(path, dst)
+        if not path.exists(): raise SystemExit(f'missing public source: {src}')
+        dst = out / 'raw' / src; dst.parent.mkdir(parents=True, exist_ok=True); shutil.copy2(path, dst)
         manifest.append({'path': src, 'sha256': hashlib.sha256(path.read_bytes()).hexdigest(), 'bytes': path.stat().st_size})
 
     for page, (title, src) in PAGES.items():
         body = render_md((ROOT / src).read_text(encoding='utf-8'), page)
-        if page == 'architecture.html':
-            body = svg_arch() + body
-        dest = out / page
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_text(layout(title, body, page, src), encoding='utf-8')
+        if page == 'architecture.html': body = svg_arch() + body
+        dest = out / page; dest.parent.mkdir(parents=True, exist_ok=True); dest.write_text(layout(title, body, page, src), encoding='utf-8')
 
     write_agent_surface(out, manifest)
-
     (out / 'llms.txt').write_text(
-        '# Hermes + Pi Agentic Stack\n\n'
-        '> Human and agent-readable architecture/playbook for a local-first Hermes control plane with isolated Pi coding workers.\n\n'
-        '## Start\n'
-        '- [Agent start](agent/START.md)\n'
-        '- [Control playbook](raw/HERMES_AGENTIC_UPLIFT_PLAYBOOK.md)\n'
-        '- [Execution contract](raw/docs/agentic-uplift/agent-execution-contract.md)\n'
-        '- [Trusted bootstrap](raw/docs/agentic-uplift/bootstrap-authority.md)\n'
-        '- [Architecture](raw/docs/agentic-uplift/architecture.md)\n'
-        '- [Artifact usability review](raw/docs/agentic-uplift/artifact-usability-review.md)\n'
-        '- [Sliced uplift skill](agent/skills/hermes-stack-uplift/SKILL.md)\n'
-        '- [Task schema](agent/protocols/pi-task-envelope.schema.json)\n'
-        '- [State schema](agent/protocols/uplift-state.schema.json)\n'
-        '- [Manifest](agent/manifest.json)\n\n'
-        '## Research (load only when relevant)\n'
-        '- [Routing](raw/docs/agentic-uplift/research/local-routing-models.md)\n'
-        '- [Router training/control](raw/docs/agentic-uplift/research/router-training-control.md)\n'
-        '- [Context/token optimization](raw/docs/agentic-uplift/research/context-token-optimization.md)\n'
-        '- [Mission context architecture](raw/docs/agentic-uplift/research/mission-context-architecture.md)\n'
-        '- [Legacy state curation](raw/docs/agentic-uplift/research/legacy-state-curation.md)\n'
-        '- [Skill slicing](raw/docs/agentic-uplift/research/skill-slimming-slicing.md)\n'
-        '- [Hermes/Pi/LSP](raw/docs/agentic-uplift/research/hermes-pi-lsp.md)\n'
-        '- [Security/PII](raw/docs/agentic-uplift/research/security-zero-trust-pii.md)\n\n'
+        '# Hermes + Pi Agentic Stack\n\n> Human and agent-readable architecture/playbook for a local-first Hermes control plane with isolated Pi coding workers.\n\n'
+        '## Start\n- [Agent start](agent/START.md)\n- [Control playbook](raw/HERMES_AGENTIC_UPLIFT_PLAYBOOK.md)\n'
+        '- [Execution contract](raw/docs/agentic-uplift/agent-execution-contract.md)\n- [Trusted bootstrap](raw/docs/agentic-uplift/bootstrap-authority.md)\n'
+        '- [Architecture](raw/docs/agentic-uplift/architecture.md)\n- [Artifact usability review](raw/docs/agentic-uplift/artifact-usability-review.md)\n'
+        '- [Sliced uplift skill](agent/skills/hermes-stack-uplift/SKILL.md)\n- [State schema](agent/protocols/uplift-state.schema.json)\n'
+        '- [Local context-memory config](agent/configs/hermes-local-context-memory.example.yaml)\n- [Mnemosyne local config](agent/configs/mnemosyne-local.example.yaml)\n'
+        '- [Manifest](agent/manifest.json)\n\n## Research — load only when relevant\n'
+        '- [Routing](raw/docs/agentic-uplift/research/local-routing-models.md)\n- [Router training](raw/docs/agentic-uplift/research/router-training-control.md)\n'
+        '- [Context/token optimization](raw/docs/agentic-uplift/research/context-token-optimization.md)\n- [Mission context](raw/docs/agentic-uplift/research/mission-context-architecture.md)\n'
+        '- [Local context & memory — LCM + Mnemosyne](raw/docs/agentic-uplift/research/local-context-memory-stack.md)\n'
+        '- [Legacy state curation](raw/docs/agentic-uplift/research/legacy-state-curation.md)\n- [Skill slicing](raw/docs/agentic-uplift/research/skill-slimming-slicing.md)\n'
+        '- [Hermes/Pi/LSP](raw/docs/agentic-uplift/research/hermes-pi-lsp.md)\n- [Security/PII](raw/docs/agentic-uplift/research/security-zero-trust-pii.md)\n\n'
         'No llms-full.txt is published intentionally; use progressive disclosure.\n', encoding='utf-8')
     (out / 'agents.txt').write_text('Start: /agent/START.md\nDiscovery: /llms.txt\n', encoding='utf-8')
     (out / '.nojekyll').write_text('', encoding='utf-8')
-
 
 if __name__ == '__main__':
     main()
