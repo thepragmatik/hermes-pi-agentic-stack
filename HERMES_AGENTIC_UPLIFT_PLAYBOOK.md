@@ -1,340 +1,269 @@
-# Hermes + Pi Agentic Stack — Control Playbook
+# Hermes + Pi Agentic Stack — Compact Control Playbook
 
-Snapshot: 2026-08-30
+Snapshot: 2026-08-30.
 
-This is the compact control document for a local-first, high-throughput agentic software-development stack using **NousResearch/hermes-agent** as the control-plane orchestrator and **earendil-works/pi** as the isolated coding-worker harness.
-
-Detailed research and execution material is deliberately split under `docs/agentic-uplift/` and `skills/hermes-stack-uplift/` so Hermes does not ingest tens of thousands of tokens on every mission.
+This is the compact architecture/control document. Detailed execution lives in `docs/agentic-uplift/implementation-playbook.md`; Hermes should load only the current phase slice rather than ingesting the full research corpus.
 
 ## Mission
 
-Build a production workflow on Apple Silicon that:
+Build an upgrade-safe Apple-Silicon development stack where:
 
-- keeps Hermes as the single mission entry point and durable orchestrator;
-- uses **LCM + Mnemosyne as the local context/memory baseline**;
-- routes research/synthesis and coding/tool work to qualified specialist roles;
-- keeps the always-on local router small;
-- delegates coding through a typed Hermes -> Pi boundary;
-- enforces filesystem/process/network/credential/PII/secret/merge policy outside prompts;
-- uses LSP selectively without workspace context floods;
-- keeps context/memory local, recoverable and bounded;
-- minimizes repeated prompt/spec/tool-schema prefill while preserving quality;
-- uses mission-sensitive Spec Kit profiles;
-- survives Hermes/Pi/LCM/Mnemosyne upgrades through canary qualification and rollback;
-- measures accepted-task quality, latency, retries, cache behavior, recall quality, human intervention and spend before promotion.
+- Hermes is the mission/control plane;
+- LCM + Mnemosyne is the fixed local context/memory baseline;
+- deterministic local policy decides whether data may leave the machine;
+- a small local mission router chooses research/coding/hybrid/review/auxiliary/abstain and the model role;
+- **OpenRouter is the default external inference gateway** and chooses the physical provider subject to policy;
+- coding crosses a typed Hermes -> Pi boundary into disposable externally-contained workers;
+- LSP/tests/scanners/review provide evidence before merge;
+- context, skills, specs and evidence use progressive disclosure;
+- every uplift phase is observable, restartable and reversible.
 
-## Execution authority
-
-The desired steady state is strict at the agent boundary: production Hermes has no arbitrary shell/source-write authority and coding crosses the typed Pi path.
-
-That state cannot exist before Hermes builds the Pi/enforcement path. The uplift therefore uses an explicit **trusted bootstrap authority**:
-
-1. current Hermes may temporarily write/run shell only inside a constrained canary/overlay/worktree scope;
-2. it installs/qualifies the required local context/memory baseline and builds the policy/privacy/sandbox substrate;
-3. it builds/tests the Pi bridge offline/local-first;
-4. it proves a privacy-controlled Pi cloud canary;
-5. only then does it revoke direct coding/shell capability from production Hermes;
-6. an instruction to “skip Pi and edit directly” must thereafter fail structurally.
-
-See `docs/agentic-uplift/bootstrap-authority.md` and `docs/agentic-uplift/agent-execution-contract.md`.
-
-## Router architecture
-
-Use four routing/control layers:
-
-1. **Tier 0 — deterministic security/privacy + state gate.** Resolve non-negotiable trust constraints and obvious operational state.
-2. **Tier 1 — compact semantic classifier.** Benchmark Qwen3-Embedding-0.6B and frozen ModernBERT Embed challengers with a calibrated lightweight head.
-3. **Tier 2 — confidence/hysteresis/abstention.** Route phases rather than micro-turns; optional RouteLLM-style difficulty escalation is separate.
-4. **Tier 3 — specialist execution.** Pin provider/model/account within a phase/session to preserve cache affinity.
-
-Security policy stays outside the learned classifier. Do not keep a 20B–100B+ generative model resident merely to classify mission intent.
-
-### ModernBERT progression
-
-Benchmark:
+## One routing architecture
 
 ```text
-rules
--> rules + structured agent state
--> Qwen3 embedding prototype
--> frozen nomic ModernBERT Embed 256d/768d + calibrated linear/logistic head
--> fine-tuned ModernBERT-base only after the frozen baseline plateaus
--> optional pairwise difficulty/escalation model
+MISSION
+  |
+  v
+Tier 0 deterministic local privacy/security/policy
+  |-- LOCAL_ONLY --> local path / BLOCKED
+  v
+Tier 1 local mission router
+  |  rules/state -> embeddings -> ModernBERT only if earned
+  v
+research | coding | hybrid | review | auxiliary | abstain
+  |
+  v
+model-role binding
+  |
+  v
+OpenRouter model ID
+  |
+  v
+OpenRouter physical-provider routing
 ```
 
-Primary promotion metrics are accepted-task utility/regret, high-severity wrong-lane errors, retries/human overrides, route-switch rate, cache continuity, time/cost per accepted task and then classification/calibration metrics.
+Ownership is non-negotiable:
 
-See `docs/agentic-uplift/research/router-training-control.md`.
+- local deterministic policy owns privacy/security routing;
+- our local router owns mission classification;
+- role config owns model selection;
+- OpenRouter owns downstream physical-provider selection within constraints;
+- OpenRouter Auto is bootstrap/shadow/fallback only, never privacy or final mission routing.
 
-## Context and token architecture
+Direct Z.ai/DeepSeek access is a benchmarked exception, not default architecture. Additional provider credentials are justified only by material improvement in cost/minutes per accepted task, latency, caching, reliability, privacy or rate limits.
 
-Apply three operational temperatures:
+See `docs/agentic-uplift/research/openrouter-routing.md` and `configs/models.example.yaml`.
 
-- **T0 stable prefix** — identity, small invariants, stable role/tool schemas and compact skill catalog;
-- **T1 mission capsule** — bounded objective/phase/constraints/acceptance/routing/evidence pointers, changed only at meaningful phase boundaries;
-- **T2 artifact/evidence memory** — full logs/diffs/Pi RPC streams/benchmarks/research/large Spec Kit artifacts outside hot context, retrieved by slice.
+## Bootstrap Mode
 
-Do not mirror the same mission state, command output or worker transcript into chat, memory, project context and artifacts simultaneously.
+Do not require the optimized router before Hermes can build it.
 
-See:
+Fresh install:
 
-- `docs/agentic-uplift/research/mission-context-architecture.md`
-- `docs/agentic-uplift/research/context-token-optimization.md`
-- `docs/agentic-uplift/research/skill-slimming-slicing.md`
-- `docs/agentic-uplift/research/local-context-memory-stack.md`
+```text
+clean narrow Hermes profile
+ -> OpenRouter
+ -> one GLM-5.3-Flash-class bootstrap model
+ -> Phases 00/10/20
+ -> build router in Phase 30 shadow mode
+ -> only later multi-role routing
+```
 
-## Local context and memory baseline
+The current model ID must be selected/verified with the installed Hermes `model` picker. Research snapshot only: `z-ai/glm-5.3-flash`.
 
-**LCM + Mnemosyne is a fixed architecture decision for this playbook.** Runtime promotion remains evidence-gated, but Hermes does not choose a different production memory architecture on its own when the pair fails a gate.
+The human bootstrap procedure is `docs/agentic-uplift/fresh-install-bootstrap.md`. The takeover action is:
 
-Assign exactly one owner to each class of state:
+```bash
+uplift chat --query-file UPLIFT_MISSION.md
+```
+
+`UPLIFT_MISSION.md` requires one observable phase per run and phase-boundary reporting.
+
+## Single 00–70 lifecycle
+
+There is exactly one phase system:
+
+| Phase | Objective | Adoption boundary |
+|---|---|---|
+| 00 | preflight/version/repo/provider/isolation truth | manual foundation verified |
+| 10 | measurable baseline + backup + optional read-only legacy salvage | rollback evidence durable |
+| 20 | context/skill diet + Spec Kit slicing + LCM/Mnemosyne | **A: first improvements usable; fresh session** |
+| 30 | local router + OpenRouter roles | **B: shadow only** |
+| 40 | external security/privacy/capability enforcement | **C: human authority gate** |
+| 50 | typed Pi bridge + containment + LSP | **D: recreate disposable workers** |
+| 60 | system evaluation + multi-role promotion | **E: ordinary role routing** |
+| 70 | recurring upgrades/restart/rollback | **F: maintenance cycle** |
+
+The old multi-dozen-phase execution ordering is superseded. Research topics remain supporting material, not extra phases.
+
+## Phase-boundary contract
+
+Every phase persists evidence + uplift-state first, then reports:
+
+```text
+Phase completed:
+What changed:
+Evidence/gates passed:
+Failures/warnings:
+Token/context/cost impact observed:
+Security impact:
+What is now usable:
+Does Hermes need a fresh session/restart?:
+Does Pi need to be recreated/restarted?:
+Remaining phases:
+Next phase:
+Human approval required before continuing?: yes/no
+```
+
+Do not start the next phase in the same uninterrupted run.
+
+`protocols/uplift-state.schema.json` v1.1 persists the same report, adoption state, runtime gateway/router mode and restart/recreate decisions.
+
+## First self-benefit boundary
+
+Phase 20 is the first major payoff.
+
+It must slim/deduplicate hot context, use a narrow skill catalogue, preserve stable prompt ordering, bound T1 mission context, keep T2 artifacts external, reduce tool-schema exposure, slice Spec Kit material, instrument prompt/cache size, and qualify the fixed LCM+Mnemosyne baseline.
+
+When it passes Hermes says:
+
+> **The first token/context improvements are ready to use.**
+
+Then the pre-optimization session is closed. Phase 30 starts fresh on the uplifted profile. This prevents the uplift itself from carrying the very context decay it is trying to remove.
+
+## Context architecture
+
+```text
+T0 = stable prefix / small invariants + skill/tool catalogue
+T1 = bounded current mission/phase capsule
+T2 = logs/diffs/research/specs/benchmarks/Pi RPC retrieved only on demand
+```
+
+Do not mirror the same state/output into conversation, memory, project context and artifacts.
+
+## Skill architecture
+
+```text
+small eligible catalogue
+ -> short class-level SKILL.md
+ -> one current phase reference
+ -> specific script/template/research only when required
+```
+
+More micro-skills are not automatically better. Measure catalogue/parent/support tokens, unnecessary loads, post-compaction reloads, skill-selection errors, accepted-task quality and cached tokens. A pruned reference is unloaded until re-read.
+
+## LCM + Mnemosyne baseline
 
 ```text
 LCM          = current-session exact context + compaction recovery
 Mnemosyne    = curated cross-session durable memory
 state.db     = raw Hermes session history / forensic search
-uplift-state = deterministic mission phase, attempt, blocker and policy authority
-T2 evidence  = raw logs, diffs, benchmark/test outputs
-Git/ADR/spec = current project truth
-Kanban       = optional operational projection/UI
+uplift-state = deterministic mission authority
+T2 evidence  = large/raw evidence
+Git/ADR/spec = project truth
+Kanban       = optional operational projection
 ```
 
-Memory is advisory. Policy, uplift-state, current repository truth and immutable evidence win every conflict.
+Initial research pins (re-verify before use): LCM stable v0.20.0, Mnemosyne core 3.15.1, Hermes wrapper 0.5.0.
 
-### LCM baseline
+Baseline posture:
 
-Initial stable research pin is `hermes-lcm v0.20.0`, re-verified during execution. Install it profile-locally and record the full resolved commit.
+- LCM owns compaction/recovery; overlapping semantic/proactive/temporal memory families off;
+- Mnemosyne local FastEmbed/ONNX embeddings, strict curated writes, no transcript autosave, no remote/host LLM, no automatic persona/richer recall/sleep, narrow tool allowlist;
+- built-in MEMORY/USER durable stores disabled to avoid duplicate authority;
+- Tool Search enabled to progressively disclose non-core tools;
+- after provisioning, context/memory must still work with outbound network denied.
 
-Use LCM for **within-session fidelity and drill-down**, with the versioned baseline environment:
+If mandatory LCM/Mnemosyne gates fail, Phase 20 is `BLOCKED`/`ROLLBACK`; the agent does not redesign memory on its own.
+
+See `docs/agentic-uplift/local-context-memory-setup.md`.
+
+## Legacy state
+
+Never transplant old `state.db`/LCM/Mnemosyne databases. If useful historical knowledge is genuinely missing from current repos/ADRs, use the read-only curation pipeline: immutable original -> disposable copy -> local discovery -> minimal export -> independent secret/PII sanitization -> provenance-bearing candidates -> adversarial current-truth reconciliation -> admit only durable accepted knowledge to its proper surface.
+
+See `research/legacy-state-curation.md`.
+
+## Router / ModernBERT
+
+Progression:
 
 ```text
-threshold=0.35
-fresh tail=32
-incremental depth=3
-leaf floor=20000
-embeddings=off
-proactive recall=off
-temporal rollups=off
+rules + explicit state
+ -> frozen embedding classifier
+ -> representative redacted real outcomes
+ -> fine-tuned ModernBERT only if justified
 ```
 
-LCM's optional semantic/proactive/temporal memory families stay OFF because Mnemosyne owns durable semantic memory. Do not promote an RC merely because upstream `main` is newer.
+ModernBERT classifies mission type; an optional RouteLLM-style model is a later difficulty/preference layer. Fine-tuning requires stable ontology, mission-level deduplicated/temporal holdout, ambiguous/hybrid examples and paired accepted-task outcomes.
 
-### Mnemosyne baseline
+Route phases, not micro-turns; use hysteresis and measure route-switch/provider-cache continuity.
 
-Initial stable research pins are core `3.15.1` and Hermes wrapper `0.5.0`, re-verified during execution.
+## OpenRouter role intent
 
-Install Mnemosyne in a profile-owned side venv/wrapper with the local embeddings extra. Baseline behavior:
-
-- no transcript autosave (`sync_roles: []`);
-- local FastEmbed/ONNX `BAAI/bge-small-en-v1.5` only;
-- `vec_type: int8`;
-- explicit durable writes default to global scope;
-- strict write classifier;
-- autonomous writes (`write_approval: false`);
-- bounded prefetch;
-- no remote sync/embedding/LLM endpoint;
-- no Hermes host LLM for memory;
-- no auto-sleep, persona, enhanced/fact/polyphonic/proactive/query-intent features;
-- narrow curation/inspection tool allowlist only.
-
-### Built-in MEMORY/USER are disabled
-
-The baseline sets:
+Snapshot candidates only:
 
 ```text
-memory.memory_enabled = false
-memory.user_profile_enabled = false
-memory.provider = mnemosyne
+bootstrap.default -> GLM-5.3-Flash-class via OpenRouter
+coding.default    -> GLM-5.3-Flash-class via OpenRouter
+research.default  -> DeepSeek-V4-Flash-class via OpenRouter
+review.default    -> independent family after benchmark
+auxiliary.cheap   -> optional after benchmark
 ```
 
-This removes duplicate built-in durable-memory guidance/tooling while preserving the external provider. `state.db/session_search` remains the raw host session-history path.
+Runtime IDs/prices belong in config/locks/evidence, not policy prose. Current Hermes provider-routing config supports sort/only/ignore/order/required-parameters/data-collection controls; do not invent raw OpenRouter fields as Hermes YAML keys. Account/workspace privacy guardrails are additional defense.
 
-### Tool Search is mandatory
+Avoid per-request provider churn when it destroys prompt-cache affinity. Optimize cost/minutes/retries/human intervention **per accepted task**.
 
-LCM and Mnemosyne add non-core tools. Enable Hermes Tool Search so provider/plugin schemas are progressively disclosed rather than injected eagerly. Baseline listing budget is 4000 tokens; measure actual static/cold-tool cost.
+## Security/root of trust
 
-### Qualification is not architecture selection
+A profile, SOUL file, memory, skill, YAML or provider guardrail is not structural authorization.
 
-Keep built-in-only, LCM-only and Mnemosyne-only profiles reproducible **for diagnostic component isolation**. They do not compete for production selection.
+Before stronger authority, implement external:
 
-LCM + Mnemosyne must prove:
+- role/capability policy;
+- filesystem/path/symlink scope;
+- process/command policy;
+- environment/credential minimization;
+- network/egress default deny;
+- deterministic secret + typed/context-aware PII scanning;
+- re-scan after transformation;
+- policy digest/idempotency/evidence journal;
+- sandbox/containment launcher;
+- independent review/merge authority.
 
-- exact-detail recovery after multiple compactions and restart;
-- useful low-noise durable recall;
-- canonical fact lifecycle;
-- no transcript/evidence duplication into durable memory;
-- no irrelevant/stale memory influencing acceptance/security decisions;
-- no unexpected context/memory network egress after provisioning;
-- bounded tool-schema/context overhead;
-- verified backup/restore of both stores;
-- acceptable target-Mac RSS/memory pressure and accepted-task quality.
+Privacy is decided locally before OpenRouter, including Auto/fallback/retry. Human authority gate remains at Phase 40 while any P0 enforcement is unresolved.
 
-If a mandatory gate fails, Phase 30 becomes `BLOCKED`/`ROLLBACK`. Hermes does **not** autonomously switch to Holographic, OpenViking or another architecture.
+## Pi invariant
 
-Config/setup:
+Pi has no assumed built-in permission boundary. Coding tasks use validated v2 envelope + policy digest, ephemeral worktree, minimal env/credentials, external containment, local pipe RPC, bounded retries/idempotency, deterministic tests/LSP/security evidence and independent merge/review.
 
-- `docs/agentic-uplift/local-context-memory-setup.md`
-- `configs/hermes-local-context-memory.example.yaml`
-- `configs/mnemosyne-local.example.yaml`
-- `configs/lcm-baseline.env.example`
+Treat `agent_settled` as fully-settled completion; never equate `agent_end` with final completion without current protocol evidence.
 
-Alternatives remain contingency research only unless the operator deliberately reopens the architecture decision.
+After a passing canary, ordinary Hermes direct source-write/arbitrary-shell authority is revoked and a “skip Pi and edit directly” attempt must fail structurally.
 
-## Skill slicing
+## Spec Kit and task graph
 
-Treat skills as progressive disclosure:
+Use Micro/Patch, Lite, Standard and High-Assurance profiles. Policy can escalate; model cannot downgrade. Generated specs are T2 source; load only current slices.
 
-1. profile/catalog metadata routes to an eligible skill;
-2. `SKILL.md` contains only invariants and phase map;
-3. current phase detail lives in one `references/` slice;
-4. deterministic mechanics belong in scripts/templates;
-5. large evidence remains external until needed.
+Use bounded typed tasks, not uncontrolled swarms. Kanban can be a durable operational UI but never overrides uplift-state/evidence.
 
-The repository includes `skills/hermes-stack-uplift/` with phase slices. More micro-skills are not automatically better; measure tokens per accepted task.
+## Maturity labels
 
-## Legacy Hermes `state.db`
+Use only:
 
-The old database is historical evidence, not memory to transplant.
+`researched -> designed -> prototype -> smoke-tested -> target-Mac-validated -> shadow -> canary -> production-approved`
 
-Default legacy status is **SKIPPED**. If active work genuinely needs historical context:
+Never imply implementation/enforcement because a diagram/config/schema exists.
 
-1. freeze/checksum the original home/DB;
-2. operate only on a disposable copy;
-3. discover relevant sessions locally before export;
-4. prefer selected prompts-only export first;
-5. treat built-in redaction as defense in depth, not complete PII/DLP;
-6. independently sanitize locally;
-7. extract only durable provenance-bearing candidates;
-8. adversarially compare them with current repository truth;
-9. admit accepted items to the correct durable surface—not a bulk transcript or DB transplant.
+## Canonical start order
 
-The clean uplift must work identically without salvaged context.
+1. `README.md`
+2. `docs/agentic-uplift/fresh-install-bootstrap.md`
+3. `UPLIFT_MISSION.md`
+4. `docs/agentic-uplift/agent-execution-contract.md`
+5. `docs/agentic-uplift/implementation-playbook.md`
+6. `skills/hermes-stack-uplift/SKILL.md` + current phase slice only
+7. topic research only when the current gate requires it
 
-See `docs/agentic-uplift/research/legacy-state-curation.md`.
-
-## Hermes built-ins
-
-Two built-ins are useful without becoming security authority:
-
-- **`security-guidance` WARN mode** — defense in depth for Hermes-owned write/patch content; not sandbox/DLP/Pi diff review.
-- **Kanban** — optional durable mission ledger/human UI for blocked/review/retry state. `uplift-state` remains authoritative; Kanban is a projection.
-
-## Zero-trust Pi invariant
-
-Pi has no built-in filesystem/process/network/credential permission system. Final worker authority therefore requires external containment.
-
-Each coding task must use:
-
-- validated v2 task envelope + policy digest;
-- fixed role -> capability mapping;
-- isolated git worktree;
-- minimal environment/credential exposure;
-- external sandbox/container/micro-VM/capability broker;
-- network default deny/allowlist;
-- local secret + typed-PII egress checks;
-- bounded retry/idempotency semantics;
-- deterministic test/LSP/security evidence;
-- independent review/merge gate.
-
-Pi RPC remains a local pipe. Treat `agent_settled` as fully settled completion; `agent_end` may still be followed by retry/compaction/queued continuation.
-
-## Spec Kit
-
-Use deterministic profiles: **Micro/Patch**, **Lite**, **Standard**, **High Assurance**. Policy may escalate; a model cannot downgrade a required high-assurance profile.
-
-Generated Markdown is durable source material, not mandatory hot context. Index and retrieve current acceptance/plan/task slices only.
-
-## Autonomous execution order
-
-Canonical detail is `docs/agentic-uplift/implementation-playbook.md`. High-level order:
-
-1. preflight/inventory;
-2. freeze/backup and optional legacy-state curation;
-3. clean parallel Hermes candidate + bootstrap checkpoint;
-4. install/qualify **LCM + Mnemosyne baseline** plus context/skill/T0-T1-T2 diet;
-5. router shadow evaluation;
-6. provider/model bake-off;
-7. external security/privacy/enforcement substrate;
-8. minimal Pi bridge offline/local-first + containment qualification;
-9. privacy-controlled Pi cloud canary + LSP;
-10. **authority cutover** — revoke direct production Hermes coding/shell capability;
-11. Spec Kit mission profiles;
-12. bounded task graph + optional Kanban projection;
-13. adversarial suite including memory poisoning/context recovery/offline tests;
-14. canary comparison and gradual promotion;
-15. continuous Hermes/Pi/LCM/Mnemosyne canary-upgrade discipline.
-
-## Acceptance gates
-
-Before production promotion:
-
-- old production/legacy archives remain recoverable;
-- no old DB is migrated into clean production;
-- fixed/hot context shrinks without accepted-task regression;
-- LCM + Mnemosyne proves exact recovery, useful low-noise durable recall, restart/backup and offline operation;
-- built-in MEMORY/USER are disabled in the production baseline;
-- context/memory ownership boundaries remain non-overlapping;
-- autonomous curated memory writes pass admission/poisoning/staleness tests;
-- no raw secrets/PII are automatically admitted to durable memory in seeded tests;
-- plugin/provider tool-schema overhead does not erase slimming gains;
-- routing beats fixed/state baselines on held-out mission outcomes;
-- no observed `LOCAL_ONLY -> cloud` path exists;
-- external Pi containment structurally denies disallowed actions;
-- every coding task crosses the typed Pi boundary after cutover;
-- direct Hermes bypass after cutover fails structurally;
-- required test/LSP/security evidence is represented in task results;
-- lighter Spec Kit profiles materially reduce eligible-task input tokens without quality regression;
-- representative Mac memory pressure/swap remains acceptable;
-- rollback of Hermes/Pi plus LCM/Mnemosyne is rehearsed;
-- accepted-task quality is non-inferior within the chosen confidence interval.
-
-## Economics
-
-Planning baseline: **3,888,531,773 logical tokens/month**.
-
-Treat savings as measured outcomes, not promises. Optimize **cost + minutes + retries + human intervention per accepted task**, while separately tracking context/memory/tool-schema tokens and cache-hit continuity.
-
-## Upgrade discipline
-
-This repository is an overlay/control repository, not a permanent fork.
-
-For every Hermes/Pi/LCM/Mnemosyne update:
-
-1. install/update a disposable canary;
-2. take a plugin-supported/quiescent backup before database/schema-affecting changes;
-3. apply pinned uplift integration;
-4. diff effective defaults/config/tool surface;
-5. run protocol/security/router/context/memory/LSP/coding smoke tests;
-6. rerun exact-recovery, memory relevance/poisoning and offline/no-network tests;
-7. compare prompt/cache/recall/accepted-task metrics with prior pins;
-8. inspect release/security/package changes;
-9. promote only on pass;
-10. otherwise keep previous pins and record an integration blocker.
-
-Never upgrade production first and qualify second.
-
-## Self-uplift mission
-
-Give Hermes this mission from the bootstrap/canary profile:
-
-> Implement the agentic uplift defined by this repository using the durable execution contract and sliced uplift skill. Treat each phase and acceptance gate in `docs/agentic-uplift/implementation-playbook.md` as a separately auditable state transition. Install and qualify **LCM + Mnemosyne as the required local context/memory baseline** using `docs/agentic-uplift/local-context-memory-setup.md`; keep LCM as current-session context/compaction recovery and Mnemosyne as curated durable memory, with built-in MEMORY/USER disabled. Do not substitute another memory architecture when a mandatory baseline gate fails—mark the phase `BLOCKED`/`ROLLBACK` and repair/requalify or escalate a deliberate architecture change. During trusted bootstrap use direct coding/shell capability only within the explicitly allowed canary/overlay/worktree scope; after the Pi/enforcement path passes its canary, revoke those capabilities from production Hermes and use typed Pi delegation for coding. Preserve upgradeability, keep old databases as read-only evidence rather than authority, collect deterministic evidence for every gate, and never weaken a security/privacy/local-only boundary to make progress.
-
-## Canonical index
-
-Start with:
-
-- `docs/agentic-uplift/implementation-playbook.md`
-- `docs/agentic-uplift/local-context-memory-setup.md`
-- `docs/agentic-uplift/agent-execution-contract.md`
-- `docs/agentic-uplift/bootstrap-authority.md`
-- `skills/hermes-stack-uplift/SKILL.md`
-- `docs/agentic-uplift/artifact-usability-review.md`
-- `docs/agentic-uplift/adversarial-review.md`
-- `docs/agentic-uplift/research/local-context-memory-stack.md`
-- `docs/agentic-uplift/research/legacy-state-curation.md`
-- `docs/agentic-uplift/research/router-training-control.md`
-- `docs/agentic-uplift/research/mission-context-architecture.md`
-- `docs/agentic-uplift/research/security-zero-trust-pii.md`
-- `docs/agentic-uplift/research/hermes-pi-lsp.md`
-
-Keep this root document compact. Put detailed changing research/configuration in canonical topic documents and load it only when needed.
+Human Pages are generated from these sources. Agents start at `llms.txt` / `agent/START.md` and fetch only the required slice.
