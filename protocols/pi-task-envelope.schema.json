@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/hermes-uplift/pi-task-envelope.schema.json",
+  "title": "Hermes to Pi Task Envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version", "task_id", "idempotency_key", "role", "objective",
+    "acceptance", "workspace", "capabilities", "privacy", "budget", "evidence"
+  ],
+  "properties": {
+    "version": {"const": "1.0"},
+    "task_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{1,128}$"},
+    "idempotency_key": {"type": "string", "minLength": 8, "maxLength": 256},
+    "role": {"enum": ["coder", "reviewer", "release"]},
+    "objective": {"type": "string", "minLength": 1, "maxLength": 20000},
+    "acceptance": {
+      "type": "array", "minItems": 1, "maxItems": 100,
+      "items": {"type": "string", "minLength": 1, "maxLength": 4000}
+    },
+    "context_refs": {
+      "type": "array", "maxItems": 100,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["path"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "sections": {"type": "array", "items": {"type": "string"}},
+          "sha256": {"type": "string", "pattern": "^[a-fA-F0-9]{64}$"}
+        }
+      }
+    },
+    "workspace": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repo", "base_sha", "worktree"],
+      "properties": {
+        "repo": {"type": "string", "minLength": 1},
+        "base_sha": {"type": "string", "pattern": "^[a-fA-F0-9]{7,64}$"},
+        "worktree": {"type": "string", "minLength": 1},
+        "allowed_paths": {"type": "array", "items": {"type": "string"}},
+        "read_only_paths": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "capabilities": {
+      "type": "object", "additionalProperties": false,
+      "required": ["shell_profile", "network_profile", "tools"],
+      "properties": {
+        "shell_profile": {"enum": ["none", "read-only", "build-test", "release"]},
+        "network_profile": {"enum": ["none", "registries", "research", "custom"]},
+        "network_allowlist": {"type": "array", "items": {"type": "string"}},
+        "tools": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "model_profile": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "model": {"type": "string"},
+        "provider": {"type": "string"},
+        "reasoning": {"enum": ["off", "low", "medium", "high", "auto"]},
+        "provider_sticky": {"type": "boolean", "default": true}
+      }
+    },
+    "privacy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["class", "pii_action", "secret_action"],
+      "properties": {
+        "class": {"enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "LOCAL_ONLY"]},
+        "pii_action": {"enum": ["allow", "redact", "tokenize", "block"]},
+        "secret_action": {"enum": ["block", "redact"]},
+        "zdr_required": {"type": "boolean", "default": false}
+      }
+    },
+    "budget": {
+      "type": "object", "additionalProperties": false,
+      "required": ["wall_seconds", "max_input_tokens", "max_output_tokens"],
+      "properties": {
+        "wall_seconds": {"type": "integer", "minimum": 1, "maximum": 86400},
+        "max_input_tokens": {"type": "integer", "minimum": 1},
+        "max_output_tokens": {"type": "integer", "minimum": 1},
+        "max_cost_usd": {"type": "number", "minimum": 0}
+      }
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["tests", "lsp", "secret_scan", "pii_scan"],
+      "properties": {
+        "tests": {"type": "array", "items": {"type": "string"}},
+        "lsp": {"type": "boolean"},
+        "secret_scan": {"type": "boolean"},
+        "pii_scan": {"type": "boolean"},
+        "review_required": {"type": "boolean", "default": true}
+      }
+    },
+    "issued_at": {"type": "string", "format": "date-time"},
+    "nonce": {"type": "string", "minLength": 16, "maxLength": 256}
+  }
+}

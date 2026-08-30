@@ -1,0 +1,18 @@
+{"id":"research-01","text":"Research contemporary approaches to long-context compression for agentic systems and compare their failure modes.","label":"deepseek"}
+{"id":"research-02","text":"Map the design space for a multi-tenant event-driven architecture and recommend three options with tradeoffs.","label":"deepseek"}
+{"id":"research-03","text":"Investigate which open-source PII detection stacks have permissive licenses and summarize evidence.","label":"deepseek"}
+{"id":"research-04","text":"Brainstorm product directions for an offline-first developer assistant and evaluate second-order risks.","label":"deepseek"}
+{"id":"research-05","text":"Compare current vector database choices for a billion-object workload; no implementation yet.","label":"deepseek"}
+{"id":"code-01","text":"Implement cursor pagination in the TypeScript API, update tests, run the test suite and fix failures.","label":"glm"}
+{"id":"code-02","text":"Debug this Java NullPointerException, patch the repository and verify with Gradle tests.","label":"glm"}
+{"id":"code-03","text":"Refactor the Kotlin service to remove duplicated retry logic and use the language server before editing.","label":"glm"}
+{"id":"code-04","text":"Add Python unit tests for the cache invalidation logic, run pytest and commit a minimal verified diff.","label":"glm"}
+{"id":"code-05","text":"Fix the CSS layout regression and the related JavaScript event handler, then run the frontend build.","label":"glm"}
+{"id":"hybrid-01","text":"Evaluate authentication libraries, select the best one for this codebase, implement it and run integration tests.","label":"hybrid"}
+{"id":"hybrid-02","text":"Research safe database migration patterns for this failure mode, then implement the chosen migration and verify rollback.","label":"hybrid"}
+{"id":"hybrid-03","text":"Design a robust job scheduling architecture and immediately build the first production slice with tests.","label":"hybrid"}
+{"id":"hybrid-04","text":"Compare two Kotlin serialization approaches, choose one based on this repository, refactor the code and test it.","label":"hybrid"}
+{"id":"local-01","text":"This contains customer PII and must remain local-only. Classify the fields without sending any data to a cloud model.","label":"local_only"}
+{"id":"local-02","text":"Inspect this production database dump containing email addresses and passport numbers; never upload or share it.","label":"local_only"}
+{"id":"local-03","text":"Find accidental private keys and access tokens in this worktree; do not send credentials to any external API.","label":"local_only"}
+{"id":"local-04","text":"Process this confidential HR export locally only; it contains personal data and tax file numbers.","label":"local_only"}
