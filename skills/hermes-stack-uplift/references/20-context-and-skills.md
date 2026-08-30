@@ -24,6 +24,24 @@ small catalogue -> short parent SKILL.md -> one phase slice -> support artifact 
 
 A pruned reference is unloaded; reload it before relying on it. Measure catalogue/parent/support tokens, unnecessary loads, reloads, wrong/missed skill choice, cached input and accepted-task quality.
 
+## Dogfood Gate A0 — use the first optimization before adding more subsystems
+
+Do **not** immediately layer LCM/Mnemosyne and Spec Kit changes on top of an unproven prompt/skill diet.
+
+After the context + skill diet is staged:
+
+1. persist Phase 20 as `EXECUTING` and write evidence for the exact prompt/skill configuration;
+2. checkpoint the pre-dogfood profile/configuration so rollback is trivial;
+3. close the pre-slimming conversation and resume **Phase 20** in a fresh Hermes session using the slimmer T0/T1 + sliced-skill layout;
+4. keep the same bootstrap model/gateway and do not introduce router authority or another unrelated variable;
+5. run a small matched subset of the Phase 10 representative workload;
+6. compare fixed/hot input, skill/tool-schema input, cached input, TTFT, accepted-task quality, wrong/missed skill loads and human intervention;
+7. persist `phase20-dogfood-A0` evidence before continuing.
+
+Continue to the LCM + Mnemosyne step only when the slimmer configuration shows non-inferior accepted-task quality and a measurable context/token improvement. If it regresses materially, roll back or repair the context/skill change **before** introducing the memory/context-engine baseline.
+
+This is a **mid-phase dogfood gate**, not Phase 20 completion and not permission to start Phase 30. The point is to get an early benefit, isolate causality and make the next increment smaller.
+
 ## LCM + Mnemosyne baseline
 
 Follow `docs/agentic-uplift/local-context-memory-setup.md` and `research/local-context-memory-stack.md`.
@@ -53,14 +71,16 @@ Validate Micro/Patch, Lite, Standard and High-Assurance profiles. Generated spec
 
 Require non-inferior accepted-task quality, materially smaller hot context, initial >=30% lower skill-related input on skill-heavy representative missions, bounded T1 (normally <=8K), reliable exact recovery, low-noise durable recall, no unexpected context/memory network dependency, verified backups and acceptable target-Mac resource behaviour before production promotion.
 
+Dogfood Gate A0 evidence must show that the prompt/skill improvement itself helped before LCM/Mnemosyne and Spec Kit were added. This preserves causal attribution and keeps the self-uplift incremental.
+
 If a mandatory LCM/Mnemosyne gate fails, persist `BLOCKED`/`ROLLBACK`; do not silently switch memory architecture.
 
 ## Restart Checkpoint A — mandatory
 
-After the gate passes, persist Phase 20 complete and report:
+After the full Phase 20 gate passes, persist Phase 20 complete and report:
 
 > **The first token/context improvements are ready to use.**
 
-Then **close the pre-optimization session**. Phase 30 starts in a fresh Hermes session using the uplifted context/skill + LCM/Mnemosyne configuration. This prevents old pre-optimization chat context from contaminating later measurements.
+Then **close the Phase-20 qualification session**. Phase 30 starts in a fresh Hermes session using the uplifted context/skill + LCM/Mnemosyne configuration. This prevents Phase-20 qualification context from contaminating router measurements.
 
 Persist state/evidence, send the required phase-boundary report, and stop.
