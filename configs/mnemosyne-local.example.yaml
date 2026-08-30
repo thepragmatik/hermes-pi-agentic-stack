@@ -1,0 +1,48 @@
+# Mnemosyne local-only CANARY configuration.
+# Merge into the Mnemosyne/Hermes canary profile only after checking the pinned release.
+# No credentials or remote endpoints belong in this file.
+
+memory:
+  mnemosyne:
+    # Explicit curated writes only; do not mirror whole conversations into durable memory.
+    sync_roles: []
+
+    # Local FastEmbed/ONNX embeddings. Do not route embeddings through an API.
+    embeddings_via_api: false
+    embedding_model: BAAI/bge-small-en-v1.5
+
+    # Initial correctness/token canary deliberately avoids LLM-backed memory synthesis.
+    host_llm_enabled: false
+    llm_enabled: false
+    llm_conflict_detection: false
+    auto_sleep_enabled: false
+    persona_enabled: false
+
+    # Start with the simpler hybrid recall path. Qualify richer features separately.
+    enhanced_recall: false
+    fact_recall_enabled: false
+    polyphonic_recall: false
+    proactive_linking: false
+
+    # Reject low-value/noisy explicit writes rather than cleaning them later.
+    write_classifier: strict
+
+    # Cross-session search is required for durable memory, while default writes remain
+    # session-scoped unless the caller intentionally promotes a reviewed item to global.
+    cross_session: true
+    default_scope: session
+
+    # Bounded working/prefetch footprint for the initial token-cost canary.
+    wm_ttl_hours: 168
+    prefetch_content_chars: 1200
+
+# Process-environment invariant for the local-only profile:
+# - no remote Mnemosyne sync endpoint;
+# - no remote embedding endpoint;
+# - no remote Mnemosyne LLM endpoint/fallback;
+# - no Hermes host-LLM adapter for Mnemosyne;
+# - tool-call auto logging remains disabled;
+# - consolidated context injection remains disabled.
+#
+# After provisioning package/model artifacts, prove this profile works with outbound
+# network denied before production promotion.
