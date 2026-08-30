@@ -1,0 +1,45 @@
+# Merge fragment for a CLEAN CANARY Hermes profile.
+# Do not replace unrelated existing config blindly.
+# Re-verify keys against the installed Hermes/LCM/Mnemosyne versions before promotion.
+
+plugins:
+  enabled:
+    # Preserve other explicitly qualified plugins in the real profile.
+    - hermes-lcm
+
+context:
+  # LCM runtime engine name; plugin manifest name is hermes-lcm.
+  engine: lcm
+
+memory:
+  # External provider; built-in MEMORY.md / USER.md remain as a small audit/rollback layer.
+  provider: mnemosyne
+
+  # Canary safety: provider writes are staged for review until memory precision/hygiene gates pass.
+  # After the canary is accepted this may be changed deliberately for autonomous operation.
+  write_approval: true
+
+  mnemosyne:
+    # Do not mirror entire conversations into durable memory. Explicit curated writes only.
+    sync_roles: []
+
+    # Keep automatic consolidation disabled during the first correctness/token canary.
+    # Current Mnemosyne versions expose this behavior under auto-sleep configuration;
+    # confirm the exact installed key via its generated config/status before applying.
+    auto_sleep: false
+
+# Defer non-core plugin/MCP tool schemas. This is especially important when both LCM
+# and Mnemosyne are installed because each adds provider/plugin tools.
+tools:
+  tool_search:
+    enabled: on
+    threshold_pct: 5
+    search_default_limit: 5
+    max_search_limit: 20
+    listing: auto
+    listing_max_tokens: 20000
+
+# LCM tunables are intentionally NOT hard-coded here. First run stable v0.20.0 defaults,
+# measure effective context budget/TTFT/retrieval, then pin LCM_* environment values in
+# the versioned uplift overlay. Keep LCM temporal/proactive cross-session features OFF
+# while Mnemosyne owns durable semantic memory.
