@@ -1,239 +1,179 @@
 # Adversarial Architectural Review
 
-This document assumes the proposed system is wrong until evidence proves otherwise.
+Assume the proposed system is wrong until evidence proves otherwise. Each item is a failure hypothesis to test, not a claim that the control is already implemented.
 
-## 1. Router confidently misclassifies hybrid work
+## Routing, models and economics
 
-**Failure:** an architecture request includes "implement a prototype" and is routed wholly to research or wholly to Pi coding.
+### 1. Hybrid mission is forced into one lane
+**Failure:** architecture + implementation work is routed wholly to research or coding. **Control:** explicit `hybrid`/abstain; research artifact then typed coding task; score margin and downstream regret. **Kill:** >1% high-severity wrong-lane errors on representative holdout.
 
-**Consequence:** poor implementation context, unnecessary tokens, or research quality loss.
+### 2. Router overfits synthetic prompts
+**Control:** redacted real missions, mission/repo/session/time holdout, near-duplicate removal, shadow before authority.
 
-**Control:** explicit `HYBRID`/abstain class; route to research plan artifact first, then coding task envelope. Train on hybrid examples and score margin, not just top probability.
+### 3. Router consumes workstation headroom
+**Control:** small encoder/head; local control-plane memory SLO; generative models on demand only.
 
-**Kill criterion:** >1% high-severity model-choice errors on held-out production-like hybrid tasks.
+### 4. Provider churn destroys prefix cache
+**Failure:** cheapest/fastest physical provider is reconsidered every request. **Control:** phase/session affinity, track physical-provider continuity + cache-read share, switch only on explicit failure/regret policy.
 
-## 2. Router benchmark overfits synthetic prompts
+### 5. Cheap endpoint creates expensive retries
+**Control:** optimize cost/minutes/retries/human intervention per **accepted task**, not nominal $/M.
 
-**Failure:** prototype utterances or generated labels look perfect but real missions use project-specific language and long Spec Kit text.
+### 6. Promotional pricing becomes architecture
+**Control:** volatile prices live in measured config/evidence; steady-state decisions survive promotion expiry.
 
-**Control:** reserve chronological live holdout; include actual redacted mission briefs; deduplicate near matches; shadow-test before authority.
+### 7. Cached tokens are misread as no savings
+**Control:** separate logical/fresh/cached input, output/reasoning, cost and TTFT.
 
-## 3. Large local router consumes workstation headroom
+### 8. RouteLLM score is misnamed mission probability
+**Control:** RouteLLM-style logic is optional difficulty/preference escalation only after pair-specific recalibration.
 
-**Failure:** a "smart" generative router holds tens of GB and causes browser/build/container memory pressure.
+### 9. ModernBERT is fine-tuned prematurely
+**Failure:** synthetic labels create a sophisticated wrong boundary. **Control:** rules -> frozen embeddings/head -> representative redacted outcomes -> fine-tune only after stable ontology/holdout/plateau.
 
-**Control:** router memory SLO; control plane <5 GB target; generative models on demand only.
+### 10. Router telemetry becomes a privacy corpus
+**Control:** outcome/features over raw prompts; local redaction; short retention; controlled sampled training records.
 
-## 4. Provider switch destroys prefix cache
+## OpenRouter gateway
 
-**Failure:** gateway chases the cheapest/fastest provider each request. Cache hit rate collapses; TTFT and fresh-input bill rise.
+### 11. OpenRouter Auto becomes the privacy router
+**Failure:** Auto/fallback sends data that local policy should keep local. **Control:** deterministic privacy decision executes before any OpenRouter call; `LOCAL_ONLY` exits the cloud path. **Kill:** any seeded `LOCAL_ONLY` payload reaches OpenRouter.
 
-**Control:** session-affine provider pinning; cache-adjusted provider score; switch only on explicit failure policy.
+### 12. OpenRouter Auto replaces the final mission classifier
+**Failure:** local router is built but ignored because Auto is convenient. **Control:** Auto only bootstrap/shadow/bounded fallback; evidence records actual role/model; production lane comes from local router.
 
-## 5. Cheap provider has poor tool correctness
+### 13. Model selection and provider selection are conflated
+**Failure:** physical provider choice silently changes the model/mission semantics. **Control:** local router -> role/model binding -> OpenRouter model ID -> physical-provider routing; log both layers distinctly.
 
-**Failure:** $/token optimization produces more invalid tool calls/retries than a slightly more expensive provider.
+### 14. Hermes request policy overrides OpenRouter preset policy
+**Failure:** a preset looks privacy-restricted, but request-level `provider_routing` changes provider constraints. **Control:** do not use preset as sole authority; one canonical Hermes request policy + account/workspace guardrails; effective-policy canary. **Kill:** observed provider violates intended privacy/parameter constraint.
 
-**Control:** optimize **cost per accepted task**, not token price. Track retries, tool-schema validity, test pass and wall time.
+### 15. OpenRouter account guardrail is mistaken for local DLP
+**Control:** account ZDR/data restrictions are defense in depth. Local secret/PII/egress gate still decides whether the request exists at all.
 
-## 6. Launch pricing disappears
+### 16. Exacto/tool routing fights cache stickiness
+**Failure:** tool-accuracy provider reordering constantly changes provider and destroys prefix cache. **Control:** benchmark accepted-task quality vs cache loss; use sticky/explicit routing policy where it wins.
 
-**Failure:** promotional rate ends and destroys a budget forecast.
+### 17. Stale model slug breaks bootstrap
+**Control:** `hermes model` live picker at install; record resolved ID; snapshot slugs are examples only; stop on unavailable/incompatible tool model.
 
-**Control:** model economics use list price for steady-state design; promotional price shown separately. Pricing belongs in periodically refreshed config, not hardcoded policy.
+### 18. One bootstrap model becomes permanent by inertia
+**Control:** Phase 30/60 explicitly benchmark role separation; Bootstrap Mode ends only by evidence, not convenience.
 
-## 7. Prompt cache makes token dashboard look unchanged
+### 19. Direct-provider fallback silently expands credential surface
+**Control:** no direct key by default. Add direct Z.ai/DeepSeek only after matched benchmark justifies the additional secret/integration; fallback cannot activate merely because a key exists.
 
-**Failure:** cached tokens remain in logical usage counts and the team concludes caching failed.
+### 20. OpenRouter/provider rate limit is the real bottleneck
+**Control:** concurrency/load/queue/fallback testing; include queue delay and reliability in accepted-task economics.
 
-**Control:** separate logical input, fresh input, cached input, cost and TTFT metrics.
+## Context, skills and memory
 
-## 8. Context compaction drops a security constraint
+### 21. Compaction drops a security constraint
+**Control:** security/data class lives in deterministic state/policy outside summarised conversation; validate after compaction.
 
-**Failure:** free-form summary forgets "do not send customer records to cloud" after many turns.
+### 22. SOUL/skill/memory is treated as authorization
+**Control:** no capability depends on advisory text; external enforcement wins.
 
-**Control:** security/data class is deterministic task state outside conversation/memory; re-injected and validated separately; post-compaction invariants.
+### 23. Skill catalogue grows until slicing loses
+**Control:** narrow profile/`--no-skills`, class-level parent, measure catalogue + loaded-support tokens.
 
-## 9. SOUL.md treated as authorization
+### 24. Micro-skill explosion creates trigger ambiguity
+**Control:** class-level umbrella skill + phase references/scripts; measure wrong/missed selection.
 
-**Failure:** child ignores or never receives security prose.
+### 25. Pruned reference is assumed still active
+**Control:** pruned = unloaded; reload current slice before relying on it.
 
-**Control:** no security capability depends on SOUL. Sandbox/toolset/egress enforcement is external.
+### 26. LCM + Mnemosyne both become durable semantic authorities
+**Control:** LCM=current-session context/recovery; Mnemosyne=curated cross-session memory; LCM semantic/proactive/temporal cross-session families off in baseline. **Kill:** provenance/owner of a recalled fact cannot be determined.
 
-## 10. Orchestrator bypasses Pi
+### 27. Memory poisoning gains authority
+**Control:** recalled/recovered text remains untrusted; policy/uplift-state/Git/immutable evidence outrank memory; strict Mnemosyne admission and seeded injection tests. **Kill:** memory changes security/acceptance without authoritative evidence.
 
-**Failure:** parent decides direct edits are more efficient.
+### 28. “Local-only memory” silently calls cloud
+**Control:** remote sync/embedding/host-LLM/auto-synthesis off; after provisioning, deny outbound network and prove compaction/write/recall/restart.
 
-**Control:** production orchestrator profile has no write/shell capabilities after cutover. Only an explicitly separate bootstrap/emergency profile can retain temporary authority.
+### 29. SQLite upgrade/crash loses the only store
+**Control:** quiescent/plugin-supported backups, WAL consistency, canary schema upgrades, restore/rollback tests, never upgrade only surviving DB first.
 
-## 11. Pi RPC protocol changes on update
+### 30. Memory/plugin schemas erase context savings
+**Control:** Hermes Tool Search, narrow Mnemosyne allowlist, measure eager/deferred schema tokens + cold-tool cost.
 
-**Failure:** Pi update breaks bridge event handling or completion semantics.
+### 31. Release defaults silently widen memory behaviour
+**Control:** stable pins + captured effective config; explicit critical values; RC/beta not auto-promoted.
 
-**Control:** pin known-good version; protocol conformance test; treat `agent_settled` as completion; independent Hermes/Pi version locks; automatic rollback.
+### 32. Mnemosyne recall is irrelevant/noisy
+**Control:** bounded prefetch, strict admission, relevance/staleness corpus; stable 3.15.x baseline must pass irrelevant-injection tests before authority.
 
-## 12. LSP extension becomes supply-chain path
+### 33. Old `state.db` reimports stale/injected context
+**Control:** immutable evidence only; local discovery/minimal export/sanitization/provenance/current-truth review; never attach old DB.
 
-**Failure:** third-party extension update runs unexpected code or accesses broader filesystem.
+## Bootstrap and restart lifecycle
 
-**Control:** pin/review/version; sandbox extension/LSP process; lockfile/SBOM; no auto-install from project content.
+### 34. Hermes profile is mistaken for sandbox
+**Control:** dedicated standard macOS account or independently qualified containment. `terminal.cwd`, profile and SOUL are not filesystem security.
 
-## 13. Kotlin LSP instability
+### 35. Docker bootstrap mount exposes too much host state
+**Control:** qualify exact Hermes Docker backend/version/mount provenance; minimal mounts/no daemon socket; do not assume `docker_mount_cwd_to_workspace` is safe just because it is named “sandbox”.
 
-**Failure:** Gradle/Android project import or refactor breaks.
+### 36. Phase 20 improvement remains trapped in old chat context
+**Failure:** slim config passes but the same giant bootstrap transcript continues. **Control:** mandatory Checkpoint A fresh Hermes session. **Kill:** Phase 30 benchmark runs in pre-optimization session.
 
-**Control:** official LSP with project compatibility tests; graceful fallback to compiler/test navigation; explicit semantic-refactor gate.
+### 37. Router config is changed but stale process/session is tested
+**Control:** Checkpoint B reload/fresh shadow session and evidence of effective config/hash.
 
-## 14. LSP diagnostics flood context
+### 38. Security policy changes without process restart
+**Control:** Checkpoint C records active policy digest and restarts/reloads enforcement processes when required.
 
-**Failure:** thousands of workspace errors get appended to model calls.
+### 39. Pi workers survive the cutover with old env/policy/model
+**Control:** Checkpoint D recreates disposable workers; do not reuse stale long-running worker state.
 
-**Control:** changed-file/high-severity cap; counts + on-demand detail.
+### 40. “Promoted” session still uses old bootstrap model/router
+**Control:** Checkpoint E fresh ordinary session + captured model/provider/router/context pins.
 
-## 15. PII scanner false negatives
+### 41. Phase report exists only in conversation
+**Failure:** crash/new session loses warnings/restart decision. **Control:** uplift-state v1.1 requires boundary report for COMPLETE/BLOCKED/ROLLBACK.
 
-**Failure:** custom account/customer identifiers are not recognized.
+### 42. Agent auto-starts next phase before human sees boundary
+**Control:** mission/skill contract says one phase per observable run; persist/report/stop.
 
-**Control:** deterministic organization-specific recognizers, seeded canaries, ensemble shadow testing, local-only class for sensitive projects.
+## Pi, security and operations
 
-## 16. PII scanner false positives corrupt code
+### 43. Orchestrator bypasses Pi after cutover
+**Control:** production orchestrator has no generic source-write/arbitrary-shell capability; direct-edit bypass test must fail structurally.
 
-**Failure:** identifiers/examples are redacted and code generation becomes invalid.
+### 44. Pi RPC drift creates premature completion
+**Control:** current protocol conformance; `agent_settled` completion; pinned independent versions; retry/reconciliation tests.
 
-**Control:** field-aware scanning; only transform policy-approved natural-language/content fields; block rather than silently mutate when uncertainty is high.
+### 45. Pi containment is assumed from RPC/worktree
+**Control:** external filesystem/process/network/credential boundary; deny actions structurally under malicious instructions.
 
-## 17. Secret scanner confused with PII scanner
+### 46. Task retry repeats destructive operation
+**Control:** idempotency keys, durable operation journal, reconciliation before replay, explicit non-repeatable operation handling.
 
-**Failure:** PII detector catches names/emails but an API token leaves the machine.
+### 47. PII false positives corrupt technical text
+**Control:** typed/field-aware scanning; distinguish code/config from prose; block on uncertainty rather than silently mutate.
 
-**Control:** dedicated secret layer before PII NER; high-confidence credential formats always block.
+### 48. PII false negatives leak organization identifiers
+**Control:** custom deterministic recognizers + seeded canaries + local-only class; secret scanner remains separate and first.
 
-## 18. Old Hermes DB reintroduces context bloat/injection
+### 49. Same model/provider rubber-stamps its own work
+**Control:** deterministic evidence first, independent reviewer; high-risk review should use independent model family or protected human gate.
 
-**Failure:** bulk import restores stale mission instructions and huge memories.
+### 50. LSP/package update is a supply-chain path
+**Control:** pin/audit/SBOM/compatibility fixtures; no install from untrusted project instructions; containment.
 
-**Control:** immutable/read-only legacy archive; curated local export; independent PII/secret sanitization; provenance/current-truth review; never attach the old DB as production memory.
+### 51. Spec Kit “Lite” removes necessary thinking
+**Control:** minimum acceptance/non-goals/risk fields and deterministic assurance escalation; compare accepted quality.
 
-## 19. Spec Kit Lite becomes "skip thinking"
+### 52. High Assurance is chosen for everything
+**Control:** deterministic profile selection bounds; measure context/rework; human may escalate.
 
-**Failure:** token optimization strips requirements and increases rework.
+### 53. Huge local model/offload ruins workstation UX
+**Control:** realistic browser/build/container load; memory pressure/swap SLO; reject steady-state swap dependency.
 
-**Control:** minimum acceptance/non-goals/risk fields in every profile; profile escalates automatically on ambiguity/security/blast radius; compare accepted-task quality.
+### 54. Continuous update invalidates overlay assumptions
+**Control:** Phase 70 one-component canary, new session/workers where required, protocol/security/context/memory/router/provider/LSP tests and rollback.
 
-## 20. Spec Kit full flow remains in every task because agents choose safety
+## Promotion decision
 
-**Failure:** model conservatively chooses High Assurance for everything.
-
-**Control:** deterministic minimum/maximum profile policy with measurable selection criteria; human can escalate.
-
-## 21. RouteLLM historical weights are assumed universal
-
-**Failure:** historical preference model sends current target models incorrectly.
-
-**Control:** RouteLLM is experimental until recalibrated/retrained on paired target-model outcomes. Do not call its pretrained score "coding probability".
-
-## 22. Dataset licenses contaminate a distributable router
-
-**Failure:** gated/custom/noncommercial data becomes embedded in a model intended for unrestricted redistribution.
-
-**Control:** dataset bill of materials; separate internal-use and distributable recipes; prefer compatible data; legal review where needed.
-
-## 23. Raw telemetry becomes a new privacy database
-
-**Failure:** optimization logs preserve prompts/source snippets.
-
-**Control:** local redaction before logging; feature/outcome telemetry over raw text; short retention; encryption/access controls.
-
-## 24. Task retry repeats destructive operation
-
-**Failure:** worker is restarted and reruns migration/delete/publish.
-
-**Control:** task idempotency keys, command classes, durable operation journal, explicit non-repeatable operation acknowledgement.
-
-## 25. Reviewer shares implementer blind spot
-
-**Failure:** same model/provider reviews its own work and rubber-stamps it.
-
-**Control:** deterministic tests first; independent reviewer process; diversify model for high-risk tasks; protected human gate where required.
-
-## 26. Docker is mistaken for complete macOS isolation
-
-**Failure:** mounted HOME/socket/credential paths expose host secrets or Docker daemon gives broad host authority.
-
-**Control:** minimal mounts, no daemon socket, scrub env, dedicated HOME, network policy, stronger VM/sandbox where necessary.
-
-## 27. Offloading/paging works in a benchmark but ruins sustained UX
-
-**Failure:** a huge local model runs once but creates memory pressure/swap during actual multitasking.
-
-**Control:** benchmark under realistic browser/build load; monitor memory pressure and swap; reject steady-state swap dependency.
-
-## 28. Daily upstream updates silently invalidate uplift assumptions
-
-**Failure:** Hermes/Pi/plugin interfaces change while the overlay still "works" superficially.
-
-**Control:** update on disposable canary; smoke/protocol/security/context/memory tests; compare prompt/cache/recall metrics; promote pinned versions only on pass.
-
-## 29. Cost savings are dominated by reasoning/output tokens
-
-**Failure:** input-cache optimization looks great but reasoning expands billed output.
-
-**Control:** log reasoning accounting where available; cap reasoning by mission class; evaluate accepted quality vs total cost.
-
-## 30. Throughput limit, not price, becomes bottleneck at high token volume
-
-**Failure:** cheapest endpoint cannot sustain concurrency/rate limits and queues tasks.
-
-**Control:** load-test concurrency/quotas/failover; include queue delay in score; maintain policy-compatible fallback.
-
-## 31. LCM and Mnemosyne both become cross-session memory authorities
-
-**Failure:** LCM semantic/proactive recall and Mnemosyne durable recall are enabled together. The same fact is independently summarized/stored/recalled, producing duplicate context, disagreement and unclear provenance.
-
-**Control:** initial ownership is strict: LCM=current-session context/compaction recovery; Mnemosyne=curated durable cross-session memory. Keep LCM temporal/proactive/cross-session semantic features disabled while qualifying the pair. Measure duplicate recall and injected-token rate.
-
-**Kill criterion:** the operator/agent cannot deterministically answer which store owns a remembered fact or duplicate recall materially affects decisions/tokens.
-
-## 32. Memory poisoning gains authority after being remembered
-
-**Failure:** malicious project/tool text is captured into Mnemosyne or recovered through LCM, then later appears trustworthy because it is "memory."
-
-**Control:** all remembered/recovered text remains untrusted advisory context. Policy, uplift-state, current repository/spec/ADR truth and immutable evidence outrank memory. Curated Mnemosyne writes require provenance; canary uses write approval and strict classification. Add seeded prompt-injection memories and verify they cannot change capability/privacy policy.
-
-**Kill criterion:** recalled content changes a security/acceptance decision without independent authoritative evidence.
-
-## 33. "Local-only" context/memory silently falls back to network
-
-**Failure:** embedding, consolidation, host-LLM, remote sync or auxiliary recall quietly uses a cloud endpoint when the local path fails.
-
-**Control:** explicitly disable remote sync, embedding API, host/remote LLM paths and automatic LLM-backed consolidation in the initial Mnemosyne canary. Provision packages/models first, then run LCM compaction/recovery and Mnemosyne write/recall with outbound network denied.
-
-**Kill criterion:** any required context/memory operation fails because a remote service is unavailable or makes unexpected outbound connections.
-
-## 34. SQLite/store upgrade or crash loses context/memory
-
-**Failure:** LCM/Mnemosyne schema upgrade, WAL handling, disk-full condition or abrupt process death corrupts the only useful store.
-
-**Control:** never upgrade the only production DB first; use plugin-supported/quiescent backup; preserve DB/WAL/SHM consistency; test restart, integrity, backup restore and rollback on a copied canary; retain built-in/session-history fallback.
-
-**Kill criterion:** restart/restore cannot prove recovery or rollback without deleting/rewriting the only surviving copy.
-
-## 35. Plugin tool schemas erase context-slimming gains
-
-**Failure:** LCM + Mnemosyne expose enough tools that their schemas become a large always-hot prompt prefix, offsetting skill slicing and compaction savings.
-
-**Control:** enable Hermes Tool Search for non-core plugin/provider tools; measure eager vs deferred schema tokens, discovery accuracy and cold-tool round trips; keep tool membership stable within a phase to protect prompt-cache affinity.
-
-**Kill criterion:** added schema/injected-memory tokens materially erase the net accepted-task token/cost benefit.
-
-## 36. Release/default drift silently enables autonomous memory behavior
-
-**Failure:** a new Mnemosyne/LCM release changes defaults (autosave, persona, auto-sleep, LLM path, recall features, schema) and production behavior expands without deliberate review.
-
-**Control:** pin stable releases/commits; capture effective runtime config/status in evidence; set critical conservative values explicitly rather than trusting defaults; canary every release and inspect security notes/schema changes before promotion. Do not auto-promote RCs.
-
-**Kill criterion:** production behavior depends on an unrecorded default or a release changes memory/network authority without an explicit policy/config diff.
-
-# Promotion decision
-
-Production promotion requires evidence that the system improves **accepted-task cost, latency and long-horizon recovery without degrading accepted-task quality or weakening privacy/security**. A token-saving or memory-rich system that increases retries, irrelevant recall, human intervention, stale-policy influence or escaped defects has failed even when its isolated benchmark scores look better.
+Production promotion requires evidence that the whole system improves **accepted-task quality/economics and long-horizon recovery without weakening privacy/security**. A cheaper, more cached, more “memory-rich” or more autonomous system has failed if it increases escaped defects, stale influence, retries, hidden egress, human recovery work or rollback uncertainty.
