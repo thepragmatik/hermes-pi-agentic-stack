@@ -9,7 +9,7 @@ This directory is the canonical research/design source behind the human Pages ma
 3. `../../UPLIFT_MISSION.md` — exact staged mission handed to Hermes.
 4. `agent-execution-contract.md` — durable state/evidence/restart authority.
 5. `implementation-playbook.md` — the single canonical `00 -> 70` lifecycle.
-6. `../..//skills/hermes-stack-uplift/SKILL.md` — progressive-disclosure phase map; load only the current slice.
+6. `../../skills/hermes-stack-uplift/SKILL.md` — progressive-disclosure phase map; load only the current slice.
 7. `architecture.md` / `architecture.graph.json` — deterministic architecture and trust boundaries.
 8. `research/openrouter-routing.md` — privacy/mission/model/provider responsibility split.
 9. `local-context-memory-setup.md` — fixed LCM + Mnemosyne installation/config/verification/backup/rollback path.
