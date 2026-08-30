@@ -41,6 +41,8 @@ bounded change
 
 A phase may be autonomous internally, but Hermes **returns control at every phase boundary**. Do not carry one enormous pre-optimization conversation through the entire uplift.
 
+When a phase contains multiple meaningful subsystems, use a smaller **mid-phase dogfood gate** before layering the next subsystem whenever that gives a clean causal measurement. Such a gate keeps the same phase `EXECUTING`, persists evidence/checkpoint state, and may resume the same phase in a fresh session. A regression is repaired/rolled back before the next subsystem is introduced.
+
 ## Routing ownership
 
 ```text
@@ -72,6 +74,7 @@ Preferred initial external inference credential footprint is only `OPENROUTER_AP
 8. Temporary bootstrap write/shell authority is narrow and revocable. After the Pi path is proven, production coding must cross the typed Pi boundary.
 9. No phase completes from prose review alone. Evidence must prove its acceptance gate.
 10. At each phase boundary persist state/evidence **before** reporting conversationally.
+11. Do not batch independent improvements merely because they share a phase number; dogfood a reversible improvement before adding a subsystem that could hide its effect.
 
 ---
 
@@ -224,6 +227,22 @@ Do not create one micro-skill per task. Measure catalogue tokens, parent tokens,
 
 A skill/reference pruned from working context is considered **unloaded**; reload it before relying on its instructions.
 
+## Dogfood Gate A0 — context/skill changes before memory layering
+
+Before installing/activating LCM + Mnemosyne or adding Spec Kit changes:
+
+1. persist Phase 20 as `EXECUTING` and record the exact context/skill configuration;
+2. create a reversible pre-dogfood checkpoint;
+3. close the pre-slimming conversation and resume **Phase 20** in a fresh Hermes session using the slimmer T0/T1 + sliced-skill layout;
+4. keep the same bootstrap model, OpenRouter policy and other variables stable;
+5. run a small matched subset of the Phase 10 representative workload;
+6. compare fixed/hot input, skill/tool-schema input, cached input, TTFT, accepted-task quality, wrong/missed skill loads and human intervention;
+7. persist `phase20-dogfood-A0` evidence.
+
+Continue only when accepted-task quality is non-inferior and context/token evidence measurably improves. If it regresses materially, repair or roll back the slimming increment **before** introducing the context-engine/memory baseline.
+
+This is deliberately a mid-phase gate: it does not mark Phase 20 complete or permit Phase 30. It exists to obtain an early self-benefit and preserve causal attribution.
+
 ## 20C — LCM + Mnemosyne fixed baseline
 
 Follow `local-context-memory-setup.md` exactly:
@@ -261,6 +280,7 @@ Implement/validate Micro/Patch, Lite, Standard and High-Assurance Spec Kit profi
 
 Require:
 
+- Dogfood Gate A0 proved the context/skill change independently before later Phase-20 layers;
 - fixed/hot context materially reduced versus Phase 10 without accepted-task regression;
 - initial target >=30% lower skill-related input on skill-heavy representative missions;
 - T1 normally bounded <=8K tokens and smaller for simple phases;
@@ -275,7 +295,7 @@ When the gate passes, report exactly:
 
 > **The first token/context improvements are ready to use.**
 
-Persist Phase 20 complete, close the pre-optimization chat, and start Phase 30 in a **fresh Hermes session using the uplifted profile/configuration**. This prevents the uplift itself from dragging its old pre-slimming conversation forward indefinitely.
+Persist Phase 20 complete, close the Phase-20 qualification chat, and start Phase 30 in a **fresh Hermes session using the uplifted profile/configuration**. This prevents Phase-20 qualification context from contaminating later router measurements.
 
 **What is now usable:** optimized context/skill layout and qualified LCM+Mnemosyne baseline.
 
@@ -553,7 +573,8 @@ Persist the recurring canary/restart/rollback policy and prove one end-to-end ro
 |---|---|---|
 | after 00 | observed only | continue after report |
 | after 10 | baseline/backups durable | restart only if backup tooling required it |
-| **A after 20** | context/skills + LCM/Mnemosyne adopted | **fresh Hermes session required** |
+| **A0 inside 20** | context/skill slimming staged | **fresh Phase-20 continuation session; matched dogfood subset; repair/rollback before adding LCM/Mnemosyne on regression** |
+| **A after 20** | context/skills + LCM/Mnemosyne adopted | **fresh Hermes session required before Phase 30** |
 | **B after 30** | router qualified for shadow | reload/restart integration if needed; fresh shadow session recommended |
 | **C after 40** | security substrate staged/proven | human authority gate; restart enforcement processes when config digest changes |
 | **D after 50** | Pi/LSP path validated | **recreate disposable Pi workers**; production coding cutover only with approval |
@@ -586,6 +607,7 @@ Hermes must persist `BLOCKED`/`ROLLBACK`, report, and stop when:
 - backup/checkpoint cannot be verified;
 - a raw legacy artifact would need cloud exposure;
 - current stable dependency/model/provider semantics cannot be verified;
+- Phase 20 Dogfood Gate A0 regresses accepted-task quality or fails to show measurable context/token benefit;
 - Phase 20 LCM/Mnemosyne mandatory gates fail;
 - supposedly local context/memory unexpectedly uses network;
 - Phase 20 fresh-session checkpoint cannot be established cleanly;
