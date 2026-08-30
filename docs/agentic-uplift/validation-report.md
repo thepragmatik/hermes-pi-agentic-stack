@@ -15,32 +15,76 @@ Do not report a lower level as a higher one.
 
 ## Executed repository / CI checks
 
-The refinement package executes or is designed to execute: Python compilation for router/site tools; JSON parsing and JSON-Schema validation of task/state examples; YAML/frontmatter checks; site generation; internal-link validation; Markdown/`llms.txt` alternate checks; accessible SVG title/description checks; agent-manifest generation; and router smoke/regression tests.
+The current repository gate executes Python compilation for router/site tooling, site generation, internal-link validation, Markdown/`llms.txt` alternate checks, accessible SVG checks, progressive-disclosure agent-surface checks, SHA-256 verification of every raw file listed by the agent manifest, JSON parsing and lifecycle assertions for task/state contracts, OpenRouter architecture assertions, agent/raw copy equality for execution-critical contracts/configs, and Pages build/deploy.
 
-During refinement these checks/reviews found real defects rather than merely confirming the design: invalid YAML frontmatter; incomplete SVG accessibility metadata; insufficient warning that policy examples are not enforcement; an overbroad privacy regex; a secret-pattern punctuation edge case; inconsistent bootstrap/security/Pi ordering; insufficient state/context ownership; duplicate-memory risk; canary write-approval semantics incompatible with autonomy; and ambiguity over whether LCM + Mnemosyne was a selected baseline or merely a challenger.
+During refinement these checks/reviews found real defects rather than merely confirming the design, including: invalid YAML/frontmatter and SVG metadata in earlier revisions; policy examples that could be mistaken for enforcement; overbroad privacy/secret patterns; bootstrap/security/Pi ordering drift; duplicate memory authority; canary memory semantics incompatible with autonomy; two competing phase models (`00-70` vs an accumulated longer sequence); a Pi example incorrectly assigned to Phase 30 before Pi authority exists; an outdated standalone architecture diagram; stale direct-provider assumptions; and a validator that did not require the new fresh-install/OpenRouter/start-mission surfaces.
 
-Those findings were corrected in canonical source.
+Those defects are corrected in canonical source.
 
-## Latest GitHub Pages gate
+## Latest GitHub Pages / operating-manual gate
 
-On the fixed LCM + Mnemosyne baseline publication candidate, GitHub Actions completed successfully:
+On commit `f2dd06d680d8e5a37723b3c9a148f9030a947417`, GitHub Actions completed successfully:
 
 - Python 3.12 compilation of `tools/router-bench/router_bench.py`, `tools/site/build_site.py` and `tools/site/validate_site.py`;
-- generation of **22 human pages plus the agent surface**;
-- validation of **22 HTML pages and agent endpoints**;
-- internal site links and Markdown/`llms.txt` alternate representations;
-- accessible architecture SVG title/description checks;
-- publication of `context-memory-setup.html`;
-- raw + agent publication of the complete Hermes baseline config, LCM environment contract and Mnemosyne local config;
-- Pages artifact upload and deployment pipeline accepted.
+- generation of **26 human pages plus the progressive-disclosure agent surface**;
+- validation of all **26 HTML pages**, internal links and Markdown/`llms.txt` alternates;
+- accessible architecture SVG title/description checks plus explicit OpenRouter/model-role/policy representation;
+- required human routes for Architecture, Fresh Install, Start Uplift, phase playbook, Context + Skills, OpenRouter + Routing, Pi + LSP, Security, Adversarial Review, Readiness, Validation, Upgrades and Sources;
+- required agent routes for `agent/START.md`, `agent/UPLIFT_MISSION.md`, manifest, architecture graph, schemas/examples, configs and sliced skill;
+- SHA-256 and byte-size verification of every canonical raw source in the agent manifest;
+- confirmation that the agent manifest declares OpenRouter as default gateway, LCM + Mnemosyne as the context/memory baseline and the `00,10,...,70` lifecycle;
+- confirmation that the architecture graph contains deterministic policy, local router, model-role binding, OpenRouter, physical-provider, Pi-boundary and durable-state nodes;
+- confirmation that Pi task schema **v2.1** binds exact lifecycle phase IDs plus `model_role`, LOCAL_ONLY fail-closed conditions and required approval evidence when policy requires approval;
+- confirmation that the Pi worked example is Phase 50 (`50-pi-and-lsp`) using `coding.default`, not a pre-Pi router task;
+- confirmation that uplift-state schema/example **v1.1** use exactly the eight `00-70` phases, persist restart/adoption/report decisions and declare OpenRouter runtime gateway;
+- exact byte equality between raw and agent copies of mission, task/state contracts/examples and baseline model/context-memory configs;
+- successful Pages artifact upload and deployment.
 
-The generated agent manifest declares LCM + Mnemosyne as the context/memory baseline and `llms.txt` exposes the setup/runbook without requiring full-site ingestion.
+The first run of the stricter validator intentionally failed because it expected a graph node ID named `model_role` while the canonical graph correctly used `role_binding` with kind `model_role_binding`. The validator was corrected to the canonical identifier and the full gate then passed; no architectural requirement was weakened.
+
+## Fresh-install and execution-path evidence
+
+The documentation now has one explicit manual-to-autonomous handoff:
+
+```text
+human installs/configures clean Hermes bootstrap profile
+-> one verified OpenRouter bootstrap model
+-> repository available locally
+-> uplift chat --query-file UPLIFT_MISSION.md
+-> Hermes reads durable state + parent skill + one current phase slice
+-> executes one bounded phase
+-> persists evidence/state + reports boundary
+-> stops before next phase
+```
+
+OpenRouter is the default external inference gateway. Deterministic privacy/security policy runs locally before every cloud request; the local mission router chooses lane/model role/model; OpenRouter selects only the downstream policy-compatible physical provider. OpenRouter Auto is not privacy authority or final mission-routing authority.
+
+The lifecycle is now singular and consistent across README, mission, playbooks, skill slices, schemas/examples, architecture and agent discovery:
+
+```text
+00 preflight
+10 baseline + backup
+20 context + skills + LCM/Mnemosyne
+   -> Restart Checkpoint A: fresh optimized Hermes session
+30 router
+   -> Checkpoint B: shadow only
+40 security + policy enforcement
+   -> Checkpoint C: authority/human gate
+50 Hermes->Pi + LSP
+   -> Checkpoint D: recreate disposable workers
+60 evaluation + promotion
+   -> Checkpoint E: normal multi-role operation
+70 upgrades + rollback
+   -> Checkpoint F: recurring canary discipline
+```
+
+Phase 20 is explicitly the first self-benefit boundary: after its acceptance gate, Hermes reports that the first token/context improvements are ready and starts Phase 30 in a fresh session rather than carrying bootstrap context forward.
 
 ## Router regression evidence
 
 The last executed deterministic router smoke corpus produced **1.000 accuracy, 1.000 macro-F1 and 1.000 repeat determinism**, with zero observed high-severity lane errors over the small regression fixture. Warm routing latency was sub-millisecond in the available Linux/x86-64 validation runtime.
 
-These numbers are regression evidence only. They are **not** claims about semantic-router accuracy, provider quality, M3 Max latency or production workload performance.
+These numbers are regression evidence only. They are **not** claims about ModernBERT/embedding-router accuracy, OpenRouter provider quality, M3 Max latency or production workload performance.
 
 ## LCM + Mnemosyne evidence status
 
@@ -48,22 +92,19 @@ Architecture status: **selected baseline**.
 
 Evidence status: **researched + repository/config/site validated; not yet canary runtime qualified on the target Mac.**
 
-The repository now contains one coherent baseline path:
+The repository contains one coherent baseline path:
 
 - `docs/agentic-uplift/local-context-memory-setup.md` — install, pin, effective config, admission, health, compaction, offline, backup, rollback and upgrade procedure;
 - `docs/agentic-uplift/research/local-context-memory-stack.md` — ownership/rationale/risks and evidence requirements;
 - `configs/hermes-local-context-memory.example.yaml` — complete Hermes composition;
 - `configs/lcm-baseline.env.example` — LCM scalar baseline;
 - `configs/mnemosyne-local.example.yaml` — Mnemosyne local-only subconfiguration;
-- Phase 30 execution gates in `implementation-playbook.md`;
-- matching sliced context/memory skill guidance;
+- Phase 20 execution gates in `implementation-playbook.md` and the matching sliced skill reference;
 - adversarial tests for duplicate authority, poisoning, relevance, unexpected network fallback, SQLite recovery, tool-schema overhead and release/default drift.
 
-Initial stable research pins are LCM `v0.20.0`, Mnemosyne core `3.15.1` and Hermes wrapper `0.5.0`. **Phase 00/30 must re-verify current stable releases, effective config and security notes before installation.** Unreleased `main`, release candidates and betas are not automatic upgrades.
+Initial stable research pins are LCM `v0.20.0`, Mnemosyne core `3.15.1` and Hermes wrapper `0.5.0`. **Phase 00/20 must re-verify current stable releases, effective config and security notes before installation.** Unreleased `main`, release candidates and betas are not automatic upgrades.
 
 ### Baseline effective-config intent
-
-The selected baseline requires:
 
 ```text
 context.engine = lcm
@@ -101,26 +142,28 @@ On the target Mac, execute the required LCM + Mnemosyne baseline on representati
 - successful context/memory operation with outbound network denied after dependency/model provisioning;
 - independent rollback to the previous known-good profile without deleting diagnostic stores.
 
-Built-in-only, LCM-only and Mnemosyne-only profiles may be used to isolate a regression, but they no longer compete for production selection. If the required pair fails a mandatory gate, Phase 30 is `BLOCKED`/`ROLLBACK`; Hermes does not autonomously choose another memory architecture.
+Built-in-only, LCM-only and Mnemosyne-only profiles may be used to isolate a regression, but they do not compete for production selection. If the required pair fails a mandatory gate, Phase 20 is `BLOCKED`/`ROLLBACK`; Hermes does not autonomously choose another memory architecture.
 
 The stable Mnemosyne 3.15.x research pin predates later relevance/prefetch work, so **irrelevant-memory injection is explicitly blocking**. Do not pin unreleased `main` merely to bypass that test; qualify the next stable release normally.
 
-## Target-machine / production evidence gaps
+## Remaining target-machine / production P0 evidence
 
-The available CI runtime is Linux/x86-64, not the target M3 Max. Production promotion still requires:
+The available repository CI runtime is Linux/x86-64, not the target M3 Max. Unattended production authority still requires:
 
-- the LCM + Mnemosyne runtime evidence above;
+- actual fresh-install/manual bootstrap rehearsal on the target Mac and captured effective Hermes/OpenRouter configuration;
+- target-Mac LCM + Mnemosyne runtime/offline/recovery/resource evidence above;
 - representative redacted mission corpus and temporal router holdout;
-- real provider/tool outcomes;
-- target-Mac router/resource measurements under normal browser/build/container pressure;
-- external capability/sandbox enforcement tests;
-- egress PII/secret canaries;
-- current Pi RPC compatibility and isolation evidence;
+- ModernBERT/embedding challenger measurements and router shadow evidence before routing authority;
+- real OpenRouter model/provider outcomes including physical-provider/cache continuity, TTFT/throughput, tool correctness, retries, rate limits and accepted-task cost;
+- implemented external capability/sandbox enforcement, not just policy YAML;
+- deterministic egress PII/secret canaries proving LOCAL_ONLY cannot reach OpenRouter/cloud;
+- current Pi RPC compatibility, `agent_settled` completion semantics and containment evidence;
 - LSP compatibility suite;
-- failure injection for outage, retry, corrupted state, malicious context/memory/tool output and rollback.
+- failure injection for provider outage/fallback, retry, corrupted state, malicious context/memory/repository/tool output, stale worker/session reuse and rollback;
+- human approval at security-critical Checkpoint C and any other phase whose policy requires it.
 
 ## Maturity conclusion
 
-The repository is **coherent and sufficiently detailed to start the controlled autonomous uplift mission from Phase 00 in a clean canary/bootstrap profile**. The LCM + Mnemosyne architecture decision is fixed and its setup/configuration is execution-ready, but this is not evidence that the target-Mac runtime baseline or the production uplift has already succeeded.
+The repository and Pages site are **coherent, internally cross-checked and sufficiently detailed to start the controlled staged uplift from Phase 00 in a clean bootstrap profile**. The documentation now functions as one operating manual for humans and progressively disclosed agents rather than competing accumulated research paths.
 
-Hermes may autonomously execute read-only and canary phases according to the execution contract. It must mark `BLOCKED`/`ROLLBACK` instead of substituting another memory architecture or promoting any component whose mandatory runtime/security/local-only gate is unresolved.
+This is still not evidence that production enforcement or target-Mac runtime qualification has succeeded. Hermes may execute the bounded phase workflow according to the execution contract, but it must stop at every phase boundary, persist/report state, and mark `BLOCKED`/`ROLLBACK` rather than bypassing an unresolved security, local-only, runtime, restart or human-approval gate.
