@@ -1,24 +1,36 @@
-# Phase 40 — Security, Policy and Bootstrap Enforcement
+# Phase 40 — Security, Policy and Authority Gate
 
-Follow `docs/agentic-uplift/bootstrap-authority.md` for the temporary root-of-trust transition.
+Follow `docs/agentic-uplift/bootstrap-authority.md` and `research/security-zero-trust-pii.md`.
 
-During bootstrap, use the existing Hermes write/shell capability only inside the explicitly constrained canary/overlay/worktree scope while building the replacement enforcement path. Do **not** remove that bootstrap capability until the Pi path is proven; doing so would create a circular dependency.
+During bootstrap, direct Hermes write/shell capability exists only inside the explicitly constrained canary scope needed to build the replacement path. Do not call this zero-trust.
 
-Build policy intent into real external controls before granting a cloud worker production authority:
+Build policy intent into external controls:
 
 - role/capability validation;
-- filesystem/workspace scope;
+- filesystem/workspace/path/symlink scope;
 - process/command policy;
 - environment allowlist/scrubbing;
 - task-scoped credential brokerage;
-- network/egress policy;
-- deterministic secret detection plus typed PII detection/redaction/tokenization;
-- evidence and policy-digest binding;
-- sandbox launcher/containment interface;
-- merge/review authority separation.
+- network default-deny/allowlist and egress policy;
+- deterministic secret detection + typed/context-aware PII handling + re-scan;
+- policy digest/evidence/idempotency binding;
+- sandbox/containment interface;
+- independent merge/review authority.
 
-Enable Hermes `security-guidance` in WARN mode when available as cheap defense in depth for Hermes-owned write/patch content. It is not DLP, a sandbox, or a review of Pi worktree changes.
+## OpenRouter enforcement
 
-Seed canaries and prove local-only/secret payloads fail closed. Do not promote while policy exists only as YAML/prompts, and do not treat a passing sanitizer unit test as proof of containment.
+Privacy is decided locally **before** OpenRouter. Prove `LOCAL_ONLY` cannot reach OpenRouter through Auto, fallback, retry or provider failover. Verify only approved role/model bindings can make cloud requests; effective Hermes request-level provider routing and OpenRouter account guardrails do not conflict; direct-provider fallback cannot activate just because a key exists.
 
-The phase may complete the enforcement substrate while bootstrap authority still exists in canary scope. Final revocation of direct Hermes coding/shell authority happens only after Phase 50 proves the replacement Pi path and a privacy-controlled worker canary.
+Do not rely on OpenRouter presets as the only provider-policy boundary until their interaction with Hermes request-level `provider_routing` is explicitly tested.
+
+Enable Hermes `security-guidance` WARN mode where available as defense in depth only; it is not sandbox/DLP/Pi review.
+
+Seed secrets, PII and technical false-positive fixtures. A policy YAML, prompt or sanitizer unit test is not containment evidence.
+
+## Adoption Checkpoint C — human authority gate
+
+This is the security-critical boundary. Any unresolved P0 enforcement/egress/containment issue means `BLOCKED`/`ROLLBACK`. Human approval is required before stronger cloud routing/delegation authority while P0 evidence remains incomplete.
+
+Restart/reload enforcement/router processes when needed to prove the tested policy digest is actually active.
+
+Persist state/evidence, send the required phase-boundary report, and stop before Phase 50.
