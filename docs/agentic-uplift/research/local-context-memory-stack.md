@@ -1,334 +1,259 @@
 # Local-Only Context and Memory Stack — LCM + Mnemosyne
 
-Snapshot: 2026-08-30
+Snapshot: 2026-08-30.
 
 ## Decision
 
-For the uplift canary, benchmark and, if the gates pass, promote the following **local-only division of ownership**:
+**LCM + Mnemosyne is the baseline architecture for the clean Hermes uplift profile.** It is no longer a challenger competing for architectural selection.
 
 ```text
 current-session exact context + compaction recovery  -> hermes-lcm
 cross-session curated durable memory                 -> Mnemosyne
-raw full historical sessions / forensic recall       -> Hermes state.db + session_search
-deterministic uplift phase / retries / policy digest -> uplift-state schema/object
-immutable proof                                      -> files, git commits, benchmark/test evidence
-operator task view                                   -> optional Hermes Kanban projection
+raw full Hermes session history / forensic recall    -> state.db + session_search
+deterministic uplift phase/retry/policy/blockers      -> uplift-state schema/object
+large raw proof                                       -> T2 files/git/test/benchmark evidence
+operator task view                                    -> optional Kanban projection
+project truth                                         -> Git/ADR/specs
 ```
 
-Do not ask one store to perform every role. In particular, **LCM is the context engine, not the durable-memory authority**, and **Mnemosyne is the durable-memory provider, not execution state or a raw transcript archive**.
+The built-in Hermes compressor with no external memory provider remains a diagnostic/control and emergency rollback profile. It is not an automatic production substitute. If the LCM + Mnemosyne baseline cannot pass a mandatory compatibility, correctness, local-only, privacy, backup or recovery gate, Phase 30 becomes `BLOCKED` or `ROLLBACK` until the baseline is repaired or the architecture is deliberately reconsidered.
 
-This architecture supersedes the earlier recommendation to keep built-in memory as the only initial production memory baseline. Built-in `MEMORY.md` / `USER.md` remain present and deliberately tiny for reviewed constitutional/user facts and rollback reference, but the preferred local challenger is now LCM + Mnemosyne because it solves two distinct problems the baseline does not solve as well.
+Detailed installation and operation are canonical in `docs/agentic-uplift/local-context-memory-setup.md`.
 
-## Why these were initially omitted
+## Why the pair is coherent
 
-The first refinement deliberately minimized variables while skill slicing, routing, Pi delegation and security boundaries were still being designed. That was reasonable for measurement isolation, but too conservative for the intended long-horizon autonomous uplift. Prior use of LCM + Mnemosyne is technically relevant because:
+The products solve different layers:
 
-- LCM addresses loss of exact detail from active-context compaction while keeping the live prompt bounded;
-- Mnemosyne addresses durable semantic recall and memory lifecycle across sessions without requiring a cloud memory service;
-- Hermes exposes one context-engine slot and one memory-provider slot, so the two products fit cleanly without requiring a core fork.
+- **LCM** is a Hermes context engine. It bounds current-session model-visible context while preserving exact raw messages and lineage for later drill-down.
+- **Mnemosyne** is a Hermes memory provider. It stores deliberately admitted durable information across sessions and retrieves it semantically.
 
-The correct response is not to turn on every feature in both systems. It is to **assign ownership and disable overlapping feature families until evidence justifies them**.
+Hermes has a single selected context-engine slot and a single selected external memory-provider slot, so the pair maps cleanly to host architecture without a core fork.
 
-## First-principles problem decomposition
+The design only stays coherent if overlap is prevented. Do not let LCM become a second automatic cross-session semantic-memory provider while Mnemosyne is active, and do not let Mnemosyne become a raw transcript archive that duplicates LCM/state.db.
 
-| Requirement | Best initial owner | Why |
-|---|---|---|
-| Preserve exact current-session messages after compaction | LCM | Raw SQLite message store + summary DAG + lineage/drill-down |
-| Bound model-visible current context | LCM + Hermes prompt architecture | Context engine assembles bounded summaries/fresh tail; T0/T1/T2 still controls what enters the mission prompt |
-| Search raw previous Hermes sessions | Hermes `state.db` / `session_search` | Canonical host session audit/history already exists |
-| Recover selected old-install knowledge | Legacy-state curation pipeline | Old DB remains untrusted read-only evidence |
-| Curated cross-session facts, decisions, lessons, preferences | Mnemosyne | Working/episodic memory + local FTS/vector retrieval and memory lifecycle |
-| Current uplift phase, attempts, blockers, policy version | `uplift-state` | Must be deterministic and schema-valid, not semantic recall |
-| Full logs, diffs, RPC streams, test output | T2 artifact/evidence store | Large/raw material should not become memory or hot context |
-| Project architectural truth | Git/ADRs/specs | Versioned authoritative source beats inferred memory |
+## Baseline version posture
 
-## LCM assessment
+Initial stable qualification pins from this research snapshot:
 
-`stephenschoettler/hermes-lcm` is a Hermes context-engine plugin. Stable release `v0.20.0` is the initial qualification target. Do not promote an RC merely because `main` is newer; qualify later release candidates separately.
+| Component | Initial stable pin | Baseline posture |
+|---|---:|---|
+| `hermes-lcm` | `v0.20.0` | pin stable tag + resolved commit; no RC promotion |
+| `mnemosyne-memory` | `3.15.1` | local embeddings extra; exact package pin |
+| `mnemosyne-hermes` | `0.5.0` | wrapper integration; exact package pin |
+| embedding model | `BAAI/bge-small-en-v1.5` | local FastEmbed/ONNX |
 
-LCM replaces the built-in active-context compressor with a SQLite-backed DAG. It stores raw messages, summarizes old material hierarchically, keeps a bounded fresh tail, preserves source lineage and exposes retrieval tools for exact drill-down after compaction.
+Re-verify current stable releases and security notes during Phase 00/30. New stable releases are canary-upgraded; upstream `main`, LCM release candidates and Mnemosyne betas are not silently selected.
 
-### What LCM solves well
+A stable pin is not proof of fitness. The target-Mac qualification still decides whether the baseline may be production-promoted.
 
-- avoids treating a lossy summary as the only model-visible path back to old current-session detail;
-- keeps live context bounded independently from how much raw conversation has accumulated;
-- makes recovery after compaction agent-accessible rather than requiring broad transcript replay;
-- externalizes/recovers oversized tool payloads;
-- gives operator diagnostics, inspection, backup and integrity controls;
-- requires no mandatory external runtime dependency beyond Hermes/Python/SQLite.
+## LCM ownership and configuration
 
-### LCM overlap that must stay disabled initially
+Stable LCM stores raw messages in profile-local SQLite, builds a hierarchical summary DAG, assembles a bounded fresh tail/summary frontier and provides source-aware drill-down after compaction.
 
-Stable v0.20.0 also contains optional semantic/hybrid cross-session recall, temporal rollups and proactive-recall capabilities. Those are useful, but overlap with Mnemosyne. Initial production canary therefore uses **LCM primarily for current-session context fidelity**:
-
-- temporal rollups: OFF;
-- proactive/cross-session semantic recall: OFF unless needed for an explicit LCM evaluation;
-- historical backfill: dry-run first and operator/uplift-task invoked only;
-- optional sensitive-pattern redaction: defense in depth only, not the PII/security boundary.
-
-If later measurements show LCM alone can replace Mnemosyne for the required durable-memory workload, test that as a separate architecture. Do not accidentally run two automatic semantic recall systems and attribute the result to either one.
-
-## Mnemosyne assessment
-
-`mnemosyne-oss/mnemosyne` is a local-first memory system with a native Hermes `MemoryProvider` integration. Initial pins for qualification are core `v3.15.1` and Hermes wrapper `v0.5.0` (or newer versions only after the normal canary/compatibility gate).
-
-For this workstation, use the **local embeddings profile**, not remote embeddings and not the full local-LLM profile initially. `mnemosyne-hermes` pairs with `mnemosyne-memory[embeddings]`, using local FastEmbed/ONNX vector generation and SQLite/FTS retrieval.
-
-### What Mnemosyne solves well
-
-- curated persistent memory across Hermes sessions;
-- working and episodic memory with importance/retention semantics;
-- local hybrid lexical/vector recall;
-- explicit remember/recall/forget/inspect lifecycle;
-- consolidation/hygiene tooling;
-- structured fact/graph/persona features when deliberately enabled later;
-- profile/bank isolation for separating memory domains.
-
-### Conservative initial Mnemosyne mode
-
-To avoid duplicating LCM and Hermes session history, initial autonomous-uplift configuration should be **explicit-write / curated-memory first**:
-
-- `memory.provider: mnemosyne`;
-- local embeddings only;
-- no remote sync URL;
-- no remote embedding API;
-- Hermes host LLM adapter disabled;
-- remote LLM base URL unset;
-- tool-call auto logging OFF;
-- `sync_roles: []` initially, so full user/assistant turns are not automatically copied into Mnemosyne;
-- `MNEMOSYNE_WRITE_CLASSIFIER=strict`;
-- enhanced recall OFF initially;
-- fact recall OFF initially;
-- persona auto-injection OFF initially;
-- automatic LLM-backed consolidation OFF initially;
-- explicit durable writes should contain compact, provenance-bearing conclusions rather than raw transcripts.
-
-This makes Mnemosyne a **curated semantic memory**, while LCM and `state.db` retain raw session fidelity.
-
-## Built-in MEMORY / USER files
-
-Do not run `hermes tools disable memory` merely because Mnemosyne is active. Current Hermes treats the built-in memory toolset and external memory provider as separate surfaces; disabling the memory toolset can also remove provider tooling. `hermes memory off` is the rollback switch for the external provider.
-
-Keep `MEMORY.md` / `USER.md` small:
-
-- stable user preferences explicitly intended to persist;
-- universal workstyle/profile facts;
-- pointers to authoritative project material;
-- no temporary mission state;
-- no raw conversation summaries;
-- no duplicated Mnemosyne episodic data.
-
-They serve as an auditable stable-prefix/rollback layer, not the primary operational memory database.
-
-## Local alternatives considered
-
-| Candidate | Local-only viability | Strength | Weakness for this stack | Role |
-|---|---|---|---|---|
-| Hermes built-in memory + session_search | Excellent | simplest, auditable, no extra plugin | weak curated semantic cross-session lifecycle; lossy active-context compressor | rollback/control baseline |
-| **hermes-lcm** | **Excellent** | lossless current-session compaction/recovery, DAG lineage | extra context-engine tools; optional memory features overlap Mnemosyne | **chosen context engine after canary** |
-| **Mnemosyne** | **Excellent with local embeddings / local-only config** | rich durable semantic memory, hygiene, episodic/working lifecycle | large feature/tool surface; can duplicate transcripts/context if defaults are not constrained | **chosen memory provider after canary** |
-| Holographic | Excellent | bundled/local SQLite, tiny dependency/tool surface, trust/contradiction model | less complete cross-session memory lifecycle than Mnemosyne | fallback/simple challenger |
-| OpenViking self-hosted | Local-capable | strong L0/L1/L2 hierarchical context retrieval | server + AGPL surface; overlaps LCM/skills hierarchy | later challenger |
-| ByteRover local | Local-capable with local model endpoint | hierarchical knowledge and pre-compression extraction | extra daemon/LLM dependency; overlaps LCM + Mnemosyne curation | later experiment |
-| Hindsight local | Local-capable | KG/entity/reflective memory | PostgreSQL/daemon + local LLM complexity | only if graph synthesis becomes a measured need |
-
-The preferred architecture is not chosen because it has the most features. It is chosen because the responsibilities are separable and each can be rolled back independently.
-
-## Tool-schema containment
-
-LCM stable v0.20.0 exposes roughly ten context-engine tools; current Mnemosyne exposes a materially larger provider tool surface. Loading all plugin schemas eagerly would undermine the token-saving goal.
-
-Enable Hermes **Tool Search** in the uplift profile so non-core plugin tools are progressively disclosed behind `tool_search`, `tool_describe` and `tool_call`. Core Hermes tools remain eager. Record tool-schema tokens before and after activation.
-
-Do not dynamically add/remove LCM or Mnemosyne tools in the middle of a phase unless necessary; toolset changes invalidate stable prompt-cache prefixes.
-
-## Recommended canary installation
-
-Perform this only in the clean parallel `HERMES_HOME` / uplift profile defined by the bootstrap playbook.
-
-### 1. Pin LCM stable
-
-Example workflow:
-
-```bash
-git clone https://github.com/stephenschoettler/hermes-lcm "$HERMES_HOME/plugins/hermes-lcm"
-git -C "$HERMES_HOME/plugins/hermes-lcm" checkout v0.20.0
-git -C "$HERMES_HOME/plugins/hermes-lcm" rev-parse HEAD
-```
-
-Record the exact commit in `versions.lock`. Activate both manifest and engine:
-
-```yaml
-plugins:
-  enabled:
-    - hermes-lcm
-context:
-  engine: lcm
-```
-
-Keep Hermes' global compression gate enabled; LCM owns its compaction threshold when selected.
-
-Initial LCM tuning should be derived from the **prompt budget you are willing to pay**, not the provider model's maximum context. Start from LCM defaults in the first correctness canary, then tune threshold/fresh-tail from measured TTFT, token cost and retrieval success.
-
-### 2. Pin Mnemosyne
-
-Use an isolated/persistent side venv where practical so upgrade/rollback is explicit. Install the wrapper plus local embeddings profile and record resolved package versions/hashes.
-
-Canonical shape:
-
-```bash
-python3 -m venv "$HERMES_HOME/.mnemosyne/venv"
-"$HERMES_HOME/.mnemosyne/venv/bin/pip" install \
-  'mnemosyne-memory[embeddings]==3.15.1' \
-  'mnemosyne-hermes==0.5.0'
-"$HERMES_HOME/.mnemosyne/venv/bin/mnemosyne-hermes" install \
-  --mode wrapper \
-  --python "$HERMES_HOME/.mnemosyne/venv/bin/python" \
-  --hermes-home "$HERMES_HOME"
-hermes config set memory.provider mnemosyne
-```
-
-If package metadata for the wrapper/core pins differs at execution time, **stop and verify current release metadata** rather than loosening the pin automatically.
-
-### 3. Local-only environment
-
-Use the example `configs/mnemosyne-local.env.example`. At minimum enforce:
+Baseline LCM settings are versioned in `configs/lcm-baseline.env.example`:
 
 ```text
-MNEMOSYNE_HOST_LLM_ENABLED=false
-MNEMOSYNE_LOG_TOOLS=0
-MNEMOSYNE_ENHANCED_RECALL=false
-MNEMOSYNE_FACT_RECALL_ENABLED=0
-MNEMOSYNE_WRITE_CLASSIFIER=strict
+LCM_CONTEXT_THRESHOLD=0.35
+LCM_FRESH_TAIL_COUNT=32
+LCM_FRESH_TAIL_MAX_TOKENS=0
+LCM_INCREMENTAL_MAX_DEPTH=3
+LCM_LEAF_CHUNK_TOKENS=20000
+LCM_DYNAMIC_LEAF_CHUNK_ENABLED=false
+LCM_THRESHOLD_FULL_SWEEP_ENABLED=false
+LCM_EMBEDDINGS_ENABLED=false
+LCM_PROACTIVE_RECALL_ENABLED=false
+LCM_TEMPORAL_ROLLUPS_ENABLED=false
+LCM_ENABLE_SLASH_COMMAND=false
+LCM_FTS_INTEGRITY_CHECK_INTERVAL_HOURS=24
 ```
 
-Additionally ensure `MNEMOSYNE_LLM_BASE_URL`, `MNEMOSYNE_EMBEDDING_API_URL`, and sync-remote settings are **unset**, not pointed to cloud fallbacks.
+Keep Hermes `compression.enabled: true`; with `context.engine: lcm`, LCM owns plugin compaction and `LCM_CONTEXT_THRESHOLD` is the principal baseline trigger. Do not tune Hermes' built-in compressor threshold as though it controlled LCM.
 
-For stronger assurance, run the canary with outbound network denied after required package/model artifacts have been downloaded. A local-only architecture should continue to recall/write/compact when the network is unavailable.
+Do not set `LCM_DATABASE_PATH` by default. Stable LCM resolves its empty path inside the active `HERMES_HOME`, preserving profile isolation.
 
-### 4. Disable transcript duplication
+### Why LCM semantic memory is off
 
-In Hermes config:
+LCM v0.20.0 also offers opt-in semantic/hybrid cross-session recall, temporal rollups and proactive recall. Those are intentionally disabled because Mnemosyne is the durable semantic-memory owner.
+
+Enabling them later is an architecture experiment requiring a separate benchmark; it is not routine tuning.
+
+## Mnemosyne ownership and configuration
+
+Mnemosyne is the sole external durable-memory provider in the baseline. The complete effective composition is in `configs/hermes-local-context-memory.example.yaml`; the Mnemosyne subconfiguration is mirrored for inspection in `configs/mnemosyne-local.example.yaml`.
+
+### Built-in Hermes memory is disabled
+
+Set:
 
 ```yaml
 memory:
   provider: mnemosyne
-  mnemosyne:
-    sync_roles: []
-    auto_sleep: false
+  memory_enabled: false
+  user_profile_enabled: false
+  write_approval: false
 ```
 
-Use explicit memory writes for durable conclusions. Consider `sync_roles: [user]` only after a corpus-based test demonstrates useful precision and acceptable pollution.
+Hermes keeps an external provider active when the two built-in stores are disabled. This removes the built-in MEMORY/USER tool/guidance from the hot prompt and prevents a second durable-memory authority.
 
-### 5. Enable Tool Search
+`state.db` / `session_search` remains the raw host session-history surface; disabling built-in MEMORY/USER does not mean deleting session history.
 
-Use the current Hermes tool-search configuration for the uplift profile and verify the LCM/Mnemosyne plugin schemas are deferred rather than all injected eagerly. Treat exact config keys as version-bound and validate them against installed Hermes before mutation.
+### Autonomous write posture
 
-## What should be written to Mnemosyne
+The production baseline uses `write_approval: false`. Human approval of each durable write would defeat autonomous operation and would not be a meaningful model-side security boundary.
 
-Good candidates:
+Instead, durable-write safety is enforced by:
 
-- durable user preference explicitly intended to persist;
-- accepted architecture decision + source ADR/commit;
-- recurring repository-specific constraint;
-- learned operational correction that survived review;
-- provider/tool incompatibility tied to exact version evidence;
-- compact outcome lesson from a failed/successful mission;
-- unresolved durable risk with evidence pointer.
+- `sync_roles: []` — no full-turn transcript autosave;
+- `write_classifier: strict`;
+- explicit store-ownership/admission rules;
+- a narrow Mnemosyne tool allowlist;
+- local-only operation;
+- validity/provenance conventions;
+- poisoning/staleness tests;
+- independent project/execution authorities that memory cannot override.
 
-Bad candidates:
+### Local-only Mnemosyne path
 
-- raw Pi RPC event stream;
-- complete assistant/user transcript;
-- test output or stack trace already stored as evidence;
-- current uplift phase/status;
-- speculative assistant inference;
-- secrets/PII not needed for memory;
-- facts better represented by current code/spec/ADR;
-- temporary model price/availability without date/provenance.
+Baseline configuration uses:
 
-Every autonomous durable write should carry or be traceable to provenance. Memory never overrides current authoritative code/policy/spec.
+- `embeddings_via_api: false`;
+- `embedding_model: BAAI/bge-small-en-v1.5`;
+- `vec_type: int8`;
+- no remote sync target;
+- no host LLM;
+- no Mnemosyne remote/local generative-memory LLM path initially;
+- no LLM conflict detection;
+- no auto-sleep;
+- no persona auto-memory;
+- no enhanced/fact/polyphonic/proactive/query-intent recall features;
+- `prefetch_content_chars: 800` as an intentionally bounded initial budget;
+- `default_scope: global` for explicitly admitted durable memory;
+- `cross_session: false` so unrelated session-scoped memories are not implicitly swept into recall.
 
-## Canary evaluation matrix
+The last two are complementary: global durable memories are explicitly cross-session by nature; session memories remain local to their session unless intentionally queried/promoted.
 
-Compare at least four profiles on the same long-horizon missions:
+## Mnemosyne memory classes
 
-1. built-in compressor + built-in memory/session_search;
-2. LCM + built-in memory;
-3. built-in compressor + Mnemosyne conservative mode;
-4. **LCM + Mnemosyne conservative mode**.
+### Canonical facts
 
-Measure:
+Use canonical memory only for one-current-value profile facts such as stable operator preferences or identity/profile properties. Canonical replacement preserves history; canonical retirement should retire rather than hard-delete.
 
-- accepted-task success;
-- recovery of exact pre-compaction facts;
-- cross-session recall precision/recall;
-- stale/contradictory memory rate;
+### Ordinary global durable memory
+
+Use ordinary global memory for compact lessons/decisions likely to help future sessions when Git/ADR/spec is not the better authority. Prefer source/provenance metadata and explicit validity horizons for time-sensitive facts.
+
+### Forbidden memory content
+
+Do not use Mnemosyne for:
+
+- uplift phase/attempt/idempotency/policy digest;
+- raw logs, diffs, source bodies, Pi RPC streams or benchmark corpora;
+- secrets, credentials or unsanitized PII;
+- authoritative project architecture/specification that belongs in Git;
+- temporary task/blocker state;
+- wholesale conversation/compaction summaries;
+- unsanitized legacy database material.
+
+Memory is advisory context. Current policy, `uplift-state`, authoritative repository content and immutable evidence win every conflict.
+
+## Tool surface and Tool Search
+
+Mnemosyne exposes a broad tool family upstream. The baseline intentionally exposes only:
+
+```text
+mnemosyne_remember
+mnemosyne_recall
+mnemosyne_remember_canonical
+mnemosyne_recall_canonical
+mnemosyne_forget_canonical
+mnemosyne_get
+mnemosyne_update
+mnemosyne_invalidate
+mnemosyne_stats
+mnemosyne_diagnose
+```
+
+Hard-delete, sync/shared-bank, graph, persona, scratchpad, import/export and sleep tools are not part of the ordinary autonomous profile.
+
+Hermes Tool Search is ON with a bounded listing budget so non-core plugin/provider schemas are progressively disclosed. This prevents a richer memory stack from undoing skill/context token savings through eagerly injected tool schemas.
+
+## Install isolation
+
+Install LCM profile-locally under the clean `HERMES_HOME/plugins/hermes-lcm` and pin the stable tag/commit.
+
+Install Mnemosyne in a profile-owned side venv under `$HERMES_HOME/.mnemosyne/venv` and use its wrapper integration. This keeps the provider independently upgradeable from the rebuildable Hermes Python environment and reduces the chance that a Hermes repair/update silently removes the memory package.
+
+Exact commands and verification gates are in `local-context-memory-setup.md`.
+
+## Known risk posture
+
+### Mnemosyne relevance/prefetch
+
+The stable 3.15.x research pin predates later upstream work on relevance/prefetch behavior. Do not jump to unreleased `main` to obtain a fix. Instead:
+
+- keep the durable corpus curated (`sync_roles: []`);
+- keep optional richer recall systems off;
+- bound `prefetch_content_chars`;
+- seed irrelevant/stale memories in qualification;
+- make irrelevant-memory injection a blocking gate;
+- canary-upgrade to the next stable release normally when its fixes are available.
+
+### Auto-sleep/concurrency/default drift
+
+`auto_sleep_enabled`, persona and LLM-backed features are set explicitly OFF because effective defaults can change between releases and some historical issues involved autonomous maintenance paths. Qualification checks **effective runtime config**, not only checked-in YAML.
+
+### SQLite durability
+
+LCM and Mnemosyne are independent SQLite-backed stores. Backup/restore both separately and verify restore rather than assuming copying one live `.db` file is sufficient. LCM live backup should use its operator facility; filesystem copy requires quiescent writers or correct WAL/SHM handling.
+
+## Diagnostic controls, not alternative architecture selection
+
+Keep these profiles reproducible for diagnosis/regression:
+
+1. built-in compressor + no external provider;
+2. LCM + no external provider;
+3. built-in compressor + Mnemosyne;
+4. **LCM + Mnemosyne baseline**.
+
+Their purpose is component isolation: if token cost, recall or recovery regresses, determine which layer caused it. They do **not** form a winner-take-all production bake-off anymore.
+
+If the required baseline fails a mandatory gate, retain the last known-good production profile and mark Phase 30 `BLOCKED`/`ROLLBACK`. Do not let Hermes autonomously switch to Holographic, OpenViking, ByteRover or another memory provider as an architectural workaround.
+
+## Local-only proof
+
+After package and embedding-model artifacts are provisioned, deny outbound network externally and repeat:
+
+- LCM ingest/compaction/exact recovery;
+- Mnemosyne global memory write/recall;
+- canonical fact write/read/retire;
+- restart/recovery;
+- backup/integrity tests.
+
+Any unexpected remote embedding, sync, auxiliary-memory LLM or other network attempt fails the context/memory baseline. This is separate from the wider stack's deliberately policy-controlled cloud research/coding model traffic.
+
+## Promotion metrics
+
+Record on representative long-horizon missions:
+
+- accepted-task quality;
+- exact-detail recovery after multiple compactions;
+- recovery after restart;
+- durable-memory precision, stale/irrelevant injection and contradiction behavior;
 - memory writes per accepted task;
-- irrelevant injected-memory tokens;
+- injected memory tokens;
 - LCM summary/fresh-tail tokens;
-- total/fresh/cached input tokens;
-- plugin/tool-schema tokens with Tool Search on/off;
-- TTFT/wall time;
-- compaction count and recovery calls;
-- route/provider-cache continuity;
-- SQLite/store growth;
-- process RSS and workstation memory pressure;
-- restart/crash recovery;
-- behavior with outbound network blocked.
+- non-core tool-schema tokens with Tool Search;
+- total/fresh/cached input;
+- TTFT and wall time;
+- SQLite growth;
+- process RSS, macOS memory pressure and swap;
+- backup/restore outcome;
+- offline/no-network outcome.
 
-## Promotion gates
+The baseline may be production-promoted only when these gates are acceptable on the target Mac. The architecture decision is fixed; runtime qualification is not assumed.
 
-Promote LCM + Mnemosyne only if all are true:
+## Alternatives retained for contingency research
 
-- no cloud/network dependency is observed for context or memory operations;
-- no raw secret/PII is auto-admitted to durable memory in seeded tests;
-- exact-detail recovery after compaction is materially better than baseline;
-- cross-session recall improves real tasks with acceptably low irrelevant/stale recall;
-- added tool/context tokens do not erase the skill/context slimming gains;
-- accepted-task quality is non-inferior;
-- restart and SQLite backup/recovery tests pass;
-- memory ownership boundaries above remain intact;
-- rollback to `context.engine: compressor` + `hermes memory off` is rehearsed.
+Holographic, OpenViking, ByteRover, Hindsight and other local/self-hostable systems remain documented research alternatives. They are useful if the architecture is deliberately reopened later, but they are not part of ordinary autonomous fallback logic.
 
-## Failure and rollback
-
-Context engine and memory provider must be independently removable.
-
-LCM rollback:
-
-1. create an LCM-consistent backup using the plugin-supported path or stop all SQLite writers before copying DB/WAL/SHM;
-2. set `context.engine: compressor`;
-3. restart Hermes;
-4. retain the LCM DB as read-only evidence until the rollback is accepted.
-
-Mnemosyne rollback:
-
-1. `hermes memory off`;
-2. restart Hermes;
-3. keep built-in MEMORY/USER and session history intact;
-4. retain Mnemosyne DB read-only for forensic comparison;
-5. remove/unlink wrapper only after rollback verification.
-
-Never delete either SQLite store as the first rollback action.
-
-## Security and autonomy constraints
-
-- Both stores are local data assets and inherit the same filesystem/backup/PII rules as `state.db`.
-- Do not expose their SQLite files or maintenance APIs over the network.
-- Download required models/packages during a controlled provisioning step; prove steady-state operation under outbound deny.
-- Memory provider content is untrusted advisory context, not authorization.
-- Prompt/project/tool injections recovered from LCM or Mnemosyne do not gain authority because they were remembered.
-- `uplift-state` and external policy remain authoritative even when memory recalls something contradictory.
-
-## Sources to re-verify before installation
-
-- Hermes context engine plugins: https://hermes-agent.nousresearch.com/docs/developer-guide/context-engine-plugin
-- Hermes context compression/config: https://hermes-agent.nousresearch.com/docs/developer-guide/context-compression-and-caching/
-- Hermes Tool Search: https://hermes-agent.nousresearch.com/docs/user-guide/features/tool-search
-- Hermes memory provider plugins: https://hermes-agent.nousresearch.com/docs/developer-guide/memory-provider-plugin/
-- LCM repository/releases: https://github.com/stephenschoettler/hermes-lcm
-- Mnemosyne repository/releases: https://github.com/mnemosyne-oss/mnemosyne
-- Mnemosyne Hermes integration: https://github.com/mnemosyne-oss/mnemosyne/blob/main/docs/hermes-integration.md
-
-Re-verify all version-specific commands and config keys against the installed Hermes/LCM/Mnemosyne versions during Phase 00/30. The playbook is an execution contract, not permission to ignore upstream drift.
+This keeps the playbook decisive while preserving reversibility and future evidence-based redesign.
