@@ -1,6 +1,6 @@
 # Repository Manifest
 
-This repository is the standalone, upgrade-safe control repository for the Hermes + Pi agentic development stack. It intentionally remains separate from upstream Hermes and Pi source repositories.
+This repository is the standalone, upgrade-safe control repository for the Hermes + Pi agentic development stack. It intentionally remains separate from upstream Hermes, Pi, LCM and Mnemosyne source repositories.
 
 ## Canonical source layout
 
@@ -11,6 +11,8 @@ MANIFEST.md
 configs/
   policy.example.yaml
   models.example.yaml
+  hermes-local-context-memory.example.yaml
+  mnemosyne-local.example.yaml
 protocols/
   pi-task-envelope.schema.json
   uplift-state.schema.json
@@ -35,6 +37,7 @@ docs/agentic-uplift/
   architecture.md
   architecture.graph.json
   agent-execution-contract.md
+  bootstrap-authority.md
   validation-report.md
   site-publishing.md
   implementation-playbook.md
@@ -44,7 +47,11 @@ docs/agentic-uplift/
   spec-kit-profiles.md
   research/
     local-routing-models.md
+    router-training-control.md
     context-token-optimization.md
+    mission-context-architecture.md
+    local-context-memory-stack.md
+    legacy-state-curation.md
     hermes-pi-lsp.md
     security-zero-trust-pii.md
     skill-slimming-slicing.md
@@ -59,29 +66,49 @@ tools/site/
   requirements.txt
 ```
 
-## Generated GitHub Pages surface
+## State ownership map
 
-`tools/site/build_site.py` generates the site in `docs/` while keeping research source under `docs/agentic-uplift/`.
-
-Key generated endpoints:
+The repository intentionally prevents “memory” from becoming a catch-all:
 
 ```text
-docs/index.html
-docs/architecture.html
-docs/playbook.html
-docs/execution-contract.html
-docs/skills.html
-docs/artifact-review.html
-docs/adversarial-review.html
-docs/research/*.html
-docs/llms.txt
-docs/agents.txt
-docs/agent/START.md
-docs/agent/manifest.json
-docs/agent/architecture.graph.json
-docs/agent/protocols/pi-task-envelope.schema.json
-docs/agent/configs/policy.example.yaml
-docs/agent/skills/hermes-stack-uplift/**
+LCM          -> current-session exact context / compaction recovery
+Mnemosyne    -> curated cross-session durable memory
+state.db     -> raw Hermes session history / forensic search
+uplift-state -> deterministic mission authority
+T2 artifacts -> raw evidence/logs/diffs/results
+Git/ADR/spec -> project truth
+Kanban       -> optional operational projection
+```
+
+LCM + Mnemosyne is the preferred **canary target**, not a claim that the components are already installed or production-qualified. The implementation playbook requires comparison against simpler built-in profiles and promotes the simplest profile that passes.
+
+## Generated GitHub Pages surface
+
+`tools/site/build_site.py` generates the site while keeping canonical research source under `docs/agentic-uplift/`.
+
+Key generated endpoints include:
+
+```text
+index.html
+architecture.html
+playbook.html
+execution-contract.html
+bootstrap.html
+skills.html
+artifact-review.html
+adversarial-review.html
+research/local-context-memory.html
+research/*.html
+llms.txt
+agents.txt
+agent/START.md
+agent/manifest.json
+agent/architecture.graph.json
+agent/protocols/pi-task-envelope.schema.json
+agent/protocols/uplift-state.schema.json
+agent/configs/hermes-local-context-memory.example.yaml
+agent/configs/mnemosyne-local.example.yaml
+agent/skills/hermes-stack-uplift/**
 ```
 
 The site deliberately does **not** publish a monolithic `llms-full.txt`. Agents should start at `llms.txt`, fetch `agent/START.md`, and load only the relevant canonical slice.
@@ -94,8 +121,8 @@ git pull --ff-only
 git switch -c uplift/<mission-name>
 
 python3 -m py_compile tools/router-bench/router_bench.py tools/site/build_site.py tools/site/validate_site.py
-python3 tools/site/build_site.py
-python3 tools/site/validate_site.py
+python3 tools/site/build_site.py --output _site
+python3 tools/site/validate_site.py --site _site
 
 python3 tools/router-bench/router_bench.py \
   --dataset tools/router-bench/sample_missions.jsonl \
@@ -114,10 +141,10 @@ Use pull requests for implementation changes and preserve `main` as the last val
 
 ## Important maturity rule
 
-A documented policy, JSON Schema, diagram or playbook is **not equivalent to implemented enforcement**. Read `docs/agentic-uplift/artifact-usability-review.md` and satisfy its P0 gates before enabling unattended self-uplift.
+A documented policy, config example, JSON Schema, diagram or playbook is **not equivalent to implemented enforcement or qualified runtime behavior**. Read `docs/agentic-uplift/artifact-usability-review.md` and satisfy its P0 gates before enabling unattended production self-uplift.
 
 Generated Python bytecode, local benchmark outputs, logs, databases, credentials, secrets and environment files are excluded by `.gitignore`.
 
 ## Upstream relationship
 
-Hermes and Pi should normally be installed/pinned independently and updated from their upstream projects. This repository should integrate with them through documented configuration, skills/extensions, RPC/headless interfaces, launchers, policies, and narrow adapters. Any unavoidable upstream patch should be feature-flagged, covered by an integration test, and tracked for upstreaming or removal.
+Hermes, Pi, LCM and Mnemosyne should normally be installed/pinned independently and updated from their upstream projects. This repository integrates with them through documented configuration, skills/extensions, RPC/headless interfaces, launchers, policies and narrow adapters. Any unavoidable upstream patch should be feature-flagged, covered by an integration test, and tracked for upstreaming or removal.
