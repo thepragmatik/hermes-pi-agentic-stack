@@ -1,30 +1,73 @@
-# Hermes + Pi Agentic Stack — Architecture Summary
+# Hermes + Pi Agentic Stack — Canonical Design Index
 
-This directory is the canonical research/design source for a local-first Hermes control plane with isolated Pi coding workers.
+This directory is the canonical research/design source behind the human Pages manual and sliced agent execution surface.
 
-## Read this in order
+## Read this in operating order
 
-1. `architecture.md` — deterministic text architecture and invariants.
-2. `artifact-usability-review.md` — what is actually ready vs merely designed.
-3. `implementation-playbook.md` — staged autonomous uplift plan.
-4. `agent-execution-contract.md` — resumability/evidence/state rules.
-5. `bootstrap-authority.md` — temporary root-of-trust transition.
-6. `local-context-memory-setup.md` — clinical LCM + Mnemosyne installation/config/verification/backup/rollback procedure.
-7. `research/mission-context-architecture.md` — T0/T1/T2 context ownership.
-8. `research/local-context-memory-stack.md` — LCM + Mnemosyne baseline ownership, risks and qualification evidence.
-9. `research/skill-slimming-slicing.md` — progressive-disclosure skill design.
-10. `adversarial-review.md` — failure catalogue and kill criteria.
-11. `validation-report.md` — checks and remaining evidence gaps.
-12. `site-publishing.md` — human/agent Pages representation.
+1. `../../README.md` — human start page, maturity and manual bootstrap summary.
+2. `fresh-install-bootstrap.md` — verified fresh-install/manual foundation.
+3. `../../UPLIFT_MISSION.md` — exact staged mission handed to Hermes.
+4. `agent-execution-contract.md` — durable state/evidence/restart authority.
+5. `implementation-playbook.md` — the single canonical `00 -> 70` lifecycle.
+6. `../..//skills/hermes-stack-uplift/SKILL.md` — progressive-disclosure phase map; load only the current slice.
+7. `architecture.md` / `architecture.graph.json` — deterministic architecture and trust boundaries.
+8. `research/openrouter-routing.md` — privacy/mission/model/provider responsibility split.
+9. `local-context-memory-setup.md` — fixed LCM + Mnemosyne installation/config/verification/backup/rollback path.
+10. `artifact-usability-review.md` — what is actually ready vs merely designed.
+11. `adversarial-review.md` — failure catalogue and kill criteria.
+12. `validation-report.md` — executed checks and remaining evidence gaps.
+13. `SOURCES.md` — current primary/upstream sources.
 
 ## Executive topology
 
-Hermes is the mission/control plane, not an unrestricted coding shell. **LCM + Mnemosyne is the required local context/memory baseline**: LCM owns exact current-session context/compaction recovery, Mnemosyne owns curated cross-session durable memory, Hermes `state.db/session_search` retains raw session history, `uplift-state` remains deterministic mission authority, and Git/ADRs/specs remain project truth.
+```text
+mission
+ -> deterministic local privacy/security/policy
+ -> local mission router
+ -> model-role binding
+ -> OpenRouter model ID
+ -> policy-compatible physical provider
+ -> {research/review | typed Pi coding worker}
+ -> evidence/review/merge gate
+```
 
-A deterministic policy/privacy gate precedes a tiny local mission router. Research uses a session-pinned research-model role. Coding crosses a typed Hermes→Pi boundary into an isolated worktree/sandbox using a coding-model role and LSP. Tests/scanners/review provide evidence before merge. Durable uplift state survives model context/session loss.
+**OpenRouter is the default external inference gateway.** It is downstream of local privacy/security and mission/model decisions. OpenRouter Auto may be benchmarked for bounded bootstrap/shadow/fallback use but never becomes the privacy boundary or final mission classifier. Direct Z.ai/DeepSeek access remains a measured exception only.
 
-Built-in MEMORY/USER are disabled in the selected baseline to avoid duplicate durable-memory authority. Built-in-only, LCM-only and Mnemosyne-only profiles are retained only for diagnostic isolation/rollback. A failed required LCM/Mnemosyne gate produces `BLOCKED`/`ROLLBACK`, not autonomous selection of another memory architecture.
+Bootstrap avoids the router paradox: a clean narrow Hermes profile uses one verified GLM-Flash-class OpenRouter model through Phases 00–20, then Phase 30 builds the local router in shadow mode. Exact model IDs are runtime config/lock evidence, not permanent architecture constants.
+
+## One lifecycle and six adoption checkpoints
+
+```text
+00 preflight
+10 baseline + backup
+20 context + skills + LCM/Mnemosyne -> Checkpoint A fresh optimized session
+30 local router/OpenRouter roles       -> Checkpoint B shadow
+40 security/policy enforcement         -> Checkpoint C human authority gate
+50 Hermes->Pi + LSP                    -> Checkpoint D recreate workers
+60 evaluation/promotion                -> Checkpoint E multi-role operation
+70 upgrades/rollback                   -> Checkpoint F recurring canary cycle
+```
+
+Phase 20 is the first self-benefit boundary. Once its acceptance gate passes, Hermes reports **“The first token/context improvements are ready to use.”** and closes the pre-optimization session before Phase 30.
+
+Every phase persists its evidence and v1.1 `boundary_report`, sends the same concise progress report to the human, and stops before the next phase.
+
+## Context/memory ownership
+
+```text
+LCM          = current-session exact context / compaction recovery
+Mnemosyne    = curated cross-session durable memory
+state.db     = raw Hermes session history / forensic search
+uplift-state = deterministic mission authority
+T2 artifacts = raw logs/diffs/benchmarks/test evidence
+Git/ADR/spec = project truth
+Kanban       = optional operational projection
+```
+
+Built-in MEMORY/USER are disabled in the selected baseline to avoid duplicate durable-memory authority. Diagnostic one-component profiles may isolate faults but do not replace LCM + Mnemosyne autonomously.
 
 ## Maturity
 
-The package is **fit for architecture review and controlled prototyping**, not yet for unattended production self-uplift. The LCM + Mnemosyne architecture is selected and its configuration/runbook is execution-ready, but target-Mac runtime/local-only/recovery qualification has not yet been performed. P0 gates are listed in `artifact-usability-review.md`, including real Pi/security enforcement and target-machine qualification of the fixed local context/memory baseline.
+The package is **designed/execution-ready for controlled Phase-00 startup**, not yet an unattended production self-uplift system. Repository/site/router fixtures are smoke-tested where stated; target-Mac runtime qualification, OpenRouter effective-policy evidence, external security/Pi containment and production promotion remain P0 gates.
+
+Use only the maturity labels defined in the canonical playbook: `researched`, `designed`, `prototype`, `smoke-tested`, `target-Mac-validated`, `shadow`, `canary`, `production-approved`.
