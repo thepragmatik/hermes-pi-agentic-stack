@@ -97,7 +97,7 @@ def main():
 
     graph=load_json(root/"agent/architecture.graph.json", errors)
     node_ids={n.get("id") for n in graph.get("nodes", [])}
-    for node in ["policy","router","model_role","openrouter","physical_provider","pi_bridge","state"]:
+    for node in ["policy","router","role_binding","openrouter","physical_provider","pi_bridge","state"]:
         if node not in node_ids: errors.append(f"architecture graph missing node {node}")
 
     pi_schema=load_json(root/"agent/protocols/pi-task-envelope.schema.json", errors)
