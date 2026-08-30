@@ -1,7 +1,59 @@
 {
-  "version":"1.0","mission_id":"uplift-2026-08-30","status":"EXECUTING","current_phase":"30-router","policy_sha256":"0000000000000000000000000000000000000000000000000000000000000000",
-  "checkpoints":[{"id":"baseline","git_ref":"refs/tags/uplift-baseline","created_at":"2026-08-30T00:00:00Z"}],
-  "phases":[
-    {"id":"00-preflight","status":"COMPLETE","attempts":1,"evidence":[],"blocker":null},{"id":"10-baseline-and-backup","status":"COMPLETE","attempts":1,"evidence":[],"blocker":null},{"id":"20-context-and-skills","status":"COMPLETE","attempts":1,"evidence":[],"blocker":null},{"id":"30-router","status":"EXECUTING","attempts":1,"evidence":[],"blocker":null},{"id":"40-security-and-policy","status":"PENDING","attempts":0,"evidence":[],"blocker":null},{"id":"50-pi-and-lsp","status":"PENDING","attempts":0,"evidence":[],"blocker":null},{"id":"60-evaluation-and-promotion","status":"PENDING","attempts":0,"evidence":[],"blocker":null},{"id":"70-upgrades-and-rollback","status":"PENDING","attempts":0,"evidence":[],"blocker":null}
-  ],"updated_at":"2026-08-30T00:00:00Z"
+  "version": "1.1",
+  "mission_id": "uplift-example",
+  "status": "EXECUTING",
+  "current_phase": "30-router",
+  "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "runtime": {
+    "repository_sha": "0000000000000000000000000000000000000000",
+    "profile": "uplift",
+    "gateway": "openrouter",
+    "bootstrap_model_id": "z-ai/glm-5.3-flash",
+    "context_engine": "lcm",
+    "memory_provider": "mnemosyne",
+    "router_mode": "shadow",
+    "maturity": "shadow"
+  },
+  "checkpoints": [
+    {"id":"baseline","kind":"baseline","git_ref":"refs/tags/uplift-baseline","created_at":"2026-08-30T00:00:00Z","evidence":["evidence/baseline.json"]},
+    {"id":"restart-A","kind":"restart-A","git_ref":"refs/tags/uplift-phase20","created_at":"2026-08-30T01:00:00Z","evidence":["evidence/phase20-context.json"]}
+  ],
+  "phases": [
+    {
+      "id":"00-preflight","status":"COMPLETE","attempts":1,"evidence":["evidence/preflight.json"],"blocker":null,
+      "boundary_report":{
+        "what_changed":[],"gates_passed":["manual bootstrap verified"],"failures_warnings":[],
+        "token_context_cost_impact":"not measured yet","security_impact":"bootstrap boundary recorded",
+        "usable_now":["clean uplift profile"],"hermes_action":"none","pi_action":"none",
+        "remaining_phases":["10-baseline-and-backup","20-context-and-skills","30-router","40-security-and-policy","50-pi-and-lsp","60-evaluation-and-promotion","70-upgrades-and-rollback"],
+        "next_phase":"10-baseline-and-backup","human_approval_required":false,"adoption_state":"observed"
+      }
+    },
+    {
+      "id":"10-baseline-and-backup","status":"COMPLETE","attempts":1,"evidence":["evidence/baseline.json"],"blocker":null,
+      "boundary_report":{
+        "what_changed":["baseline and rollback checkpoint captured"],"gates_passed":["restore evidence verified"],"failures_warnings":[],
+        "token_context_cost_impact":"baseline only","security_impact":"legacy DB remains read-only",
+        "usable_now":["measured before-state","rollback checkpoint"],"hermes_action":"none","pi_action":"none",
+        "remaining_phases":["20-context-and-skills","30-router","40-security-and-policy","50-pi-and-lsp","60-evaluation-and-promotion","70-upgrades-and-rollback"],
+        "next_phase":"20-context-and-skills","human_approval_required":false,"adoption_state":"observed"
+      }
+    },
+    {
+      "id":"20-context-and-skills","status":"COMPLETE","attempts":1,"evidence":["evidence/phase20-context.json"],"blocker":null,
+      "boundary_report":{
+        "what_changed":["sliced skills active","LCM+Mnemosyne baseline active"],"gates_passed":["context gate","local-only memory gate"],"failures_warnings":[],
+        "token_context_cost_impact":"first measured context reduction accepted","security_impact":"memory remains advisory",
+        "usable_now":["first token/context improvements"],"hermes_action":"fresh-session","pi_action":"none",
+        "remaining_phases":["30-router","40-security-and-policy","50-pi-and-lsp","60-evaluation-and-promotion","70-upgrades-and-rollback"],
+        "next_phase":"30-router","human_approval_required":false,"adoption_state":"active"
+      }
+    },
+    {"id":"30-router","status":"EXECUTING","attempts":1,"evidence":[],"blocker":null},
+    {"id":"40-security-and-policy","status":"PENDING","attempts":0,"evidence":[],"blocker":null},
+    {"id":"50-pi-and-lsp","status":"PENDING","attempts":0,"evidence":[],"blocker":null},
+    {"id":"60-evaluation-and-promotion","status":"PENDING","attempts":0,"evidence":[],"blocker":null},
+    {"id":"70-upgrades-and-rollback","status":"PENDING","attempts":0,"evidence":[],"blocker":null}
+  ],
+  "updated_at": "2026-08-30T01:05:00Z"
 }
