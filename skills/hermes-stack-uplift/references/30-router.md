@@ -1,19 +1,35 @@
-# Phase 30 — Router
+# Phase 30 — Local Mission Router + OpenRouter Roles
+
+Start this phase in the **fresh optimized Hermes session required by Checkpoint A**.
 
 Implement routing in this order:
 
-1. Tier 0 deterministic security/privacy rules;
+1. Tier 0 deterministic local privacy/security policy;
 2. deterministic agent-state gates;
 3. compact semantic routing;
 4. confidence calibration, hysteresis and abstention;
-5. optional learned/difficulty escalation.
+5. optional second-stage difficulty/preference escalation.
 
-Separate mission-type routing from strong-vs-weak difficulty routing. Validate explicit `hybrid`, `local_only` and `abstain`. Provider/model selection is a downstream role binding and should remain session-sticky.
+Separate responsibilities:
 
-Before fine-tuning any encoder, run the curriculum in `docs/agentic-uplift/research/router-training-control.md`: compare always-research, always-coding, deterministic state rules, Qwen3-Embedding-0.6B prototypes, and frozen `nomic-ai/modernbert-embed-base` (256d and 768d) with the same calibrated linear/logistic head plus explicit state features. Fine-tune ModernBERT-base only if the frozen-head baseline plateaus on representative pair-specific data.
+```text
+local policy -> local mission lane -> model role/model -> OpenRouter -> physical provider
+```
 
-Route **phases rather than micro-turns**. Keep the current lane inside a calibrated middle confidence band; switch only at meaningful phase boundaries or when the new-lane confidence/margin clears the entry threshold. Measure route-switch rate and provider cache continuity.
+`LOCAL_ONLY` never reaches OpenRouter. The local router decides research/coding/hybrid/review/auxiliary/abstain and role/model; OpenRouter provider routing is downstream. OpenRouter Auto is a shadow/fallback experiment only, never privacy or final mission classification.
 
-Run the regression corpus plus a representative redacted holdout split by mission/repository/session/time rather than random turns. A mention of security/PII technology is not itself sensitive payload.
+Follow `research/router-training-control.md` and `research/openrouter-routing.md`. Compare deterministic state rules, embedding prototypes and frozen `nomic-ai/modernbert-embed-base` 256d/768d with the same calibrated lightweight head. Fine-tune ModernBERT only after representative redacted real missions/outcomes, deduplication, stable ontology, mission/repository/session/time holdout, ambiguous/hybrid examples and frozen-head plateau show it is justified.
 
-Promotion evidence must include downstream accepted-task utility/regret, high-severity wrong-lane errors, retries/human overrides, route-switch rate, cache-hit continuity, local latency/memory and classification/calibration metrics. Security-class violations remain fail-closed and outside the learned router.
+Route **phases rather than micro-turns**. Use hysteresis; measure route-switch rate and OpenRouter model/physical-provider cache continuity.
+
+Keep volatile model IDs in `configs/models.example.yaml`/runtime locks. Research snapshot intent is GLM-5.3-Flash-class for bootstrap/coding and DeepSeek-V4-Flash-class for research, both through OpenRouter; re-verify exact current IDs via Hermes/OpenRouter before binding.
+
+Use only provider-routing fields actually supported by the installed Hermes release. Do not assume an OpenRouter preset overrides Hermes request-level provider policy without an explicit effective-policy test.
+
+Run a representative redacted shadow corpus. Promotion evidence includes accepted-task utility/regret, high-severity lane errors, zero observed `LOCAL_ONLY -> cloud`, calibration/abstention, route-switch rate, cache continuity, local latency/RSS, tool correctness and retries.
+
+## Restart/Canary Checkpoint B
+
+A passing Phase 30 enters **shadow mode only**. Reload/restart the router integration if required and prefer a fresh shadow session so the tested router/config is demonstrably active. Do not grant routing authority yet.
+
+Persist state/evidence, send the required phase-boundary report, and stop before Phase 40.
