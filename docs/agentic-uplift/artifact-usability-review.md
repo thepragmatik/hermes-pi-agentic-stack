@@ -2,60 +2,75 @@
 
 ## Verdict
 
-**Architecture review / controlled prototype: fit. Unattended production self-uplift: not yet fit.**
+**Fresh-install operating manual / controlled autonomous uplift: fit to begin Phase 00. Unattended production authority: not yet fit.**
 
-This is deliberately stricter than the architecture adversarial review. A sound design can still fail because an artifact is ambiguous, non-executable, stale, or falsely appears to enforce policy.
+The distinction matters: a coherent executable playbook can safely guide Hermes to build and test missing P0 controls without pretending those controls already exist.
 
 ## Readiness taxonomy
 
-| Artifact | What it is | What it is not | Current status |
+| Artifact | What it is | What it is not | Status |
 |---|---|---|---|
-| `policy.example.yaml` | declarative policy intent | sandbox/egress enforcement | design-ready; enforcement P0 |
-| Pi task schema | typed delegation contract | transport/auth/sandbox | schema-ready; integration P0 |
-| uplift state schema | resumability contract | durable state store | schema-ready; persistence P0 |
-| router benchmark | comparative test harness | production router | smoke-tested; live corpus P0 |
-| sliced uplift skill | progressive-disclosure procedure | security boundary | prototype-ready |
-| LCM + Mnemosyne baseline configs | selected local context/memory configuration contract | installed/benchmarked production subsystem | config-ready; target-Mac qualification P0 |
-| local context/memory setup runbook | deterministic install/verify/offline/backup/rollback procedure | evidence those steps have run on the target Mac | execution-ready; runtime evidence P0 |
-| playbook | ordered implementation guidance | proof implementation succeeded | review-ready |
-| Pages site | human/agent publication view | canonical secret-bearing store | deployed; public/sanitized surface only |
+| `README.md` + `fresh-install-bootstrap.md` | verified human bootstrap/runbook | OS sandbox implementation | designed/execution-ready |
+| `UPLIFT_MISSION.md` | one-command staged mission seed | durable state/security policy | designed |
+| `policy.example.yaml` | declarative policy intent | sandbox/egress enforcement | designed; enforcement P0 |
+| Pi task schema | typed delegation contract | transport/auth/containment | schema-ready; integration P0 |
+| uplift-state v1.1 | phase/report/restart/adoption contract | persistence daemon | schema-ready; persistence P0 |
+| router benchmark | comparative fixture/harness | production router | smoke-tested; representative corpus P0 |
+| sliced uplift skill | progressive-disclosure 00–70 procedure | security boundary | prototype-ready |
+| OpenRouter routing design/config | gateway/model/provider ownership | proven provider/privacy behaviour | designed; canary P0 |
+| LCM + Mnemosyne baseline configs/runbook | selected local context/memory path | installed target-Mac subsystem | config-ready; runtime P0 |
+| canonical 00–70 playbook | ordered iterative implementation contract | evidence implementation succeeded | review/execution-ready |
+| Pages site | public human/agent operating manual | secret-bearing runtime store | deployed/validated surface |
 
-## P0 gates before unattended authority
+## P0 gates before unattended production authority
 
-1. Implement an external capability broker that makes orchestrator source-write/arbitrary-shell impossible, rather than merely instructing Hermes not to use them.
-2. Implement egress scanning and network policy with seeded PII/secret canaries; prove `LOCAL_ONLY` cannot reach cloud adapters.
-3. Implement the Hermes-to-Pi bridge with schema validation, idempotency, bounded retries, worktree isolation and evidence collection.
-4. Persist uplift state atomically outside chat history; resume from that state after process/session restart.
-5. Build a representative, redacted routing corpus from real mission distributions and temporal holdouts. The included corpus is a regression smoke set only.
-6. Pin/audit Pi extensions and LSP servers; add upgrade compatibility tests.
-7. Run target-machine measurements on the M3 Max under realistic browser/build/container pressure.
-8. Add failure-injection tests for provider outage, partial worker completion, invalid LSP output, malicious repository instructions, and duplicate destructive retries.
-9. Qualify the required **LCM + Mnemosyne baseline** on the target Mac: exact LCM recovery, Mnemosyne recall precision/staleness, tool/context token overhead, restart/backup/restore, memory poisoning, storage/RSS growth, autonomous curated writes, and successful context/memory operation with outbound network denied. Rehearse independent rollback without silently promoting another architecture.
+1. **Bootstrap containment:** verify the actual bootstrap isolation mode. A named Hermes profile is not a sandbox. Preferred dedicated non-admin macOS account or independently qualified containment must prevent silent production mutation.
+2. **External capability enforcement:** make production Hermes direct source-write/arbitrary-shell bypass structurally impossible after cutover.
+3. **Cloud egress/privacy:** implement and seed-test secret + typed PII + network policy; prove `LOCAL_ONLY` cannot reach OpenRouter, Auto, fallback or a direct provider.
+4. **OpenRouter effective-policy evidence:** verify request-level Hermes provider routing + account/workspace guardrails + actual physical-provider behaviour; do not rely on untested preset precedence.
+5. **Typed Pi integration:** implement bridge, current RPC completion semantics, idempotency, worktree/containment, bounded retries and evidence collection.
+6. **Durable state persistence:** atomically write/validate uplift-state v1.1 outside chat and recover after planned Checkpoint-A fresh session plus crash/restart.
+7. **Representative router evidence:** build redacted real mission/outcome corpus with stable ontology, deduplication and mission/repo/session/time holdout; the bundled dataset is regression smoke only.
+8. **LCM + Mnemosyne target-Mac qualification:** exact recovery, recall relevance/staleness, local-only operation, backup/restore, storage/RSS, tool/context overhead and poisoning/admission tests.
+9. **Pi/LSP supply-chain/compatibility:** pin/audit extensions and language servers; current protocol/language fixtures and external containment must pass.
+10. **Target-Mac whole-system evidence:** realistic browser/build/container pressure, cache/TTFT/accepted-task economics, failure injection and end-to-end rollback.
 
-## Concrete defects found during refinement
+## Major inconsistencies/gaps found and corrected
 
-- The original Tier-0 privacy regex treated the word **“PII” itself** as sensitive payload, so a harmless request to *research PII detection tools* could be forced to `LOCAL_ONLY`. The rule was narrowed to explicit local-only instructions and credential/identifier-shaped payload signals.
-- The original policy YAML could be mistaken for enforcement. It now carries an explicit warning and versioned enforcement requirements.
-- The original Pi schema lacked phase/attempt/risk/policy-digest/rollback bindings, making retries and resumability ambiguous. Version 2 binds those fields.
-- Conversational phase memory was underspecified. A separate uplift-state schema defines `PENDING → EXECUTING → COMPLETE | BLOCKED | ROLLBACK`.
-- SVG diagrams were visually useful but not deterministic for text-only agents. Architecture now has Markdown and graph-JSON canonical representations.
-- The initial benchmark corpus is far too small to substantiate production routing claims; all such scores are explicitly labelled smoke/regression evidence.
-- The initial memory recommendation treated built-in memory as the long-term default and underweighted the previously successful LCM + Mnemosyne pattern. The architecture now fixes **LCM=current-session context/recovery** and **Mnemosyne=curated durable memory**, with `state.db`, uplift-state and project truth remaining separate authorities.
-- The first LCM/Mnemosyne refinement still framed the pair as a canary winner in a four-profile production bake-off. That no longer matches the selected architecture. Component-isolation controls remain for diagnosis only; baseline failure now produces `BLOCKED`/`ROLLBACK` rather than autonomous substitution.
-- Keeping built-in MEMORY/USER alongside Mnemosyne would create duplicate durable-memory guidance/authority and unnecessary prompt/tool surface. The baseline now explicitly disables both built-in stores while leaving the external provider active.
-- Requiring write approval for every Mnemosyne durable write would make the supposed autonomous baseline dependent on human staging approval. The baseline instead uses autonomous writes with a strict classifier, explicit admission policy, narrow tool allowlist and adversarial tests.
-- LCM v0.20 includes optional semantic/cross-session recall and Mnemosyne can automatically persist/inject/consolidate memory. Enabling all features in both would duplicate state and context. Overlapping LCM semantic/proactive/temporal memory and Mnemosyne transcript/LLM/persona/sleep features are explicitly disabled.
-- Mnemosyne's effective configuration defaults have changed over time. The playbook therefore pins stable releases, explicitly sets baseline behavior, checks effective runtime config and treats upstream default drift as a qualification failure until reviewed.
-- Stable Mnemosyne 3.15.x predates later upstream work on relevance/prefetch behavior. The baseline does not chase unreleased `main`; irrelevant-memory injection is a blocking target-Mac test and future stable releases are canary-qualified normally.
+- **Two lifecycle systems:** canonical playbook had evolved to phases through 140 while the executable sliced skill/state remained 00–70. There is now one authoritative `00 -> 70` lifecycle everywhere.
+- **No first-class human bootstrap:** repo previously assumed a sufficiently configured Hermes existed. README + `fresh-install-bootstrap.md` now document a clean `--no-skills` profile, Blank Slate, OpenRouter model wizard, repo/skill exposure, evidence directories, health checks and one start command.
+- **Profile mistaken for isolation:** current Hermes profiles isolate state but not filesystem authority. The manual now requires an explicit bootstrap isolation decision and labels same-user local execution trusted root-of-trust rather than zero-trust.
+- **Provider architecture ambiguous:** prior prose discussed cloud roles/providers without making the gateway boundary explicit. OpenRouter is now default gateway; local policy owns cloud eligibility, local router owns lane/model, OpenRouter owns downstream physical-provider routing.
+- **Direct-provider bias:** direct Z.ai/DeepSeek credentials are no longer assumed. They remain measured exceptions only.
+- **Bootstrap paradox:** optimized router is no longer required before it exists. Early phases use one verified GLM-Flash-class OpenRouter bootstrap model; multi-role routing starts only after Phase 30 shadow evidence.
+- **Restart/context-decay gap:** Phase 20 improvements could previously remain trapped inside the old giant bootstrap conversation. Checkpoint A now requires a fresh optimized session; subsequent router/security/worker/promotion checkpoints record reload/restart/recreate decisions.
+- **Progress existed only as prose:** uplift-state v1.1 now persists phase boundary report, adoption state, runtime gateway/router mode and Hermes/Pi restart actions.
+- **OpenRouter Auto ambiguity:** Auto is now explicitly barred from privacy/security/final mission authority.
+- **Provider-policy precedence risk:** current Hermes request-level `provider_routing` can interact with OpenRouter preset policy; the design requires effective-policy tests rather than assuming the stricter-looking layer wins.
+- **ModernBERT timing:** full fine-tuning is explicitly delayed until representative redacted outcome data, stable ontology, deduplicated temporal holdout and frozen/prototype plateau exist.
+- **Memory architecture drift:** LCM + Mnemosyne is fixed as baseline; built-in/one-component profiles are diagnostic only; failure blocks/rolls back instead of silently changing architecture.
+- **Legacy state risk:** old `state.db` remains read-only evidence with local curation/provenance, never a DB transplant.
 
-## Real-world operator UX review
+## Real-world operator UX
 
-A human operator needs one clear start page, explicit maturity labels, commands that are safe to copy, rollback instructions adjacent to mutating steps, and visible distinction between “selected architecture” and “runtime-qualified implementation.” `docs/agentic-uplift/local-context-memory-setup.md` now provides one deterministic context/memory setup path, while the Pages generator exposes the same canonical source to agents.
+A new operator should now be able to answer, in order:
 
-An autonomous agent needs a stable start URI/file, machine contracts, phase/state identifiers, deterministic evidence paths, explicit state ownership, and a rule to fetch only relevant slices. `llms.txt`, `agent/START.md`, JSON Schemas and the sliced skill provide that entry surface.
+1. what the stack is and its maturity;
+2. how to create the clean bootstrap;
+3. which credential/model is required initially;
+4. the exact takeover action;
+5. what each phase does;
+6. when improvements become usable;
+7. when a fresh session/reload/recreated Pi worker is required;
+8. what still requires human approval;
+9. which evidence proves promotion.
 
-For context/memory specifically, the operator must be able to answer **where a fact came from and which store is authoritative**. Remembered content is advisory. Current policy/uplift state/repository truth/evidence outrank both LCM-recovered text and Mnemosyne recall.
+The first value boundary is Phase 20. After its gate Hermes must say **“The first token/context improvements are ready to use.”** and start Phase 30 in a fresh session.
+
+## Agent UX
+
+An autonomous agent needs a small stable entry surface rather than the full corpus. `UPLIFT_MISSION.md`, `agent-execution-contract.md`, uplift-state schema and `hermes-stack-uplift` parent skill provide the execution spine; one current phase reference and only required research/evidence are loaded next. `llms.txt`/`agent/START.md` must mirror this ordering on Pages.
 
 ## Kill criteria
 
-Stop or roll back the uplift if any of these occur: security policy can be bypassed by prompt/tool/memory output; destructive retries are not idempotent; high-severity routing error exceeds the chosen threshold; accepted-task quality regresses materially; steady-state swap harms normal workstation use; context/memory unexpectedly requires network access; built-in and external memory become competing authorities; memory poisoning or stale/irrelevant recall influences an acceptance/security decision; autonomous memory writes cannot satisfy the admission policy; SQLite backup/recovery cannot be proven; upstream upgrade requires repeated invasive patches; or state recovery cannot prove which operations already executed.
+Stop/rollback on any structural privacy/capability bypass; `LOCAL_ONLY -> cloud`; unverified OpenRouter effective provider policy; destructive retry ambiguity; failure to recover uplift-state after planned fresh-session checkpoint; stale session/worker testing the wrong config; material accepted-task quality regression; unexpected LCM/Mnemosyne network dependency; stale/poisoned memory influencing security/acceptance; unproven SQLite restore; uncontained Pi; or a promotion that requires weakening a mandatory gate.
