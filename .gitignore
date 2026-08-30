@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local runtime state
+*.db
+*.sqlite
+*.sqlite3
+logs/
+.tmp/
+tmp/
+
+# Secrets / local config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials*
+secrets*
+.DS_Store
