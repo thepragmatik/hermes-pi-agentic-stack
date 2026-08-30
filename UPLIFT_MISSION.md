@@ -14,6 +14,7 @@ You are running the controlled Hermes + Pi uplift defined by this repository.
 8. During Bootstrap Mode use the single configured OpenRouter bootstrap model. Do not invent multi-model routing before Phase 30 earns shadow mode.
 9. LCM + Mnemosyne is the selected local context/memory baseline. Preserve its ownership boundaries and follow its setup/qualification runbook in Phase 20.
 10. Coding uses direct bootstrap authority only inside the explicitly allowed canary scope until the external enforcement + Pi path is proven; after cutover, production coding must cross the typed Pi boundary.
+11. Prefer the smallest reversible increment that can produce evidence. If the current phase slice defines a mid-phase dogfood gate, persist state/evidence and perform that gate before layering the next subsystem.
 
 ## Phase-boundary rule
 
@@ -24,6 +25,8 @@ At the end of **every** phase:
 - determine whether staged changes are active, need reload, require a fresh Hermes session, require Hermes restart, require Pi worker recreation, or remain shadow-only;
 - return control to the human with the report below;
 - **do not start the next phase in the same uninterrupted run.** A phase may be autonomous internally, but phase boundaries are observable control points.
+
+A phase slice may define a smaller **mid-phase dogfood gate**. Such a gate does not mark the phase complete, but it must still use a reversible checkpoint, persist evidence, and stop/repair if the dogfood result regresses. A fresh continuation session may resume the same phase from durable state.
 
 Required report:
 
@@ -46,7 +49,8 @@ If a mandatory gate fails, persist `BLOCKED` or `ROLLBACK` and report it instead
 
 ## Mandatory adoption checkpoints
 
-- **Checkpoint A — after Phase 20:** once context/skill + LCM/Mnemosyne gates pass, report **“The first token/context improvements are ready to use.”** Start Phase 30 in a **fresh Hermes session using the uplifted profile/configuration** so the mission does not carry pre-optimization chat context indefinitely.
+- **Dogfood Gate A0 — inside Phase 20:** after prompt/context + skill slimming is staged, checkpoint it and resume Phase 20 in a fresh session using only that slimmer configuration. Run a matched baseline subset before installing/activating LCM + Mnemosyne or adding Spec Kit changes. Continue only if accepted-task quality is non-inferior and context/token evidence improves; otherwise repair/rollback the slimming increment first.
+- **Checkpoint A — after Phase 20:** once the complete context/skill + LCM/Mnemosyne gates pass, report **“The first token/context improvements are ready to use.”** Start Phase 30 in a **fresh Hermes session using the uplifted profile/configuration** so Phase-20 qualification context does not contaminate router measurements.
 - **Checkpoint B — after Phase 30:** router enters **shadow mode only**. Reload/restart the relevant router integration if required; no routing authority yet.
 - **Checkpoint C — after Phase 40:** security/policy/egress/sandbox evidence is the authority gate. Human approval is required before granting stronger cloud/delegation authority while any P0 control remains unproven.
 - **Checkpoint D — after Phase 50:** recreate disposable Pi workers under the validated bridge/LSP/containment configuration. Do not trust stale long-running workers.
