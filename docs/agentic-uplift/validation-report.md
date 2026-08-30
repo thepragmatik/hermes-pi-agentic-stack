@@ -17,23 +17,24 @@ Do not report a lower level as a higher one.
 
 The refinement package executes or is designed to execute: Python compilation for router/site tools; JSON parsing and JSON-Schema validation of task/state examples; YAML/frontmatter checks; site generation; internal-link validation; Markdown/`llms.txt` alternate checks; accessible SVG title/description checks; agent-manifest generation; and router smoke/regression tests.
 
-During refinement these checks/reviews found real defects rather than merely confirming the design: invalid YAML frontmatter caused by an unquoted colon; incomplete SVG accessibility metadata; insufficient warning that policy examples are not enforcement; an overbroad privacy regex that treated the vocabulary word “PII” as sensitive payload; a secret-pattern punctuation edge case; inconsistent bootstrap/security/Pi ordering; and insufficiently explicit context/memory ownership.
+During refinement these checks/reviews found real defects rather than merely confirming the design: invalid YAML frontmatter; incomplete SVG accessibility metadata; insufficient warning that policy examples are not enforcement; an overbroad privacy regex; a secret-pattern punctuation edge case; inconsistent bootstrap/security/Pi ordering; insufficient state/context ownership; duplicate-memory risk; canary write-approval semantics incompatible with autonomy; and ambiguity over whether LCM + Mnemosyne was a selected baseline or merely a challenger.
 
 Those findings were corrected in canonical source.
 
 ## Latest GitHub Pages gate
 
-On the latest context/memory publication candidate, GitHub Actions completed successfully:
+On the fixed LCM + Mnemosyne baseline publication candidate, GitHub Actions completed successfully:
 
 - Python 3.12 compilation of `tools/router-bench/router_bench.py`, `tools/site/build_site.py` and `tools/site/validate_site.py`;
-- generation of the complete human/agent site;
-- validation of **21 HTML pages and agent endpoints**;
-- internal site links and alternate representations;
+- generation of **22 human pages plus the agent surface**;
+- validation of **22 HTML pages and agent endpoints**;
+- internal site links and Markdown/`llms.txt` alternate representations;
 - accessible architecture SVG title/description checks;
-- upload of the Pages artifact;
-- successful GitHub Pages deployment.
+- publication of `context-memory-setup.html`;
+- raw + agent publication of the complete Hermes baseline config, LCM environment contract and Mnemosyne local config;
+- Pages artifact upload and deployment pipeline accepted.
 
-The public generated surface now includes the local context/memory research page plus non-secret Hermes/Mnemosyne canary configuration examples in both raw and agent-facing surfaces.
+The generated agent manifest declares LCM + Mnemosyne as the context/memory baseline and `llms.txt` exposes the setup/runbook without requiring full-site ingestion.
 
 ## Router regression evidence
 
@@ -43,52 +44,75 @@ These numbers are regression evidence only. They are **not** claims about semant
 
 ## LCM + Mnemosyne evidence status
 
-Current status: **researched + repository/config validated; not yet canary runtime qualified on the target Mac.**
+Architecture status: **selected baseline**.
 
-The repository now contains:
+Evidence status: **researched + repository/config/site validated; not yet canary runtime qualified on the target Mac.**
 
-- `docs/agentic-uplift/research/local-context-memory-stack.md` — ownership, alternatives, setup, four-profile benchmark, promotion and rollback design;
-- `configs/hermes-local-context-memory.example.yaml` — Hermes canary fragment selecting LCM and Mnemosyne plus Tool Search;
-- `configs/mnemosyne-local.example.yaml` — conservative local-only memory behavior without secrets/remote endpoints;
+The repository now contains one coherent baseline path:
+
+- `docs/agentic-uplift/local-context-memory-setup.md` — install, pin, effective config, admission, health, compaction, offline, backup, rollback and upgrade procedure;
+- `docs/agentic-uplift/research/local-context-memory-stack.md` — ownership/rationale/risks and evidence requirements;
+- `configs/hermes-local-context-memory.example.yaml` — complete Hermes composition;
+- `configs/lcm-baseline.env.example` — LCM scalar baseline;
+- `configs/mnemosyne-local.example.yaml` — Mnemosyne local-only subconfiguration;
 - Phase 30 execution gates in `implementation-playbook.md`;
-- the matching sliced context/memory skill reference;
-- adversarial tests for duplicate memory authority, poisoning, unexpected network fallback, SQLite recovery, tool-schema overhead and release/default drift.
+- matching sliced context/memory skill guidance;
+- adversarial tests for duplicate authority, poisoning, relevance, unexpected network fallback, SQLite recovery, tool-schema overhead and release/default drift.
 
-The research currently targets stable LCM `v0.20.0`, Mnemosyne core `v3.15.1` and Hermes integration `v0.5.0`, but **Phase 00/30 must re-verify current stable releases, effective config and security notes before installation**. A later stable version is not automatically rejected; an RC is not automatically promoted.
+Initial stable research pins are LCM `v0.20.0`, Mnemosyne core `3.15.1` and Hermes wrapper `0.5.0`. **Phase 00/30 must re-verify current stable releases, effective config and security notes before installation.** Unreleased `main`, release candidates and betas are not automatic upgrades.
+
+### Baseline effective-config intent
+
+The selected baseline requires:
+
+```text
+context.engine = lcm
+compression.enabled = true
+memory.provider = mnemosyne
+memory.memory_enabled = false
+memory.user_profile_enabled = false
+memory.write_approval = false
+Tool Search = on
+LCM semantic/proactive/temporal cross-session memory = off
+Mnemosyne transcript autosave + LLM/auto-sleep/persona/richer recall = off
+Mnemosyne embeddings = local FastEmbed/ONNX
+```
+
+This removes duplicate built-in durable-memory authority while keeping Mnemosyne autonomous under a strict admission policy and narrow tool allowlist.
 
 ### Runtime evidence still required
 
-On the target Mac, compare the same long-horizon missions across:
+On the target Mac, execute the required LCM + Mnemosyne baseline on representative long-horizon missions and collect at minimum:
 
-1. built-in compressor + built-in memory/session_search;
-2. LCM + built-in memory;
-3. built-in compressor + Mnemosyne conservative local mode;
-4. LCM + Mnemosyne conservative local mode.
-
-Collect at minimum:
-
-- accepted-task success/quality;
-- exact-detail recovery after multiple compactions;
+- successful profile-local LCM install + resolved stable tag/commit;
+- successful Mnemosyne side-venv/wrapper install + exact package pins;
+- effective Hermes/provider config evidence matching the checked-in baseline;
+- LCM exact-detail recovery after multiple compactions;
 - restart/session recovery;
-- cross-session durable-recall precision/recall and stale/irrelevant recall;
+- Mnemosyne global/canonical memory lifecycle;
+- durable-recall precision and stale/irrelevant-memory injection;
+- autonomous curated memory writes under the strict classifier/admission policy;
+- absence of transcript/raw-evidence duplication into Mnemosyne;
 - injected-memory and plugin/tool-schema tokens;
 - total/fresh/cached input and TTFT/wall time;
-- compaction/recovery calls;
-- SQLite/store growth, RSS, memory pressure and swap;
+- SQLite/store growth, RSS, macOS memory pressure and swap;
 - memory poisoning/contradiction behavior;
-- backup/restore integrity;
-- independent context-engine and memory-provider rollback;
-- successful context/memory operation with outbound network denied after provisioning.
+- independent backup/restore integrity for LCM and Mnemosyne;
+- successful context/memory operation with outbound network denied after dependency/model provisioning;
+- independent rollback to the previous known-good profile without deleting diagnostic stores.
 
-No context/memory profile receives production authority until those gates pass. If the LCM+Mnemosyne pair loses to a simpler profile, promote the simpler qualified profile.
+Built-in-only, LCM-only and Mnemosyne-only profiles may be used to isolate a regression, but they no longer compete for production selection. If the required pair fails a mandatory gate, Phase 30 is `BLOCKED`/`ROLLBACK`; Hermes does not autonomously choose another memory architecture.
+
+The stable Mnemosyne 3.15.x research pin predates later relevance/prefetch work, so **irrelevant-memory injection is explicitly blocking**. Do not pin unreleased `main` merely to bypass that test; qualify the next stable release normally.
 
 ## Target-machine / production evidence gaps
 
 The available CI runtime is Linux/x86-64, not the target M3 Max. Production promotion still requires:
 
+- the LCM + Mnemosyne runtime evidence above;
 - representative redacted mission corpus and temporal router holdout;
 - real provider/tool outcomes;
-- target-Mac context/memory/router/resource measurements under normal browser/build/container pressure;
+- target-Mac router/resource measurements under normal browser/build/container pressure;
 - external capability/sandbox enforcement tests;
 - egress PII/secret canaries;
 - current Pi RPC compatibility and isolation evidence;
@@ -97,6 +121,6 @@ The available CI runtime is Linux/x86-64, not the target M3 Max. Production prom
 
 ## Maturity conclusion
 
-The repository is **coherent and sufficiently detailed to start the controlled autonomous uplift mission from Phase 00 in a clean canary/bootstrap profile**. It is not evidence that the production uplift has already succeeded.
+The repository is **coherent and sufficiently detailed to start the controlled autonomous uplift mission from Phase 00 in a clean canary/bootstrap profile**. The LCM + Mnemosyne architecture decision is fixed and its setup/configuration is execution-ready, but this is not evidence that the target-Mac runtime baseline or the production uplift has already succeeded.
 
-Hermes may autonomously execute read-only and canary phases according to the execution contract, but must mark `BLOCKED`/`ROLLBACK` instead of promoting any component whose mandatory runtime/security/local-only gate is unresolved.
+Hermes may autonomously execute read-only and canary phases according to the execution contract. It must mark `BLOCKED`/`ROLLBACK` instead of substituting another memory architecture or promoting any component whose mandatory runtime/security/local-only gate is unresolved.
