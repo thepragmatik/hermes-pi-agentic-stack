@@ -1,16 +1,32 @@
-# Phase 20 — Context, Skills and Local Memory
+# Phase 20 — Context, Skills and Local Context/Memory
 
-**Architecture decision:** LCM + Mnemosyne is the required clean-profile baseline. Diagnostic controls are retained only to isolate regressions; Hermes must not autonomously substitute a different production memory provider/context engine if the required pair fails a mandatory gate.
+**First self-improvement boundary.** This phase must make the uplift start paying for itself in reduced hot context while preserving accepted-task quality.
 
-Apply `docs/agentic-uplift/research/mission-context-architecture.md`:
+**Architecture decision:** LCM + Mnemosyne is the required clean-profile baseline. Diagnostic controls isolate regressions only; Hermes must not autonomously substitute another production context/memory architecture if the pair fails a mandatory gate.
 
-- **T0 stable prefix** — identity, minimal invariants, stable profile/tool schemas and compact skill catalog;
-- **T1 mission capsule** — bounded current objective/phase/constraints/acceptance/routing/evidence pointers, regenerated only at meaningful phase boundaries;
-- **T2 artifact/evidence memory** — logs, diffs, Pi RPC streams, benchmarks, research and large Spec Kit/source artifacts remain outside hot context and are retrieved by slice.
+## Context + skill diet
 
-Then follow `docs/agentic-uplift/local-context-memory-setup.md` and `docs/agentic-uplift/research/local-context-memory-stack.md`.
+Apply `research/mission-context-architecture.md`:
 
-## Baseline ownership
+```text
+T0 = stable identity/invariants + small skill/tool catalogue
+T1 = bounded current mission/phase capsule
+T2 = logs/diffs/research/spec/evidence retrieved only when needed
+```
+
+Measure and remove duplicate hot prose, irrelevant skills/tool schemas and whole-document replay. Preserve stable prompt order and current provider/session affinity where it improves cache continuity. Use prompt/context instrumentation; do not infer savings.
+
+Use the sliced `hermes-stack-uplift` design:
+
+```text
+small catalogue -> short parent SKILL.md -> one phase slice -> support artifact only on demand
+```
+
+A pruned reference is unloaded; reload it before relying on it. Measure catalogue/parent/support tokens, unnecessary loads, reloads, wrong/missed skill choice, cached input and accepted-task quality.
+
+## LCM + Mnemosyne baseline
+
+Follow `docs/agentic-uplift/local-context-memory-setup.md` and `research/local-context-memory-stack.md`.
 
 ```text
 LCM          = current-session exact context + compaction recovery
@@ -21,82 +37,30 @@ T2 evidence  = raw logs/diffs/results
 Git/ADR/spec = project truth
 ```
 
-Memory never overrides policy, uplift-state, Git/ADR/spec or immutable evidence.
+Initial LCM research pin: stable v0.20.0, re-verified before install. Keep LCM semantic/proactive/temporal cross-session memory features off while Mnemosyne owns durable memory. Prove multiple compactions, exact drill-down, restart, integrity and backup.
 
-## LCM baseline
+Initial Mnemosyne research pins: core 3.15.1 + Hermes wrapper 0.5.0, re-verified. Use the local embeddings profile, `sync_roles: []`, strict curated writes, no remote/host LLM, no auto-sleep/persona/richer recall, no remote sync, bounded prefetch and the narrow tool allowlist checked into `configs/`. Built-in MEMORY/USER durable stores remain disabled so Mnemosyne is the single durable-memory provider.
 
-Pin the current qualified **stable** LCM release profile-locally; initial research pin is `v0.20.0`. Record full commit/tag and apply `configs/lcm-baseline.env.example` through the canary launcher.
+Tool Search is mandatory to progressively disclose LCM/Mnemosyne non-core schemas.
 
-Required initial posture:
+After dependencies/model artifacts are provisioned, deny outbound network and prove LCM + Mnemosyne still compacts/recalls/writes/restarts/backups locally. Any remote fallback fails the phase.
 
-- `context.engine: lcm`;
-- Hermes compression lifecycle remains enabled;
-- threshold 0.35, fresh tail 32, depth 3, leaf floor 20K;
-- dynamic chunking/full-sweep disabled initially;
-- LCM embeddings OFF;
-- LCM proactive recall OFF;
-- LCM temporal rollups OFF;
-- optional slash command OFF;
-- profile-scoped default DB path;
-- prove exact-detail drill-down, multiple compactions, restart, doctor/integrity and backup.
+## Spec Kit projection
 
-Do not promote an LCM RC merely because upstream `main` is newer.
+Validate Micro/Patch, Lite, Standard and High-Assurance profiles. Generated specs are T2 durable artifacts; T1 receives only current requirement/acceptance/task slices. Risk policy may escalate assurance; the model cannot downgrade it.
 
-## Mnemosyne baseline
+## Acceptance
 
-Use a profile-owned side venv and wrapper integration; initial stable research pins are core `3.15.1` and Hermes wrapper `0.5.0`. Use `mnemosyne-memory[embeddings]`, not `[all]`, and provision the local `BAAI/bge-small-en-v1.5` FastEmbed model before offline qualification.
+Require non-inferior accepted-task quality, materially smaller hot context, initial >=30% lower skill-related input on skill-heavy representative missions, bounded T1 (normally <=8K), reliable exact recovery, low-noise durable recall, no unexpected context/memory network dependency, verified backups and acceptable target-Mac resource behaviour before production promotion.
 
-Apply the complete composition in `configs/hermes-local-context-memory.example.yaml` and the Mnemosyne detail in `configs/mnemosyne-local.example.yaml`.
+If a mandatory LCM/Mnemosyne gate fails, persist `BLOCKED`/`ROLLBACK`; do not silently switch memory architecture.
 
-Required effective state:
+## Restart Checkpoint A — mandatory
 
-```text
-memory.provider = mnemosyne
-memory.memory_enabled = false
-memory.user_profile_enabled = false
-memory.write_approval = false
-sync_roles = []
-local embeddings only
-write_classifier = strict
-default durable scope = global
-session cross-recall = false
-```
+After the gate passes, persist Phase 20 complete and report:
 
-Explicitly keep host/remote LLM, LLM conflict detection, auto-sleep, persona, enhanced/fact/polyphonic recall, proactive linking, query-intent and remote sync OFF. Bound provider prefetch initially to 800 content characters.
+> **The first token/context improvements are ready to use.**
 
-Only expose the narrow curation/inspection Mnemosyne tool set defined in the baseline config. Hard-delete, remote sync/shared, graph, persona, scratchpad, import/export and sleep tools stay outside the ordinary orchestrator profile.
+Then **close the pre-optimization session**. Phase 30 starts in a fresh Hermes session using the uplifted context/skill + LCM/Mnemosyne configuration. This prevents old pre-optimization chat context from contaminating later measurements.
 
-Built-in MEMORY/USER are disabled deliberately: Mnemosyne is the sole durable-memory provider; `state.db/session_search` remains the raw session-history path.
-
-## Memory admission
-
-Use canonical Mnemosyne memory only for stable one-current-value profile/operator facts. Use ordinary global memory for compact durable lessons/decisions that do not belong in Git/ADR/spec.
-
-Never store mission state, raw logs/diffs/Pi streams, source corpora, secrets/PII, temporary blockers/tasks, whole session summaries or unsanitized legacy material in Mnemosyne.
-
-## Tool/schema containment
-
-Hermes Tool Search is mandatory in this baseline so LCM/Mnemosyne non-core tools are progressively disclosed. Use the versioned config (`5%`, default search 5, max 20, listing auto, listing budget 4000) and measure actual schema tokens/cold-tool round trips.
-
-## Qualification
-
-Retain these only as diagnostic component-isolation controls:
-
-1. built-in compressor + no external provider;
-2. LCM + no external provider;
-3. built-in compressor + Mnemosyne;
-4. **LCM + Mnemosyne required baseline**.
-
-The first three do not compete for production selection.
-
-Seed exact details before multiple compactions; verify restart recovery, global/canonical memory behavior, stale/contradictory rejection, irrelevant-memory injection, no PII/secret durable memory and T2 retrieval by pointer.
-
-The stable Mnemosyne 3.15.x research pin predates later relevance/prefetch work, so irrelevant-memory injection is a blocking test. Do not jump to unreleased `main`; canary-upgrade a future stable normally.
-
-After package/model provisioning, deny outbound network and prove LCM compaction/retrieval plus Mnemosyne global/canonical write/recall/restart/backup still work. Any remote fallback fails the phase.
-
-Promotion requires non-inferior accepted-task quality, reliable exact-detail recovery, low-noise durable recall, no unexpected egress, bounded tool/schema cost, verified backup/restore and acceptable target-Mac RSS/memory pressure.
-
-If a mandatory LCM/Mnemosyne gate fails, mark the phase `BLOCKED` or `ROLLBACK`. Do **not** promote Holographic/OpenViking or another memory architecture autonomously.
-
-Do not hide security invariants solely in optional slices or memory. Initial skill target remains >=30% lower skill-related input tokens with non-inferior accepted-task quality; T1 is normally <=8K tokens and smaller for simple phases. These are engineering targets, not guarantees.
+Persist state/evidence, send the required phase-boundary report, and stop.
