@@ -17,13 +17,13 @@ Do not report a lower level as a higher one.
 
 The current repository gate executes Python compilation for router/site tooling, site generation, internal-link validation, Markdown/`llms.txt` alternate checks, accessible SVG checks, progressive-disclosure agent-surface checks, SHA-256 verification of every raw file listed by the agent manifest, JSON parsing and lifecycle assertions for task/state contracts, OpenRouter architecture assertions, agent/raw copy equality for execution-critical contracts/configs, and Pages build/deploy.
 
-During refinement these checks/reviews found real defects rather than merely confirming the design, including: invalid YAML/frontmatter and SVG metadata in earlier revisions; policy examples that could be mistaken for enforcement; overbroad privacy/secret patterns; bootstrap/security/Pi ordering drift; duplicate memory authority; canary memory semantics incompatible with autonomy; two competing phase models (`00-70` vs an accumulated longer sequence); a Pi example incorrectly assigned to Phase 30 before Pi authority exists; an outdated standalone architecture diagram; stale direct-provider assumptions; and a validator that did not require the new fresh-install/OpenRouter/start-mission surfaces.
+During refinement these checks/reviews found real defects rather than merely confirming the design, including: invalid YAML/frontmatter and SVG metadata in earlier revisions; policy examples that could be mistaken for enforcement; overbroad privacy/secret patterns; bootstrap/security/Pi ordering drift; duplicate memory authority; canary memory semantics incompatible with autonomy; two competing phase models (`00-70` vs an accumulated longer sequence); a Pi example incorrectly assigned to Phase 30 before Pi authority exists; an outdated standalone architecture diagram; stale direct-provider assumptions; a validator that did not require the new fresh-install/OpenRouter/start-mission surfaces; stale install wording that called the now-public control repository private; and a Phase-20 sequence that could have layered LCM/Mnemosyne and Spec Kit before independently dogfooding the first prompt/skill slimming increment.
 
 Those defects are corrected in canonical source.
 
 ## Latest GitHub Pages / operating-manual gate
 
-On commit `f2dd06d680d8e5a37723b3c9a148f9030a947417`, GitHub Actions completed successfully:
+On implementation head `065be61364a02723d090cd60d99f968acb319909`, GitHub Actions completed successfully:
 
 - Python 3.12 compilation of `tools/router-bench/router_bench.py`, `tools/site/build_site.py` and `tools/site/validate_site.py`;
 - generation of **26 human pages plus the progressive-disclosure agent surface**;
@@ -40,11 +40,13 @@ On commit `f2dd06d680d8e5a37723b3c9a148f9030a947417`, GitHub Actions completed s
 - exact byte equality between raw and agent copies of mission, task/state contracts/examples and baseline model/context-memory configs;
 - successful Pages artifact upload and deployment.
 
-The first run of the stricter validator intentionally failed because it expected a graph node ID named `model_role` while the canonical graph correctly used `role_binding` with kind `model_role_binding`. The validator was corrected to the canonical identifier and the full gate then passed; no architectural requirement was weakened.
+The stricter validator previously caught an identifier mismatch between its expected `model_role` graph node and the canonical graph's `role_binding` / `model_role_binding`; the validator was corrected to the canonical identifier rather than weakening the architecture.
+
+The final readiness pass also verified current upstream Hermes documentation for the bootstrap-critical commands used by this manual: named profiles with `--no-skills`, `terminal.cwd`, interactive model/provider selection, OpenRouter provider-routing controls and `chat --query-file` remain current at the snapshot date.
 
 ## Fresh-install and execution-path evidence
 
-The documentation now has one explicit manual-to-autonomous handoff:
+The documentation has one explicit manual-to-autonomous handoff:
 
 ```text
 human installs/configures clean Hermes bootstrap profile
@@ -59,13 +61,14 @@ human installs/configures clean Hermes bootstrap profile
 
 OpenRouter is the default external inference gateway. Deterministic privacy/security policy runs locally before every cloud request; the local mission router chooses lane/model role/model; OpenRouter selects only the downstream policy-compatible physical provider. OpenRouter Auto is not privacy authority or final mission-routing authority.
 
-The lifecycle is now singular and consistent across README, mission, playbooks, skill slices, schemas/examples, architecture and agent discovery:
+The lifecycle is singular and consistent across README, mission, playbooks, skill slices, schemas/examples, architecture and agent discovery:
 
 ```text
 00 preflight
 10 baseline + backup
 20 context + skills + LCM/Mnemosyne
-   -> Restart Checkpoint A: fresh optimized Hermes session
+   -> Dogfood Gate A0: fresh Phase-20 continuation using prompt/skill slimming only
+   -> Restart Checkpoint A: fresh optimized Hermes session before Phase 30
 30 router
    -> Checkpoint B: shadow only
 40 security + policy enforcement
@@ -78,7 +81,19 @@ The lifecycle is now singular and consistent across README, mission, playbooks, 
    -> Checkpoint F: recurring canary discipline
 ```
 
-Phase 20 is explicitly the first self-benefit boundary: after its acceptance gate, Hermes reports that the first token/context improvements are ready and starts Phase 30 in a fresh session rather than carrying bootstrap context forward.
+### Early dogfooding rule
+
+Phase 20 now avoids batching its first useful optimization with later context/memory/spec layers. After prompt/context + skill slimming is staged, Hermes must:
+
+1. keep Phase 20 `EXECUTING` and checkpoint the pre-dogfood configuration;
+2. resume the same phase in a fresh session using the slimmer context/skill layout;
+3. keep the bootstrap model/OpenRouter policy stable;
+4. run a matched subset of the Phase-10 workload;
+5. prove non-inferior accepted-task quality plus measurable context/token improvement;
+6. persist `phase20-dogfood-A0` evidence;
+7. repair/rollback before LCM/Mnemosyne if the first increment regresses.
+
+Only then are LCM + Mnemosyne and Spec Kit layered onto the qualified slimmer baseline. After the complete Phase-20 gate, Hermes reports that the first token/context improvements are ready and starts Phase 30 in another fresh session so Phase-20 qualification context does not contaminate router measurements.
 
 ## Router regression evidence
 
@@ -151,6 +166,7 @@ The stable Mnemosyne 3.15.x research pin predates later relevance/prefetch work,
 The available repository CI runtime is Linux/x86-64, not the target M3 Max. Unattended production authority still requires:
 
 - actual fresh-install/manual bootstrap rehearsal on the target Mac and captured effective Hermes/OpenRouter configuration;
+- Dogfood Gate A0 evidence on the target Mac before later Phase-20 layering;
 - target-Mac LCM + Mnemosyne runtime/offline/recovery/resource evidence above;
 - representative redacted mission corpus and temporal router holdout;
 - ModernBERT/embedding challenger measurements and router shadow evidence before routing authority;
@@ -164,6 +180,8 @@ The available repository CI runtime is Linux/x86-64, not the target M3 Max. Unat
 
 ## Maturity conclusion
 
-The repository and Pages site are **coherent, internally cross-checked and sufficiently detailed to start the controlled staged uplift from Phase 00 in a clean bootstrap profile**. The documentation now functions as one operating manual for humans and progressively disclosed agents rather than competing accumulated research paths.
+The repository and Pages site are **coherent, internally cross-checked and sufficiently detailed to start the controlled staged uplift from Phase 00 in a clean bootstrap profile**. The documentation functions as one operating manual for humans and progressively disclosed agents rather than competing accumulated research paths.
+
+The sequence intentionally targets early dogfooding: Phase 00 and 10 only establish safety/baseline; Phase 20A/B is the first reversible optimization; Dogfood Gate A0 exercises that increment immediately in a fresh same-phase session before LCM/Mnemosyne and Spec Kit are layered; the full Phase-20 adoption is then isolated again before router work begins.
 
 This is still not evidence that production enforcement or target-Mac runtime qualification has succeeded. Hermes may execute the bounded phase workflow according to the execution contract, but it must stop at every phase boundary, persist/report state, and mark `BLOCKED`/`ROLLBACK` rather than bypassing an unresolved security, local-only, runtime, restart or human-approval gate.
