@@ -4,7 +4,7 @@ This document assumes the proposed system is wrong until evidence proves otherwi
 
 ## 1. Router confidently misclassifies hybrid work
 
-**Failure:** an architecture request includes "implement a prototype" and is routed wholly to DeepSeek research or wholly to Pi coding.
+**Failure:** an architecture request includes "implement a prototype" and is routed wholly to research or wholly to Pi coding.
 
 **Consequence:** poor implementation context, unnecessary tokens, or research quality loss.
 
@@ -38,13 +38,13 @@ This document assumes the proposed system is wrong until evidence proves otherwi
 
 ## 6. Launch pricing disappears
 
-**Failure:** GLM-5.3-Flash promotional rate doubles after the launch period and destroys a budget forecast.
+**Failure:** promotional rate ends and destroys a budget forecast.
 
-**Control:** model economics use list price for steady-state design; promotional price shown separately. Pricing pulled into a periodically refreshed config, not hardcoded into policy.
+**Control:** model economics use list price for steady-state design; promotional price shown separately. Pricing belongs in periodically refreshed config, not hardcoded policy.
 
 ## 7. Prompt cache makes token dashboard look unchanged
 
-**Failure:** team expects cached tokens to vanish from usage counts and concludes caching failed.
+**Failure:** cached tokens remain in logical usage counts and the team concludes caching failed.
 
 **Control:** separate logical input, fresh input, cached input, cost and TTFT metrics.
 
@@ -52,7 +52,7 @@ This document assumes the proposed system is wrong until evidence proves otherwi
 
 **Failure:** free-form summary forgets "do not send customer records to cloud" after many turns.
 
-**Control:** security/data class stored in deterministic task state outside conversation; re-injected/validated separately; post-compaction invariants.
+**Control:** security/data class is deterministic task state outside conversation/memory; re-injected and validated separately; post-compaction invariants.
 
 ## 9. SOUL.md treated as authorization
 
@@ -64,13 +64,13 @@ This document assumes the proposed system is wrong until evidence proves otherwi
 
 **Failure:** parent decides direct edits are more efficient.
 
-**Control:** orchestrator profile has no write/shell capabilities. Only explicit maintenance profile can alter this.
+**Control:** production orchestrator profile has no write/shell capabilities after cutover. Only an explicitly separate bootstrap/emergency profile can retain temporary authority.
 
 ## 11. Pi RPC protocol changes on update
 
-**Failure:** daily Pi update breaks bridge event handling.
+**Failure:** Pi update breaks bridge event handling or completion semantics.
 
-**Control:** pin known-good version; protocol conformance test; independent Hermes/Pi version locks; automatic rollback to previous Pi package.
+**Control:** pin known-good version; protocol conformance test; treat `agent_settled` as completion; independent Hermes/Pi version locks; automatic rollback.
 
 ## 12. LSP extension becomes supply-chain path
 
@@ -78,11 +78,11 @@ This document assumes the proposed system is wrong until evidence proves otherwi
 
 **Control:** pin/review/version; sandbox extension/LSP process; lockfile/SBOM; no auto-install from project content.
 
-## 13. Kotlin LSP Alpha instability
+## 13. Kotlin LSP instability
 
 **Failure:** Gradle/Android project import or refactor breaks.
 
-**Control:** official JetBrains LSP with project-level compatibility tests; graceful fallback to compiler/test navigation for normal edits; require explicit LSP pass for semantic refactor tasks.
+**Control:** official LSP with project compatibility tests; graceful fallback to compiler/test navigation; explicit semantic-refactor gate.
 
 ## 14. LSP diagnostics flood context
 
@@ -100,19 +100,19 @@ This document assumes the proposed system is wrong until evidence proves otherwi
 
 **Failure:** identifiers/examples are redacted and code generation becomes invalid.
 
-**Control:** field-aware scanning; only redact cloud-bound natural-language/content fields according to policy; code transformations require explicit entity types and tests. Block instead of silently mutating when uncertainty is high.
+**Control:** field-aware scanning; only transform policy-approved natural-language/content fields; block rather than silently mutate when uncertainty is high.
 
 ## 17. Secret scanner confused with PII scanner
 
-**Failure:** Presidio catches names/emails but an API token leaves the machine.
+**Failure:** PII detector catches names/emails but an API token leaves the machine.
 
 **Control:** dedicated secret layer before PII NER; high-confidence credential formats always block.
 
 ## 18. Old Hermes DB reintroduces context bloat/injection
 
-**Failure:** bulk-import restores stale mission instructions and huge memories.
+**Failure:** bulk import restores stale mission instructions and huge memories.
 
-**Control:** read-only migration; export candidate facts/artifacts; scan/dedupe/human or reviewer approval; import only durable normalized entries.
+**Control:** immutable/read-only legacy archive; curated local export; independent PII/secret sanitization; provenance/current-truth review; never attach the old DB as production memory.
 
 ## 19. Spec Kit Lite becomes "skip thinking"
 
@@ -128,7 +128,7 @@ This document assumes the proposed system is wrong until evidence proves otherwi
 
 ## 21. RouteLLM historical weights are assumed universal
 
-**Failure:** GPT-4/Mixtral preference model sends DeepSeek/GLM incorrectly.
+**Failure:** historical preference model sends current target models incorrectly.
 
 **Control:** RouteLLM is experimental until recalibrated/retrained on paired target-model outcomes. Do not call its pretrained score "coding probability".
 
@@ -136,13 +136,13 @@ This document assumes the proposed system is wrong until evidence proves otherwi
 
 **Failure:** gated/custom/noncommercial data becomes embedded in a model intended for unrestricted redistribution.
 
-**Control:** dataset bill of materials; separate internal-use and distributable training recipes; prefer Apache/MIT/compatible data for the distributable model; legal review for ODC/custom terms.
+**Control:** dataset bill of materials; separate internal-use and distributable recipes; prefer compatible data; legal review where needed.
 
 ## 23. Raw telemetry becomes a new privacy database
 
 **Failure:** optimization logs preserve prompts/source snippets.
 
-**Control:** local redaction before logging; feature/outcome telemetry over raw text; short retention for sampled training records; encryption/access controls.
+**Control:** local redaction before logging; feature/outcome telemetry over raw text; short retention; encryption/access controls.
 
 ## 24. Task retry repeats destructive operation
 
@@ -160,7 +160,7 @@ This document assumes the proposed system is wrong until evidence proves otherwi
 
 **Failure:** mounted HOME/socket/credential paths expose host secrets or Docker daemon gives broad host authority.
 
-**Control:** minimal mounts, no daemon socket, scrub env, dedicated HOME, network policy, consider stronger VM/sandbox for untrusted builds.
+**Control:** minimal mounts, no daemon socket, scrub env, dedicated HOME, network policy, stronger VM/sandbox where necessary.
 
 ## 27. Offloading/paging works in a benchmark but ruins sustained UX
 
@@ -170,22 +170,70 @@ This document assumes the proposed system is wrong until evidence proves otherwi
 
 ## 28. Daily upstream updates silently invalidate uplift assumptions
 
-**Failure:** Hermes context/prompt interfaces change while overlay still "works" superficially.
+**Failure:** Hermes/Pi/plugin interfaces change while the overlay still "works" superficially.
 
-**Control:** daily update on canary clone; smoke + protocol + security tests; compare prompt-size/cache metrics; promote pinned version only on pass.
+**Control:** update on disposable canary; smoke/protocol/security/context/memory tests; compare prompt/cache/recall metrics; promote pinned versions only on pass.
 
 ## 29. Cost savings are dominated by reasoning/output tokens
 
-**Failure:** input cache optimization looks great but high reasoning effort expands billed output.
+**Failure:** input-cache optimization looks great but reasoning expands billed output.
 
-**Control:** log hidden/visible reasoning accounting where provider exposes it; cap reasoning by mission class; evaluate quality vs output cost.
+**Control:** log reasoning accounting where available; cap reasoning by mission class; evaluate accepted quality vs total cost.
 
-## 30. Throughput limit, not price, becomes bottleneck at 4B tokens/month
+## 30. Throughput limit, not price, becomes bottleneck at high token volume
 
 **Failure:** cheapest endpoint cannot sustain concurrency/rate limits and queues tasks.
 
-**Control:** load-test target concurrency, provider quotas and failover; include queue delay in cost/quality score; maintain at least one policy-compatible fallback.
+**Control:** load-test concurrency/quotas/failover; include queue delay in score; maintain policy-compatible fallback.
+
+## 31. LCM and Mnemosyne both become cross-session memory authorities
+
+**Failure:** LCM semantic/proactive recall and Mnemosyne durable recall are enabled together. The same fact is independently summarized/stored/recalled, producing duplicate context, disagreement and unclear provenance.
+
+**Control:** initial ownership is strict: LCM=current-session context/compaction recovery; Mnemosyne=curated durable cross-session memory. Keep LCM temporal/proactive/cross-session semantic features disabled while qualifying the pair. Measure duplicate recall and injected-token rate.
+
+**Kill criterion:** the operator/agent cannot deterministically answer which store owns a remembered fact or duplicate recall materially affects decisions/tokens.
+
+## 32. Memory poisoning gains authority after being remembered
+
+**Failure:** malicious project/tool text is captured into Mnemosyne or recovered through LCM, then later appears trustworthy because it is "memory."
+
+**Control:** all remembered/recovered text remains untrusted advisory context. Policy, uplift-state, current repository/spec/ADR truth and immutable evidence outrank memory. Curated Mnemosyne writes require provenance; canary uses write approval and strict classification. Add seeded prompt-injection memories and verify they cannot change capability/privacy policy.
+
+**Kill criterion:** recalled content changes a security/acceptance decision without independent authoritative evidence.
+
+## 33. "Local-only" context/memory silently falls back to network
+
+**Failure:** embedding, consolidation, host-LLM, remote sync or auxiliary recall quietly uses a cloud endpoint when the local path fails.
+
+**Control:** explicitly disable remote sync, embedding API, host/remote LLM paths and automatic LLM-backed consolidation in the initial Mnemosyne canary. Provision packages/models first, then run LCM compaction/recovery and Mnemosyne write/recall with outbound network denied.
+
+**Kill criterion:** any required context/memory operation fails because a remote service is unavailable or makes unexpected outbound connections.
+
+## 34. SQLite/store upgrade or crash loses context/memory
+
+**Failure:** LCM/Mnemosyne schema upgrade, WAL handling, disk-full condition or abrupt process death corrupts the only useful store.
+
+**Control:** never upgrade the only production DB first; use plugin-supported/quiescent backup; preserve DB/WAL/SHM consistency; test restart, integrity, backup restore and rollback on a copied canary; retain built-in/session-history fallback.
+
+**Kill criterion:** restart/restore cannot prove recovery or rollback without deleting/rewriting the only surviving copy.
+
+## 35. Plugin tool schemas erase context-slimming gains
+
+**Failure:** LCM + Mnemosyne expose enough tools that their schemas become a large always-hot prompt prefix, offsetting skill slicing and compaction savings.
+
+**Control:** enable Hermes Tool Search for non-core plugin/provider tools; measure eager vs deferred schema tokens, discovery accuracy and cold-tool round trips; keep tool membership stable within a phase to protect prompt-cache affinity.
+
+**Kill criterion:** added schema/injected-memory tokens materially erase the net accepted-task token/cost benefit.
+
+## 36. Release/default drift silently enables autonomous memory behavior
+
+**Failure:** a new Mnemosyne/LCM release changes defaults (autosave, persona, auto-sleep, LLM path, recall features, schema) and production behavior expands without deliberate review.
+
+**Control:** pin stable releases/commits; capture effective runtime config/status in evidence; set critical conservative values explicitly rather than trusting defaults; canary every release and inspect security notes/schema changes before promotion. Do not auto-promote RCs.
+
+**Kill criterion:** production behavior depends on an unrecorded default or a release changes memory/network authority without an explicit policy/config diff.
 
 # Promotion decision
 
-Production promotion requires evidence that the system improves **accepted-task cost and latency without degrading accepted-task quality or weakening privacy/security**. A token-saving system that increases retries, human intervention or escaped defects has failed even when the billing dashboard looks better.
+Production promotion requires evidence that the system improves **accepted-task cost, latency and long-horizon recovery without degrading accepted-task quality or weakening privacy/security**. A token-saving or memory-rich system that increases retries, irrelevant recall, human intervention, stale-policy influence or escaped defects has failed even when its isolated benchmark scores look better.
