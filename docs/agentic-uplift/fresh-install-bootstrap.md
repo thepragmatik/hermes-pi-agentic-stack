@@ -32,7 +32,7 @@ If the installer tells you to use a different shell-init file, follow its printe
 
 ## 2. Clone this control repository
 
-Use your normal authenticated GitHub method for this private repository; do not paste a GitHub credential into this document or the Hermes chat.
+The repository is currently public, so a read-only HTTPS clone does not require a GitHub credential. If repository visibility or access policy changes later, use your normal authenticated GitHub method. Never paste a GitHub credential into this document or the Hermes chat.
 
 ```bash
 mkdir -p ~/src
