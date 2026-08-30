@@ -1,35 +1,89 @@
-# Merge fragment for a CLEAN CANARY Hermes profile.
-# Do not replace unrelated existing config blindly.
-# Re-verify keys against the installed Hermes/LCM/Mnemosyne versions before promotion.
+# BASELINE fragment for a CLEAN Hermes uplift profile.
+# Merge deliberately; do not replace unrelated qualified settings blindly.
+# Re-verify exact keys against the installed stable Hermes/LCM/Mnemosyne releases before promotion.
 
 plugins:
   enabled:
+    # LCM is a general plugin that registers the selected context engine.
     # Preserve other explicitly qualified plugins in the real profile.
     - hermes-lcm
 
 context:
-  # LCM runtime engine name; plugin manifest name is hermes-lcm.
   engine: lcm
 
+# Keep Hermes' compression lifecycle enabled. With context.engine=lcm, LCM owns
+# compaction behavior and LCM_CONTEXT_THRESHOLD is the primary trigger knob.
+compression:
+  enabled: true
+
 memory:
-  # External provider; built-in MEMORY.md / USER.md remain as a small audit/rollback layer.
+  # Mnemosyne is the ONE external durable-memory provider for this baseline.
   provider: mnemosyne
 
-  # Canary safety: provider writes are staged for review until memory precision/hygiene gates pass.
-  # After the canary is accepted this may be changed deliberately for autonomous operation.
-  write_approval: true
+  # Avoid a second durable-memory authority and remove the built-in memory/profile
+  # tool + prompt guidance. External provider tools remain available.
+  memory_enabled: false
+  user_profile_enabled: false
+
+  # Autonomous baseline: do not stage Mnemosyne writes for human approval.
+  # Safety comes from the strict write policy, narrow tool surface, local-only
+  # operation, provenance rules and adversarial tests—not self-approval theatre.
+  write_approval: false
 
   mnemosyne:
-    # Do not mirror entire conversations into durable memory. Explicit curated writes only.
+    # Curated memory only. Do not mirror full user/assistant transcripts.
     sync_roles: []
 
-    # Keep automatic consolidation disabled during the first correctness/token canary.
-    # Current Mnemosyne versions expose this behavior under auto-sleep configuration;
-    # confirm the exact installed key via its generated config/status before applying.
-    auto_sleep: false
+    # Local vector path only.
+    embeddings_via_api: false
+    embedding_model: BAAI/bge-small-en-v1.5
+    vec_type: int8
 
-# Defer non-core plugin/MCP tool schemas. This is especially important when both LCM
-# and Mnemosyne are installed because each adds provider/plugin tools.
+    # Durable explicit writes default to cross-session/global memory. Session-local
+    # memories remain available when a caller explicitly requests scope=session.
+    default_scope: global
+    cross_session: false
+
+    # Minimise accidental/noisy durable writes.
+    write_classifier: strict
+
+    # Explicitly disable autonomous/LLM-backed memory synthesis in the baseline.
+    host_llm_enabled: false
+    llm_enabled: false
+    llm_conflict_detection: false
+    auto_sleep_enabled: false
+    persona_enabled: false
+    enhanced_recall: false
+    fact_recall_enabled: false
+    polyphonic_recall: false
+    proactive_linking: false
+    query_intent: false
+    recall_diagnostics: false
+
+    # Bound automatic provider prefetch while stable 3.15.x recall precision is
+    # qualified. Raise only from measured accepted-task evidence.
+    prefetch_content_chars: 800
+    wm_ttl_hours: 168
+
+    # Empty means no Mnemosyne remote sync target.
+    sync_remote: ""
+
+    # Narrow agent-facing surface. Destructive hard-delete, sync, graph, persona,
+    # scratchpad, import/export and sleep tools are intentionally absent.
+    tools:
+      - mnemosyne_remember
+      - mnemosyne_recall
+      - mnemosyne_remember_canonical
+      - mnemosyne_recall_canonical
+      - mnemosyne_forget_canonical
+      - mnemosyne_get
+      - mnemosyne_update
+      - mnemosyne_invalidate
+      - mnemosyne_stats
+      - mnemosyne_diagnose
+
+# Defer non-core plugin/provider tool schemas. LCM and Mnemosyne both add tools,
+# so Tool Search is part of the baseline rather than an optional optimisation.
 tools:
   tool_search:
     enabled: on
@@ -37,9 +91,8 @@ tools:
     search_default_limit: 5
     max_search_limit: 20
     listing: auto
-    listing_max_tokens: 20000
+    listing_max_tokens: 4000
 
-# LCM tunables are intentionally NOT hard-coded here. First run stable v0.20.0 defaults,
-# measure effective context budget/TTFT/retrieval, then pin LCM_* environment values in
-# the versioned uplift overlay. Keep LCM temporal/proactive cross-session features OFF
-# while Mnemosyne owns durable semantic memory.
+# LCM scalar settings live in configs/lcm-baseline.env.example because stable LCM
+# consumes LCM_* environment overrides. Keep its semantic/proactive/temporal memory
+# features OFF while Mnemosyne owns cross-session durable memory.
