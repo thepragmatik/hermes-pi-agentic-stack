@@ -1,23 +1,65 @@
-# Stable architectural roles are separated from volatile provider/model IDs.
-version: 1
+# ARCHITECTURAL MODEL-ROLE CONFIG EXAMPLE — runtime IDs must be re-verified.
+version: 2
+
+gateway:
+  default: openrouter
+  credential_env: OPENROUTER_API_KEY
+  direct_provider_credentials: benchmark_only
+
+bootstrap:
+  role: bootstrap.default
+  gateway: openrouter
+  # Research snapshot only. Use `hermes model` at implementation time and record
+  # the exact current OpenRouter model ID selected by the installed Hermes catalog.
+  model_snapshot_example: z-ai/glm-5.3-flash
+  single_model_until_router_shadow_passes: true
+
 roles:
-  research:
+  research.default:
+    gateway: openrouter
     model_env: RESEARCH_MODEL_ID
-    provider_env: RESEARCH_PROVIDER
+    snapshot_example: deepseek/deepseek-v4-flash-0731
     session_sticky: true
     require_tools: true
-  coding:
+  coding.default:
+    gateway: openrouter
     model_env: CODING_MODEL_ID
-    provider_env: CODING_PROVIDER
+    snapshot_example: z-ai/glm-5.3-flash
     session_sticky: true
     require_tools: true
+  review.default:
+    gateway: openrouter
+    model_env: REVIEW_MODEL_ID
+    independent_family_required_for_high_risk: true
+    bind_only_after_benchmark: true
+  auxiliary.cheap:
+    gateway: openrouter
+    model_env: AUX_MODEL_ID
+    optional: true
+    bind_only_after_benchmark: true
   local_router:
     family: embedding_or_encoder
-    preferred_examples: [Qwen3-Embedding-0.6B, ModernBERT-base]
+    progression:
+      - deterministic_rules
+      - frozen_embedding_head
+      - fine_tuned_modernbert_if_justified
+    preferred_examples: [nomic-ai/modernbert-embed-base, ModernBERT-base]
     resident_memory_target_gb: 5
-  local_reviewer:
-    enabled: false
-    load_on_demand: true
 
-# Keep concrete API IDs in .env or a secret manager, not this repository.
-# Re-benchmark providers/models before promotion; do not encode promotional prices as policy.
+# This mirrors only the provider-routing controls Hermes currently documents.
+# Account/workspace privacy guardrails on OpenRouter remain an additional boundary.
+openrouter_provider_routing:
+  sort: price
+  only: []
+  ignore: []
+  order: []
+  require_parameters: true
+  data_collection: deny
+
+# Invariants:
+# - deterministic privacy/security policy runs BEFORE this gateway;
+# - the local mission router chooses lane/model role/model, not OpenRouter Auto;
+# - OpenRouter chooses a physical provider subject to our constraints;
+# - provider/model affinity should stay sticky when caching/behaviour benefits;
+# - direct Z.ai/DeepSeek credentials are added only if measured evidence justifies them;
+# - volatile IDs/prices belong in runtime locks/evidence, not architecture prose.
