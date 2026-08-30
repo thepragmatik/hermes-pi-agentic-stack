@@ -14,12 +14,37 @@ Persist state conforming to `protocols/uplift-state.schema.json`. Persist worker
 - Never silently skip a phase because a newer model considers it unnecessary.
 - Never weaken policy to pass a benchmark or upgrade.
 - Never replay a destructive task with the same uncertainty about whether it already executed; reconcile evidence first.
-- The orchestrator does not become the coder as an optimization. Coding crosses the typed Pi boundary.
+- After the trusted bootstrap transition, the orchestrator does not become the coder as an optimization. Coding crosses the typed Pi boundary.
 - A policy digest is bound into each Pi task so a worker cannot unknowingly run under stale rules.
+- Legacy Hermes `state.db` is historical evidence only; it is never migrated into the clean production profile.
+
+## Trusted bootstrap transition
+
+Self-uplift has an explicit temporary root of trust. Follow `docs/agentic-uplift/bootstrap-authority.md`.
+
+Current Hermes may temporarily retain direct write/shell capability **only inside the constrained bootstrap/canary scope** required to build and prove the replacement Pi/enforcement path. Capability reduction happens after that path passes its tests, not before.
+
+The transition is complete only when:
+
+1. external policy/privacy/sandbox primitives exist;
+2. the typed Pi bridge passes protocol, worktree, environment, retry/idempotency and containment tests;
+3. a privacy-controlled worker canary passes;
+4. production Hermes is switched to the constrained orchestrator profile;
+5. an instruction to bypass Pi and edit directly fails structurally.
+
+Bootstrap authority must not leak into normal production operation.
 
 ## Phase protocol
 
 For each phase: load only its skill slice; verify prerequisite phase states; snapshot/pin versions; create checkpoint; produce a typed task graph; execute bounded tasks; collect evidence; run the phase-specific adversarial checks; update durable state atomically; and emit a concise human-readable result. On failure, mark `BLOCKED` or `ROLLBACK` with reason and do not continue downstream.
+
+Legacy salvage is optional and follows `docs/agentic-uplift/research/legacy-state-curation.md`; inability to curate legacy context never blocks a clean uplift.
+
+## Kanban projection
+
+Hermes Kanban may mirror mission tasks for durable human/agent supervision, blocked/review/retry visibility and restart resilience. It is an operational projection only.
+
+`protocols/uplift-state.schema.json` remains authoritative for phase, attempt, policy digest, checkpoints and acceptance evidence. Kanban state must never override a stricter uplift/security state.
 
 ## Evidence object
 
