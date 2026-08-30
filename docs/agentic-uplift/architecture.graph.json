@@ -1,10 +1,50 @@
 {
-  "version": 1,
+  "version": 2,
   "nodes": [
-    {"id":"user","kind":"external"},{"id":"hermes","kind":"control_plane"},{"id":"policy","kind":"security_boundary"},{"id":"router","kind":"local_classifier"},{"id":"research","kind":"cloud_executor"},{"id":"pi_bridge","kind":"typed_boundary"},{"id":"pi_worker","kind":"sandboxed_worker"},{"id":"lsp","kind":"code_intelligence"},{"id":"review","kind":"evidence_gate"},{"id":"merge","kind":"promotion_gate"},{"id":"state","kind":"durable_state"}
+    {"id":"user","kind":"external"},
+    {"id":"hermes","kind":"control_plane"},
+    {"id":"lcm","kind":"local_context_engine"},
+    {"id":"mnemosyne","kind":"local_memory_provider"},
+    {"id":"policy","kind":"security_boundary"},
+    {"id":"router","kind":"local_mission_classifier"},
+    {"id":"role_binding","kind":"model_role_binding"},
+    {"id":"openrouter","kind":"default_inference_gateway"},
+    {"id":"physical_provider","kind":"external_inference_provider"},
+    {"id":"research_review","kind":"cloud_executor"},
+    {"id":"pi_bridge","kind":"typed_boundary"},
+    {"id":"pi_worker","kind":"sandboxed_worker"},
+    {"id":"lsp","kind":"code_intelligence"},
+    {"id":"review","kind":"evidence_gate"},
+    {"id":"merge","kind":"promotion_gate"},
+    {"id":"state","kind":"durable_execution_state"}
   ],
   "edges": [
-    {"from":"user","to":"hermes","label":"mission"},{"from":"hermes","to":"policy","label":"classify/enforce"},{"from":"policy","to":"router","label":"cloud-eligible intent"},{"from":"router","to":"research","label":"research"},{"from":"router","to":"pi_bridge","label":"coding/hybrid"},{"from":"pi_bridge","to":"pi_worker","label":"validated task envelope"},{"from":"pi_worker","to":"lsp","label":"bounded diagnostics/refactor"},{"from":"pi_worker","to":"review","label":"diff+evidence"},{"from":"research","to":"review","label":"research artifact"},{"from":"review","to":"merge","label":"accepted"},{"from":"hermes","to":"state","label":"phase transitions"},{"from":"pi_bridge","to":"state","label":"attempt/evidence"}
+    {"from":"user","to":"hermes","label":"mission"},
+    {"from":"hermes","to":"lcm","label":"current-session context"},
+    {"from":"hermes","to":"mnemosyne","label":"curated durable memory"},
+    {"from":"hermes","to":"policy","label":"deterministic classify/enforce"},
+    {"from":"policy","to":"router","label":"cloud-eligible mission"},
+    {"from":"router","to":"role_binding","label":"lane + model role/model"},
+    {"from":"role_binding","to":"openrouter","label":"approved OpenRouter model ID"},
+    {"from":"openrouter","to":"physical_provider","label":"policy-constrained provider routing"},
+    {"from":"physical_provider","to":"research_review","label":"research/review/auxiliary response"},
+    {"from":"physical_provider","to":"pi_bridge","label":"coding role inference used by worker"},
+    {"from":"pi_bridge","to":"pi_worker","label":"validated task envelope + policy digest"},
+    {"from":"pi_worker","to":"lsp","label":"bounded diagnostics/refactor"},
+    {"from":"pi_worker","to":"review","label":"diff + evidence"},
+    {"from":"research_review","to":"review","label":"research/review artifact"},
+    {"from":"review","to":"merge","label":"accepted evidence"},
+    {"from":"hermes","to":"state","label":"phase/report/restart/adoption transitions"},
+    {"from":"pi_bridge","to":"state","label":"attempt/evidence"}
   ],
-  "invariants": ["policy before learned routing","local-only never reaches cloud","orchestrator has no direct coding authority","worker cannot self-merge","state survives context/session loss"]
+  "invariants": [
+    "deterministic privacy/security policy precedes any cloud/OpenRouter call",
+    "local-only never reaches OpenRouter or direct cloud",
+    "local mission router chooses lane/model role/model; OpenRouter chooses only downstream physical provider within policy",
+    "OpenRouter Auto never becomes privacy or final mission authority",
+    "LCM and Mnemosyne are advisory context/memory, not execution authority",
+    "orchestrator has no direct production coding authority after cutover",
+    "worker cannot self-merge",
+    "durable uplift state survives context/session loss and stores phase-boundary restart/adoption decisions"
+  ]
 }
