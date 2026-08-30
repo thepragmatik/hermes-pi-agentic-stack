@@ -2,232 +2,265 @@
 
 Snapshot: 2026-08-30
 
-This is the repository-level control document for implementing and continuously validating a local-first, high-throughput agentic software-development stack built around **NousResearch/hermes-agent** as the orchestration/control plane and **earendil-works/pi** as the isolated coding-worker harness.
+This is the compact control document for a local-first, high-throughput agentic software-development stack using **NousResearch/hermes-agent** as the control-plane orchestrator and **earendil-works/pi** as the isolated coding-worker harness.
 
-The detailed research and implementation material is intentionally split into canonical topic documents under `docs/agentic-uplift/`. This root playbook defines the mission, architecture, rollout order, acceptance gates, and upgrade discipline so Hermes can execute the uplift without duplicating tens of thousands of tokens of detail into every session.
+Detailed research and execution material is deliberately split under `docs/agentic-uplift/` and `skills/hermes-stack-uplift/` so Hermes does not ingest tens of thousands of tokens on every mission.
 
 ## Mission
 
-Build a production-grade workflow on Apple Silicon that:
+Build a production workflow on Apple Silicon that:
 
-- keeps Hermes as the single mission entry point and control-plane orchestrator;
-- routes research/synthesis to the configured DeepSeek-class cloud model and coding/tool work to the configured GLM-class model;
-- uses a very small local router rather than a permanently resident large generative model;
-- delegates coding through a typed Hermes → Pi boundary rather than allowing the orchestrator to silently code directly;
-- enforces filesystem, shell, network, credential, PII, secret, and merge policy outside model prompts;
-- uses language servers to improve code navigation, diagnostics, rename/refactor and bounded context retrieval;
-- minimizes repeated prompt/spec/tool-schema prefill while preserving quality and auditability;
-- supports mission-sensitive Spec Kit profiles rather than running the full artifact pipeline for every change;
-- remains upgrade-safe as Hermes and Pi change frequently;
-- measures accepted-task quality, latency, retries, cache behavior, human intervention, and spend before promotion.
+- keeps Hermes as the single mission entry point and durable orchestrator;
+- routes research/synthesis to the qualified research specialist and coding/tool work to the qualified coding specialist;
+- keeps the always-on local router small;
+- delegates coding through a typed Hermes -> Pi boundary;
+- enforces filesystem/process/network/credential/PII/secret/merge policy outside prompts;
+- uses LSP selectively for code intelligence without workspace context floods;
+- minimizes repeated prompt/spec/tool-schema prefill while preserving quality;
+- uses mission-sensitive Spec Kit profiles;
+- survives Hermes/Pi upgrades through canary qualification and rollback;
+- measures accepted-task quality, latency, retries, cache behavior, human intervention and spend before promotion.
 
-## Architecture decision
+## Execution authority
+
+The desired steady state is zero-trust-ish at the agent boundary: the production Hermes orchestrator has no arbitrary shell/source-write authority and coding crosses the typed Pi path.
+
+That state cannot exist before Hermes builds the Pi/enforcement path. Therefore the uplift uses an explicit **trusted bootstrap authority**:
+
+1. current Hermes may temporarily write/run shell only inside a constrained canary/overlay/worktree scope;
+2. it builds the external policy/privacy/sandbox substrate;
+3. it builds and tests the Pi bridge offline/local-first;
+4. it proves a privacy-controlled Pi cloud canary;
+5. only then does it revoke direct coding/shell capability from production Hermes;
+6. an instruction to “skip Pi and edit directly” must thereafter fail structurally.
+
+See `docs/agentic-uplift/bootstrap-authority.md` and `docs/agentic-uplift/agent-execution-contract.md`.
+
+## Architecture
 
 Use four routing/control layers:
 
-1. **Tier 0 — deterministic policy gate.** Resolve explicit coding/research signals, privacy class, local-only requirements, repository state, and non-negotiable security rules.
-2. **Tier 1 — tiny local semantic classifier.** Start with Qwen3-Embedding-0.6B prototypes or an equivalent compact encoder. Fine-tune ModernBERT only after a representative, redacted, outcome-labelled corpus exists.
-3. **Tier 2 — uncertainty/difficulty escalation.** Use abstention/margin thresholds and optionally a RouteLLM-style difficulty router calibrated on actual DeepSeek-vs-GLM outcomes.
-4. **Tier 3 — execution.** Pin the chosen cloud model/provider for the session to preserve cache affinity and behavioral stability.
+1. **Tier 0 — deterministic security/privacy + state gate.** Resolve non-negotiable trust constraints and obvious operational state.
+2. **Tier 1 — compact semantic classifier.** Benchmark Qwen3-Embedding-0.6B and frozen ModernBERT Embed challengers with a calibrated lightweight head.
+3. **Tier 2 — confidence/hysteresis/abstention.** Route phases rather than micro-turns; optional RouteLLM-style difficulty escalation is separate.
+4. **Tier 3 — specialist execution.** Pin provider/model/account within the phase/session to preserve cache affinity.
 
-Do **not** make a 20B–100B+ local generative model the always-on router on a 128 GB unified-memory workstation. Keep large local models on-demand for offline review/fallback experiments.
+Security policy stays outside the learned classifier.
 
-See: [`docs/agentic-uplift/research/local-routing-models.md`](docs/agentic-uplift/research/local-routing-models.md).
+Do not keep a 20B–100B+ generative model permanently resident merely to classify mission intent on a 128 GB developer workstation.
 
-## Zero-trust invariant
+## ModernBERT progression
 
-`SOUL.md`, `USER.md`, task prompts, project docs, LSP output, tool output, and child-agent prose are **not authorization mechanisms**.
+Do **not** start by fine-tuning ModernBERT.
 
-The Hermes orchestrator profile must have no arbitrary shell, source-write, merge, or unrestricted credential capability. Coding is performed by a constrained Pi worker launched from a trusted bridge with:
+Benchmark this progression:
 
-- a validated task envelope;
-- a fixed role-to-capability mapping;
-- a dedicated git worktree;
-- environment scrubbing and temporary HOME;
-- filesystem scope;
-- shell/command policy;
-- network allowlist/default deny;
-- task-scoped credentials only when required;
-- PII + secret egress scanning;
-- deterministic test/LSP/security evidence requirements;
-- an independent review/merge gate.
+```text
+rules
+-> rules + structured agent state
+-> Qwen3 embedding prototype
+-> frozen nomic ModernBERT Embed 256d/768d + calibrated linear/logistic head
+-> fine-tuned ModernBERT-base only after the frozen baseline plateaus
+-> optional pairwise difficulty/escalation model
+```
+
+Explicit state features include current phase/lane, write request, failing tests, pending tool action, active worker, repo state, research requirement, privacy class and recent route switches.
+
+Primary promotion metrics are accepted-task utility/regret, high-severity wrong-lane errors, retries/human overrides, route-switch rate, cache continuity, time/cost per accepted task and then classification/calibration metrics.
+
+See `docs/agentic-uplift/research/router-training-control.md`.
+
+## Context and token architecture
+
+Preserve current Hermes prompt assembly/compression. Apply three operational temperatures:
+
+- **T0 stable prefix** — identity, small invariants, stable role/tool schemas and compact skill catalog;
+- **T1 mission capsule** — bounded current objective/phase/constraints/acceptance/routing/evidence pointers, changed only at meaningful phase boundaries;
+- **T2 artifact memory** — full logs/diffs/Pi RPC streams/benchmarks/research/large Spec Kit artifacts kept outside hot context and retrieved by slice.
+
+Do not mirror the same mission state, command output or worker transcript into chat, MEMORY, project context and artifacts simultaneously.
+
+Use current Hermes compression/`session_search` as recovery machinery; after restart/compaction, reload durable uplift state, regenerate T1, load the current skill slice and fetch only unresolved T2 evidence.
 
 See:
 
-- [`protocols/pi-task-envelope.schema.json`](protocols/pi-task-envelope.schema.json)
-- [`protocols/uplift-state.schema.json`](protocols/uplift-state.schema.json)
-- [`configs/policy.example.yaml`](configs/policy.example.yaml)
-- [`docs/agentic-uplift/research/security-zero-trust-pii.md`](docs/agentic-uplift/research/security-zero-trust-pii.md)
-- [`docs/agentic-uplift/research/hermes-pi-lsp.md`](docs/agentic-uplift/research/hermes-pi-lsp.md)
+- `docs/agentic-uplift/research/mission-context-architecture.md`
+- `docs/agentic-uplift/research/context-token-optimization.md`
+- `docs/agentic-uplift/research/skill-slimming-slicing.md`
 
-## Context and token strategy
+## Skill slicing
 
-Optimize four separate quantities: logical input tokens, fresh billable input, cached billable input, and prefill/TTFT compute.
+Treat skills as progressive disclosure:
 
-Preserve current Hermes context-engine strengths before replacing them. The primary optimization sequence is:
+1. profile/catalog metadata routes to an eligible skill;
+2. `SKILL.md` contains only invariants and phase map;
+3. current phase details live in one `references/` slice;
+4. deterministic mechanics belong in scripts/templates;
+5. large evidence remains external until needed.
 
-1. measure prompt contributions and current compaction/cache behavior;
-2. remove duplicated policy/procedural prose;
-3. separate orchestrator and coder tool schemas;
-4. keep stable system/policy/project invariants before volatile mission/tool content;
-5. replace large project-context files with indexes + retrieval;
-6. use task-scoped spec/code slices for Pi instead of replaying the full Hermes session;
-7. tune lean compaction and model-specific thresholds using accepted-task quality;
-8. pin provider/model per session and measure provider-side cached-input counters;
-9. use MLX-LM/vLLM KV/prompt caches only for models actually served locally.
+The repository includes `skills/hermes-stack-uplift/` with eight phase slices.
 
-See: [`docs/agentic-uplift/research/context-token-optimization.md`](docs/agentic-uplift/research/context-token-optimization.md).
+More micro-skills are not automatically better. Excess catalog entries increase selection cost and inconsistency. Slice by stable phase/concern boundaries and measure tokens per accepted task.
 
-## Skill slimming and slicing
+## Legacy Hermes `state.db`
 
-Treat skills as a progressive-disclosure context system, not as markdown files that are all permanently “active”. The optimized hierarchy is:
+The old database is historical evidence, not memory to transplant.
 
-1. a narrow Hermes profile decides which skill catalog is eligible;
-2. each catalog description is only a routing hint;
-3. `SKILL.md` contains invariants, a phase map, and instructions for what to load next;
-4. phase/topic details live in `references/` and are loaded only when needed;
-5. deterministic mechanics live in `scripts/` rather than being re-generated from prose;
-6. a pruned skill is treated as **not loaded** until explicitly reloaded;
-7. the curator archives or consolidates stale/overlapping skills, but rare recovery/security procedures are protected by tests.
+Current Hermes `state.db` is full-fidelity session storage used for resume/search, so it can contain stale decisions, raw tool output, secrets/PII and old model assumptions.
 
-The repository includes a concrete sliced skill at [`skills/hermes-stack-uplift/`](skills/hermes-stack-uplift/) and the research rationale at [`docs/agentic-uplift/research/skill-slimming-slicing.md`](docs/agentic-uplift/research/skill-slimming-slicing.md).
+Default legacy status is **SKIPPED**. If active work genuinely needs historical context:
 
-The goal is not “more micro-skills”. Excessive slicing creates catalog growth, retrieval thrash and instruction inconsistency. Slice by **phase or concern with a clear load boundary** and measure skill-related input tokens per accepted task.
+1. freeze/checksum the original old home/DB;
+2. operate only on a disposable copy;
+3. discover relevant sessions locally before export;
+4. prefer selected prompts-only export first;
+5. treat Hermes `--redact` as secret-scrubbing defense in depth, not complete PII/DLP;
+6. independently sanitize locally;
+7. extract only durable provenance-bearing candidates;
+8. adversarially compare them with current repository truth;
+9. admit facts to the correct durable surface—not a bulk MEMORY transcript.
 
+The clean uplift must work identically without salvaged context.
 
-## Spec Kit strategy
+See `docs/agentic-uplift/research/legacy-state-curation.md`.
 
-Use deterministic risk/complexity selection for four profiles:
+## Memory posture
 
-- **Micro/Patch** — localized low-risk change; compact change contract only.
-- **Lite** — bounded feature; compact spec + plan, tasks only when useful.
-- **Standard** — cross-component feature/refactor; normal SDD flow.
-- **High Assurance** — auth/security/PII/destructive migrations/large architectural blast radius; full flow plus threat model, rollback, evidence matrix and adversarial review.
+Baseline memory is deliberately simple:
 
-Use Spec Kit presets/extensions rather than maintaining a private fork of core templates. Generated Markdown is durable source material, not mandatory hot-context material: index it and retrieve only sections required by the current task.
+- built-in `MEMORY.md` / `USER.md` for compact reviewed durable state;
+- local `session_search` for historical recall;
+- project ADR/docs for project truth.
 
-See: [`docs/agentic-uplift/spec-kit-profiles.md`](docs/agentic-uplift/spec-kit-profiles.md).
+Do not turn on another memory provider during the baseline just because it is available. Holographic memory is a later local canary if baseline recall proves insufficient; start with `auto_extract: false` and measure added schema/context cost, stale-fact risk and retrieval quality before promotion.
 
-## Router evaluation
+## Hermes built-ins
 
-Use the repository benchmark rig before granting routing authority:
+Two current built-ins are useful without becoming security authority:
 
-```bash
-python3 -m py_compile tools/router-bench/router_bench.py
-python3 tools/router-bench/router_bench.py \
-  --dataset tools/router-bench/sample_missions.jsonl \
-  --routers rules \
-  --repeat 3 \
-  --output /tmp/router-smoke.json
-```
+- **`security-guidance` WARN mode** — cheap pattern-based defense in depth for Hermes-owned write/patch content; not a sandbox/DLP/Pi diff reviewer.
+- **Kanban** — optional durable mission ledger/human UI for blocked/review/retry state. `uplift-state` remains authoritative execution/security state; Kanban is a projection.
 
-Then benchmark the same held-out mission corpus with rules, embedding prototypes, Semantic Router, a fine-tuned ModernBERT checkpoint, and a RouteLLM-style difficulty adapter in isolated processes.
+Keep unnecessary toolsets out of ordinary profile schemas.
 
-Production promotion requires representative held-out data, a temporal canary, explicit abstention behavior, zero observed `LOCAL_ONLY -> cloud` errors, and task-class-specific error analysis. Initial engineering target: macro-F1 >= 0.97, warm p95 <= 50 ms on the target Mac, subject to validation against real missions.
+## Zero-trust Pi invariant
 
-See: [`tools/router-bench/README.md`](tools/router-bench/README.md).
+Pi has no built-in filesystem/process/network/credential permission system. Final worker authority therefore requires external containment.
 
-## Implementation order
+Each coding task must use:
 
-Execute the canonical staged playbook rather than enabling every component at once:
+- validated v2 task envelope + policy digest;
+- fixed role -> capability mapping;
+- isolated git worktree;
+- minimal environment/credential exposure;
+- external sandbox/container/micro-VM/capability broker;
+- network default deny/allowlist;
+- local secret + typed-PII egress checks;
+- bounded retry/idempotency semantics;
+- deterministic test/LSP/security evidence;
+- independent review/merge gate.
 
-1. capture baseline telemetry;
-2. establish a fresh current Hermes canary and current Pi compatibility baseline;
-3. optionally salvage only reviewed durable knowledge from the old Hermes context DB;
-4. install the versioned external uplift overlay;
-5. diet prompt/context/tool schemas and validate quality;
-6. deploy the local router in shadow mode, then canary mode;
-7. benchmark and pin cloud providers/models;
-8. implement the Hermes → Pi typed bridge and remove direct coding capability from orchestrator mode;
-9. add pinned/audited LSP integration;
-10. add PII/secrets egress enforcement;
-11. install Spec Kit mission profiles;
-12. replace unconstrained swarms with capability-validated task graphs;
-13. execute the adversarial suite;
-14. canary, compare accepted-task economics, and promote gradually.
+Pi RPC remains a local pipe. Treat `agent_settled` as fully settled completion; `agent_end` may still be followed by retry/compaction/queued continuation.
 
-Canonical implementation detail: [`docs/agentic-uplift/implementation-playbook.md`](docs/agentic-uplift/implementation-playbook.md).
+## Spec Kit
 
-## Adversarial gate
+Use deterministic profiles:
 
-The uplift is not complete until it survives the failure catalogue in [`docs/agentic-uplift/adversarial-review.md`](docs/agentic-uplift/adversarial-review.md), including:
+- **Micro/Patch** — localized low-risk change;
+- **Lite** — bounded feature;
+- **Standard** — cross-component feature/refactor;
+- **High Assurance** — security/auth/PII/destructive migration/large blast radius.
 
-- hybrid route misclassification;
-- synthetic benchmark overfit;
-- provider/cache churn;
-- prompt-compaction loss of security state;
-- SOUL-policy non-propagation;
-- orchestrator bypass of Pi;
-- Pi protocol breakage after upgrades;
-- malicious project/LSP/tool output;
-- PII/secret false negatives and false positives;
-- extension supply-chain changes;
-- task retry of destructive operations;
-- reviewer/implementer correlated blind spots;
-- memory pressure/swap under realistic workstation load;
-- rate-limit/concurrency bottlenecks at high token volume.
+Policy may escalate; a model cannot downgrade a required high-assurance profile.
 
-Security failures fail closed. Do not weaken a boundary to make an upgrade or benchmark pass.
+Generated Markdown is durable source material, not mandatory hot context. Index and retrieve only current acceptance/plan/task slices.
+
+## Autonomous execution order
+
+Canonical detail is `docs/agentic-uplift/implementation-playbook.md`. High-level order:
+
+1. preflight/inventory;
+2. freeze/backup and optional legacy-state curation;
+3. clean parallel Hermes candidate + bootstrap checkpoint;
+4. context/skill/T0-T1-T2 diet;
+5. router shadow evaluation;
+6. provider/model bake-off;
+7. external security/privacy/enforcement substrate;
+8. minimal Pi bridge offline/local-first + containment qualification;
+9. privacy-controlled Pi cloud canary + LSP;
+10. **authority cutover** — revoke direct production Hermes coding/shell capability;
+11. Spec Kit mission profiles;
+12. bounded task graph + optional Kanban projection;
+13. adversarial suite;
+14. canary comparison and gradual promotion;
+15. continuous Hermes/Pi canary-upgrade discipline.
+
+This order intentionally builds enforcement **before** cloud Pi authority while retaining only the minimum temporary bootstrap capability needed to construct the replacement path.
 
 ## Acceptance gates
 
 Before production promotion:
 
-- routing quality is non-inferior on held-out and temporal canary data;
-- no `LOCAL_ONLY` payload crosses the cloud egress boundary in seeded tests;
-- orchestrator mode structurally cannot edit source or execute arbitrary shell commands;
-- all coding tasks enter Pi through the typed task envelope;
-- required tests, LSP diagnostics, PII scan and secret scan are represented in the evidence object;
-- stable-prefix/provider cache metrics materially improve without quality regression;
-- mission-sensitive Spec Kit profiles reduce median input tokens per accepted task materially (initial target >=25% versus the all-phases baseline);
-- daily Hermes/Pi upgrade rehearsal passes protocol, security, router and context smoke tests;
-- rollback to the previous pinned overlay + dependency versions is one documented operation;
-- accepted-task success rate remains non-inferior within the chosen confidence interval.
+- old production/legacy archive remains recoverable;
+- no old DB is migrated into clean production;
+- fixed/hot context shrinks without accepted-task quality regression;
+- routing beats fixed/state baselines on held-out mission-level outcomes;
+- no observed `LOCAL_ONLY -> cloud` path exists;
+- external Pi containment structurally denies disallowed filesystem/network/credential actions;
+- every coding task crosses the typed Pi boundary after cutover;
+- direct Hermes bypass after cutover fails structurally;
+- seeded secrets/PII fail closed and sanitizer does not corrupt common technical fixtures;
+- required test/LSP/security evidence is represented in task results;
+- lighter Spec Kit profiles materially reduce eligible-task input tokens without quality regression;
+- representative Mac memory pressure/swap remains acceptable;
+- daily upstream canary qualification does not overwrite uplift-owned controls;
+- rollback to the previous pins/overlay is documented and rehearsed;
+- accepted-task quality is non-inferior within the chosen confidence interval.
 
 ## Economics
 
-The supplied baseline is **3,888,531,773 logical tokens/month**. Treat savings as an experimentally measured range, not a promise. A sensible initial target is roughly **25–50% logical-token reduction** from context/spec/tool optimization plus materially higher cached-input share on long sequential sessions. Provider pricing is volatile enough that the stable KPI should be **cost and minutes per accepted task**, with retries and human intervention included.
+Planning baseline: **3,888,531,773 logical tokens/month**.
 
-See: [`docs/agentic-uplift/savings-model.md`](docs/agentic-uplift/savings-model.md).
+Treat savings as measured outcomes, not promises. A sensible initial architecture target remains roughly **25–50% logical-token reduction** from prompt/spec/tool/context optimization plus materially higher cached-input share on long sequential work.
+
+Optimize **cost + minutes + retries + human intervention per accepted task**, not token price in isolation.
 
 ## Upgrade discipline
 
 This repository is an overlay/control repository, not a permanent fork of Hermes or Pi.
 
-For each upstream update:
+For every upstream update:
 
-1. install/update in a disposable canary profile;
-2. apply the pinned uplift overlay;
-3. run protocol, router, context, security and representative coding smoke tests;
-4. compare prompt-size/cache/accepted-task metrics with the prior pinned version;
-5. promote the new pins only on pass;
-6. otherwise retain the previous pins and file an integration issue.
+1. install/update a disposable canary;
+2. apply pinned uplift overlay/integration;
+3. run protocol/security/router/context/LSP/coding smoke tests;
+4. compare prompt/cache/accepted-task metrics with prior pins;
+5. inspect plugin/package changes;
+6. promote only on pass;
+7. otherwise keep previous pins and record an integration blocker.
 
-Any unavoidable patch to upstream source must be feature-flagged, integration-tested, documented, and tracked for removal/upstreaming.
+Never upgrade production first and qualify second.
 
-## Self-uplift mission for Hermes
+## Self-uplift mission
 
-Run Hermes under the constrained uplift/orchestrator profile and give it this mission:
+Give Hermes this mission from the constrained bootstrap/canary profile:
 
-> Implement the agentic uplift defined by this repository. Treat each phase and acceptance gate in `docs/agentic-uplift/implementation-playbook.md` as a separately auditable task. You are the control-plane orchestrator: do not perform coding directly when the playbook requires Pi; use only capabilities granted by the installed policy. Preserve upstream upgradeability, collect deterministic evidence for every gate, run the adversarial suite before promotion, and mark a phase blocked rather than weakening a security/privacy boundary. Verify assumptions against the installed Hermes/Pi versions before implementation.
+> Implement the agentic uplift defined by this repository using the durable execution contract and sliced uplift skill. Treat each phase and acceptance gate in `docs/agentic-uplift/implementation-playbook.md` as a separately auditable state transition. During trusted bootstrap, use direct coding/shell capability only within the explicitly allowed canary/overlay/worktree scope; after the Pi/enforcement path passes its canary, revoke those capabilities from the production orchestrator and use typed Pi delegation for coding. Preserve upstream upgradeability, keep old `state.db` as read-only evidence rather than migrated memory, collect deterministic evidence for every gate, and mark a phase `BLOCKED` or `ROLLBACK` rather than weakening a security/privacy boundary. Verify assumptions against the installed Hermes/Pi versions before implementation.
 
-## Canonical evidence and research index
+## Canonical index
 
-- [`docs/agentic-uplift/README.md`](docs/agentic-uplift/README.md)
-- [`docs/agentic-uplift/SOURCES.md`](docs/agentic-uplift/SOURCES.md)
-- [`docs/agentic-uplift/architecture.html`](docs/agentic-uplift/architecture.html)
-- [`docs/agentic-uplift/research/local-routing-models.md`](docs/agentic-uplift/research/local-routing-models.md)
-- [`docs/agentic-uplift/research/context-token-optimization.md`](docs/agentic-uplift/research/context-token-optimization.md)
-- [`docs/agentic-uplift/research/hermes-pi-lsp.md`](docs/agentic-uplift/research/hermes-pi-lsp.md)
-- [`docs/agentic-uplift/research/security-zero-trust-pii.md`](docs/agentic-uplift/research/security-zero-trust-pii.md)
+Start with:
 
-Keep this root document compact. Update canonical detailed documents rather than copying their full contents here; this is itself an application of the stack's context-diet principle.
+- `docs/agentic-uplift/implementation-playbook.md`
+- `docs/agentic-uplift/agent-execution-contract.md`
+- `docs/agentic-uplift/bootstrap-authority.md`
+- `skills/hermes-stack-uplift/SKILL.md`
+- `docs/agentic-uplift/artifact-usability-review.md`
+- `docs/agentic-uplift/adversarial-review.md`
+- `docs/agentic-uplift/research/legacy-state-curation.md`
+- `docs/agentic-uplift/research/router-training-control.md`
+- `docs/agentic-uplift/research/mission-context-architecture.md`
+- `docs/agentic-uplift/research/security-zero-trust-pii.md`
+- `docs/agentic-uplift/research/hermes-pi-lsp.md`
 
-
-## Readiness and publication
-
-This repository distinguishes **design maturity** from **implemented enforcement**. Read [`docs/agentic-uplift/artifact-usability-review.md`](docs/agentic-uplift/artifact-usability-review.md) before granting unattended authority. The current bundle is suitable for architecture review and controlled prototyping; production self-uplift remains gated on the P0 controls in that review.
-
-For resumable agent execution, use [`docs/agentic-uplift/agent-execution-contract.md`](docs/agentic-uplift/agent-execution-contract.md) rather than conversational memory as execution state.
-
-Executed refinement evidence is recorded in [`docs/agentic-uplift/validation-report.md`](docs/agentic-uplift/validation-report.md). The GitHub Pages site is generated under `docs/`. Human pages link to raw Markdown alternates; agent discovery starts at `docs/llms.txt` and `docs/agent/START.md`. SVG diagrams are presentation views, while [`docs/agentic-uplift/architecture.md`](docs/agentic-uplift/architecture.md) and [`docs/agentic-uplift/architecture.graph.json`](docs/agentic-uplift/architecture.graph.json) are the canonical text/machine representations.
+Keep this root document compact. Put detailed changing research in canonical topic documents and load it only when needed.
