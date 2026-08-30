@@ -55,6 +55,7 @@ The Hermes orchestrator profile must have no arbitrary shell, source-write, merg
 See:
 
 - [`protocols/pi-task-envelope.schema.json`](protocols/pi-task-envelope.schema.json)
+- [`protocols/uplift-state.schema.json`](protocols/uplift-state.schema.json)
 - [`configs/policy.example.yaml`](configs/policy.example.yaml)
 - [`docs/agentic-uplift/research/security-zero-trust-pii.md`](docs/agentic-uplift/research/security-zero-trust-pii.md)
 - [`docs/agentic-uplift/research/hermes-pi-lsp.md`](docs/agentic-uplift/research/hermes-pi-lsp.md)
@@ -76,6 +77,23 @@ Preserve current Hermes context-engine strengths before replacing them. The prim
 9. use MLX-LM/vLLM KV/prompt caches only for models actually served locally.
 
 See: [`docs/agentic-uplift/research/context-token-optimization.md`](docs/agentic-uplift/research/context-token-optimization.md).
+
+## Skill slimming and slicing
+
+Treat skills as a progressive-disclosure context system, not as markdown files that are all permanently “active”. The optimized hierarchy is:
+
+1. a narrow Hermes profile decides which skill catalog is eligible;
+2. each catalog description is only a routing hint;
+3. `SKILL.md` contains invariants, a phase map, and instructions for what to load next;
+4. phase/topic details live in `references/` and are loaded only when needed;
+5. deterministic mechanics live in `scripts/` rather than being re-generated from prose;
+6. a pruned skill is treated as **not loaded** until explicitly reloaded;
+7. the curator archives or consolidates stale/overlapping skills, but rare recovery/security procedures are protected by tests.
+
+The repository includes a concrete sliced skill at [`skills/hermes-stack-uplift/`](skills/hermes-stack-uplift/) and the research rationale at [`docs/agentic-uplift/research/skill-slimming-slicing.md`](docs/agentic-uplift/research/skill-slimming-slicing.md).
+
+The goal is not “more micro-skills”. Excessive slicing creates catalog growth, retrieval thrash and instruction inconsistency. Slice by **phase or concern with a clear load boundary** and measure skill-related input tokens per accepted task.
+
 
 ## Spec Kit strategy
 
@@ -204,3 +222,12 @@ Run Hermes under the constrained uplift/orchestrator profile and give it this mi
 - [`docs/agentic-uplift/research/security-zero-trust-pii.md`](docs/agentic-uplift/research/security-zero-trust-pii.md)
 
 Keep this root document compact. Update canonical detailed documents rather than copying their full contents here; this is itself an application of the stack's context-diet principle.
+
+
+## Readiness and publication
+
+This repository distinguishes **design maturity** from **implemented enforcement**. Read [`docs/agentic-uplift/artifact-usability-review.md`](docs/agentic-uplift/artifact-usability-review.md) before granting unattended authority. The current bundle is suitable for architecture review and controlled prototyping; production self-uplift remains gated on the P0 controls in that review.
+
+For resumable agent execution, use [`docs/agentic-uplift/agent-execution-contract.md`](docs/agentic-uplift/agent-execution-contract.md) rather than conversational memory as execution state.
+
+Executed refinement evidence is recorded in [`docs/agentic-uplift/validation-report.md`](docs/agentic-uplift/validation-report.md). The GitHub Pages site is generated under `docs/`. Human pages link to raw Markdown alternates; agent discovery starts at `docs/llms.txt` and `docs/agent/START.md`. SVG diagrams are presentation views, while [`docs/agentic-uplift/architecture.md`](docs/agentic-uplift/architecture.md) and [`docs/agentic-uplift/architecture.graph.json`](docs/agentic-uplift/architecture.graph.json) are the canonical text/machine representations.

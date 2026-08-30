@@ -1,0 +1,7 @@
+{
+  "version":"1.0","mission_id":"uplift-2026-08-30","status":"EXECUTING","current_phase":"30-router","policy_sha256":"0000000000000000000000000000000000000000000000000000000000000000",
+  "checkpoints":[{"id":"baseline","git_ref":"refs/tags/uplift-baseline","created_at":"2026-08-30T00:00:00Z"}],
+  "phases":[
+    {"id":"00-preflight","status":"COMPLETE","attempts":1,"evidence":[],"blocker":null},{"id":"10-baseline-and-backup","status":"COMPLETE","attempts":1,"evidence":[],"blocker":null},{"id":"20-context-and-skills","status":"COMPLETE","attempts":1,"evidence":[],"blocker":null},{"id":"30-router","status":"EXECUTING","attempts":1,"evidence":[],"blocker":null},{"id":"40-security-and-policy","status":"PENDING","attempts":0,"evidence":[],"blocker":null},{"id":"50-pi-and-lsp","status":"PENDING","attempts":0,"evidence":[],"blocker":null},{"id":"60-evaluation-and-promotion","status":"PENDING","attempts":0,"evidence":[],"blocker":null},{"id":"70-upgrades-and-rollback","status":"PENDING","attempts":0,"evidence":[],"blocker":null}
+  ],"updated_at":"2026-08-30T00:00:00Z"
+}

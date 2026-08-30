@@ -1,0 +1,23 @@
+# Stable architectural roles are separated from volatile provider/model IDs.
+version: 1
+roles:
+  research:
+    model_env: RESEARCH_MODEL_ID
+    provider_env: RESEARCH_PROVIDER
+    session_sticky: true
+    require_tools: true
+  coding:
+    model_env: CODING_MODEL_ID
+    provider_env: CODING_PROVIDER
+    session_sticky: true
+    require_tools: true
+  local_router:
+    family: embedding_or_encoder
+    preferred_examples: [Qwen3-Embedding-0.6B, ModernBERT-base]
+    resident_memory_target_gb: 5
+  local_reviewer:
+    enabled: false
+    load_on_demand: true
+
+# Keep concrete API IDs in .env or a secret manager, not this repository.
+# Re-benchmark providers/models before promotion; do not encode promotional prices as policy.

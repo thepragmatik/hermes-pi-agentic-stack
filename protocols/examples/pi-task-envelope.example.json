@@ -1,0 +1,12 @@
+{
+  "version":"2.0","task_id":"uplift-router-001","idempotency_key":"uplift-router-001-attempt-1","phase":"30-router","attempt":1,"role":"coder","objective":"Implement the local router adapter and regression tests without changing cloud egress policy.",
+  "acceptance":["Router regression corpus passes","No LOCAL_ONLY payload is sent to cloud adapters"],
+  "workspace":{"repo":"hermes-pi-agentic-stack","worktree":"/tmp/uplift/router-001","base_ref":"main","write_globs":["tools/router/**","tests/router/**"],"deny_globs":[".env","**/secrets/**"]},
+  "capabilities":{"shell_profile":"build_test_only","network_profile":"none","tools":["file_read","file_edit","build_test"]},
+  "privacy":{"class":"INTERNAL","cloud_allowed":false,"pii_action":"redact","secret_action":"block"},
+  "risk":{"level":"medium","destructive":false,"human_approval_required":false},
+  "policy":{"policy_id":"hermes-pi-uplift-default","sha256":"0000000000000000000000000000000000000000000000000000000000000000"},
+  "budget":{"max_turns":20,"max_input_tokens":200000,"max_output_tokens":30000,"deadline_seconds":1800},
+  "evidence":{"required":["diff","tests","secret_scan"],"paths":["artifacts/router-001/"]},
+  "rollback":{"checkpoint":"before-router-001","strategy":"reset worktree to checkpoint and delete ephemeral state"},"human_approval":null
+}

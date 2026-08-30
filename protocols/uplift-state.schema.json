@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thepragmatik.github.io/hermes-pi-agentic-stack/agent/protocols/uplift-state.schema.json",
+  "title": "Hermes Stack Uplift Execution State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version","mission_id","status","current_phase","policy_sha256","checkpoints","phases","updated_at"],
+  "properties": {
+    "version":{"const":"1.0"},"mission_id":{"type":"string"},"status":{"enum":["PENDING","EXECUTING","BLOCKED","ROLLBACK","COMPLETE"]},"current_phase":{"type":"string"},"policy_sha256":{"type":"string","pattern":"^[a-f0-9]{64}$"},
+    "checkpoints":{"type":"array","items":{"type":"object","required":["id","git_ref","created_at"],"properties":{"id":{"type":"string"},"git_ref":{"type":"string"},"created_at":{"type":"string","format":"date-time"}}}},
+    "phases":{"type":"array","minItems":1,"items":{"type":"object","additionalProperties":false,"required":["id","status","attempts","evidence"],"properties":{"id":{"type":"string"},"status":{"enum":["PENDING","EXECUTING","BLOCKED","ROLLBACK","COMPLETE"]},"attempts":{"type":"integer","minimum":0},"evidence":{"type":"array","items":{"type":"string"}},"blocker":{"type":["string","null"]}}}},
+    "updated_at":{"type":"string","format":"date-time"}
+  }
+}

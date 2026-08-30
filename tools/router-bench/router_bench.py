@@ -1,689 +1,174 @@
 #!/usr/bin/env python3
-"""Hermes local-router benchmark rig.
+"""Isolated-process local router benchmark for the Hermes + Pi stack.
 
-Designed for a Mac workstation where each router should be evaluated in a fresh
-process so model/framework initialization, memory footprint, and warm routing
-latency can be compared honestly.
-
-Dataset JSONL format (one object per line):
-  {"id":"r1", "text":"Investigate ...", "label":"deepseek"}
-
-Labels used by the supplied policy:
-  deepseek   research / ideation / architecture / broad synthesis
-  glm        coding / terminal / implementation / tests / refactors
-  hybrid     substantial planning + coding; caller should decompose
-  local_only sensitive material that must not be sent to a cloud model
-  abstain    router is insufficiently confident; caller escalates locally
-
-No raw prompt text is written to result files unless --include-text is used.
+Dataset JSONL: {"id":"x","text":"...","label":"deepseek|glm|hybrid|local_only|abstain"}.
+Raw prompts are not persisted unless --include-text is explicitly supplied.
 """
-
 from __future__ import annotations
-
-import argparse
-import dataclasses
-import hashlib
-import json
-import math
-import os
-import platform
-import re
-import resource
-import statistics
-import subprocess
-import sys
-import time
-from collections import Counter, defaultdict
+import argparse, hashlib, json, os, platform, re, resource, statistics, subprocess, sys, time
 from pathlib import Path
-from typing import Any, Callable, Iterable, Protocol
 
-LABELS = ("deepseek", "glm", "hybrid", "local_only", "abstain")
-CLOUD_LABELS = ("deepseek", "glm", "hybrid")
-
-
-@dataclasses.dataclass(frozen=True)
-class Sample:
-    id: str
-    text: str
-    label: str
-
-
-@dataclasses.dataclass(frozen=True)
-class Prediction:
-    label: str
-    confidence: float | None = None
-    detail: dict[str, Any] | None = None
-
-
-class Router(Protocol):
-    name: str
-
-    def route(self, text: str) -> Prediction: ...
-
-
-def _safe_confidence(x: Any) -> float | None:
-    if x is None:
-        return None
-    try:
-        return max(0.0, min(1.0, float(x)))
-    except (TypeError, ValueError):
-        return None
-
-
-def load_dataset(path: Path) -> list[Sample]:
-    samples: list[Sample] = []
-    for lineno, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-        if not raw.strip() or raw.lstrip().startswith("#"):
-            continue
-        try:
-            obj = json.loads(raw)
-        except json.JSONDecodeError as exc:
-            raise SystemExit(f"{path}:{lineno}: invalid JSON: {exc}") from exc
-        for key in ("id", "text", "label"):
-            if key not in obj:
-                raise SystemExit(f"{path}:{lineno}: missing {key!r}")
-        label = str(obj["label"]).strip().lower()
-        if label not in LABELS:
-            raise SystemExit(f"{path}:{lineno}: unsupported label {label!r}; choose {LABELS}")
-        samples.append(Sample(str(obj["id"]), str(obj["text"]), label))
-    if not samples:
-        raise SystemExit(f"dataset is empty: {path}")
-    return samples
-
-
-def _rss_mb() -> float:
-    # macOS ru_maxrss is bytes; Linux is KiB.
-    rss = float(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
-    if sys.platform == "darwin":
-        return rss / (1024 * 1024)
-    return rss / 1024
-
-
-class RulesRouter:
-    """Fast deterministic baseline and security override.
-
-    Rules are deliberately conservative. The intended production stack runs
-    these checks before any learned router, because privacy and explicit task
-    declarations should not depend on probabilistic classification.
-    """
-
-    name = "rules"
-
-    LOCAL_ONLY = re.compile(
-        r"\b(local[- ]only|do not (?:upload|send|share)|never (?:upload|send|share)|"
-        r"pii|personal data|passport|tax file number|tfn|ssn|private key|seed phrase|"
-        r"client secret|access token|credential|production database dump)\b",
-        re.I,
-    )
-    CODE = re.compile(
-        r"\b(implement|code|fix|debug|refactor|compile|build|test|unit test|integration test|"
-        r"rename symbol|edit (?:the )?file|patch|pull request|commit|typescript|javascript|"
-        r"python|java|kotlin|gradle|maven|npm|pnpm|pytest|junit|stack trace|exception|"
-        r"terminal|shell command|cli|api endpoint|migration)\b",
-        re.I,
-    )
-    RESEARCH = re.compile(
-        r"\b(research|investigate|compare|evaluate|architecture|strategy|ideat|brainstorm|"
-        r"landscape|market|trade[- ]?off|design options|literature|survey|systems map|"
-        r"root cause hypotheses|recommend|decision memo)\b",
-        re.I,
-    )
-
-    def route(self, text: str) -> Prediction:
-        if self.LOCAL_ONLY.search(text):
-            return Prediction("local_only", 1.0, {"reason": "privacy/security rule"})
-        code = bool(self.CODE.search(text))
-        research = bool(self.RESEARCH.search(text))
-        if code and research:
-            return Prediction("hybrid", 0.90, {"reason": "code + research indicators"})
-        if code:
-            return Prediction("glm", 0.93, {"reason": "coding/tool indicators"})
-        if research:
-            return Prediction("deepseek", 0.93, {"reason": "research/design indicators"})
-        return Prediction("abstain", 0.0, {"reason": "no deterministic signal"})
-
-
-PROTOTYPES: dict[str, list[str]] = {
-    "deepseek": [
-        "Research a technical topic deeply and synthesize competing evidence.",
-        "Compare architectures, explore tradeoffs and recommend a strategy.",
-        "Brainstorm product ideas and map an unfamiliar problem space.",
-        "Investigate current libraries, standards, papers, vendors and approaches.",
-    ],
-    "glm": [
-        "Implement a feature in the repository, edit files, run tests and fix failures.",
-        "Debug this stack trace and patch the code using terminal tools.",
-        "Refactor source code safely and use language-server diagnostics.",
-        "Create tests, run the build and produce a verified code diff.",
-    ],
-    "hybrid": [
-        "Research the right technical approach then implement and test it in the repository.",
-        "Design an architecture and immediately build a production-ready implementation.",
-        "Compare libraries, select one, integrate it and verify the code.",
-    ],
-}
-
-
-class PrototypeEmbeddingRouter:
-    """Cosine-to-prototypes baseline using SentenceTransformers.
-
-    Recommended model for the target machine: Qwen/Qwen3-Embedding-0.6B.
-    For a tiny smoke test, pass a smaller SentenceTransformers model.
-    """
-
-    name = "prototype"
-
-    def __init__(self, model_name: str, threshold: float, margin: float):
-        try:
-            from sentence_transformers import SentenceTransformer
-        except ImportError as exc:
-            raise RuntimeError(
-                "prototype router requires sentence-transformers; "
-                "pip install 'sentence-transformers>=3'"
-            ) from exc
-        self.model_name = model_name
-        self.threshold = threshold
-        self.margin = margin
-        self.model = SentenceTransformer(model_name, trust_remote_code=True)
-        labels, texts = [], []
-        for label, examples in PROTOTYPES.items():
-            for example in examples:
-                labels.append(label)
-                texts.append(example)
-        vecs = self.model.encode(texts, normalize_embeddings=True)
-        self.centroids: dict[str, Any] = {}
-        for label in PROTOTYPES:
-            members = [vecs[i] for i, value in enumerate(labels) if value == label]
-            # avoid a mandatory numpy import in our own module; ST already returns ndarray.
-            centroid = sum(members) / len(members)
-            norm = math.sqrt(float((centroid * centroid).sum()))
-            self.centroids[label] = centroid / max(norm, 1e-12)
-
-    def route(self, text: str) -> Prediction:
-        privacy = RulesRouter.LOCAL_ONLY.search(text)
-        if privacy:
-            return Prediction("local_only", 1.0, {"reason": "privacy/security rule"})
-        vec = self.model.encode([text], normalize_embeddings=True)[0]
-        scores = {label: float(vec @ centroid) for label, centroid in self.centroids.items()}
-        ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-        label, score = ranked[0]
-        second = ranked[1][1]
-        # Cosine is not a calibrated probability. Keep the raw similarity in detail,
-        # and expose a bounded confidence only for convenient threshold dashboards.
-        conf = max(0.0, min(1.0, (score + 1.0) / 2.0))
-        if score < self.threshold or (score - second) < self.margin:
-            return Prediction("abstain", conf, {"scores": scores, "margin": score - second})
-        return Prediction(label, conf, {"scores": scores, "margin": score - second})
-
-
-class SemanticRouterAdapter:
-    """Aurelio Semantic Router adapter with local Hugging Face encoder."""
-
-    name = "semantic-router"
-
-    def __init__(self, model_name: str, threshold: float):
-        try:
-            from semantic_router import Route
-            from semantic_router.routers import SemanticRouter
-            try:
-                from semantic_router.encoders import HuggingFaceEncoder
-            except ImportError:
-                from semantic_router.encoders.huggingface import HuggingFaceEncoder  # type: ignore
-        except ImportError as exc:
-            raise RuntimeError(
-                "semantic-router adapter requires a patched/current local install; "
-                "pip install 'semantic-router[local]>=0.1.16'"
-            ) from exc
-
-        try:
-            encoder = HuggingFaceEncoder(name=model_name)
-        except TypeError:
-            encoder = HuggingFaceEncoder(model_name=model_name)
-        routes = [Route(name=label, utterances=utterances) for label, utterances in PROTOTYPES.items()]
-        # API names have changed across Semantic Router releases; support both common forms.
-        try:
-            self.router = SemanticRouter(encoder=encoder, routes=routes, auto_sync="local")
-        except TypeError:
-            self.router = SemanticRouter(encoder=encoder, routes=routes)
-        self.threshold = threshold
-
-    def route(self, text: str) -> Prediction:
-        if RulesRouter.LOCAL_ONLY.search(text):
-            return Prediction("local_only", 1.0, {"reason": "privacy/security rule"})
-        result = self.router(text)
-        name = getattr(result, "name", None) or getattr(result, "route", None)
-        score = getattr(result, "similarity_score", None)
-        if score is None:
-            score = getattr(result, "score", None)
-        if not name:
-            return Prediction("abstain", _safe_confidence(score), {"raw": str(result)[:500]})
-        label = str(name)
-        conf = _safe_confidence(score)
-        if conf is not None and conf < self.threshold:
-            return Prediction("abstain", conf, {"candidate": label})
-        if label not in LABELS:
-            return Prediction("abstain", conf, {"candidate": label})
-        return Prediction(label, conf)
-
-
-class ModernBERTRouter:
-    """Fine-tuned local sequence-classification checkpoint adapter."""
-
-    name = "modernbert"
-
-    def __init__(self, checkpoint: str, threshold: float):
-        if not checkpoint:
-            raise RuntimeError("modernbert requires --modernbert-model PATH_OR_HF_ID")
-        try:
-            import torch
-            from transformers import AutoModelForSequenceClassification, AutoTokenizer
-        except ImportError as exc:
-            raise RuntimeError("modernbert requires transformers + torch") from exc
-        self.torch = torch
-        self.tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-        self.model = AutoModelForSequenceClassification.from_pretrained(checkpoint)
-        self.model.eval()
-        self.threshold = threshold
-        self.id2label = {int(k): str(v).lower() for k, v in self.model.config.id2label.items()}
-
-    def route(self, text: str) -> Prediction:
-        if RulesRouter.LOCAL_ONLY.search(text):
-            return Prediction("local_only", 1.0, {"reason": "privacy/security rule"})
-        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, max_length=2048)
-        with self.torch.inference_mode():
-            logits = self.model(**inputs).logits[0]
-            probs = self.torch.softmax(logits, dim=-1)
-        idx = int(probs.argmax().item())
-        conf = float(probs[idx].item())
-        label = self.id2label.get(idx, str(idx)).lower()
-        if label not in LABELS or conf < self.threshold:
-            return Prediction("abstain", conf, {"candidate": label})
-        return Prediction(label, conf)
-
-
-class RouteLLMDifficultyAdapter:
-    """RouteLLM MF difficulty adapter.
-
-    RouteLLM's pretrained routers are strong-vs-weak preference routers, *not*
-    native research-vs-code classifiers. This adapter is intentionally exposed
-    as an experiment: assign `strong_label` to the route that should receive
-    high-difficulty cases, or retrain RouteLLM on actual DeepSeek-vs-GLM outcome
-    pairs before production use.
-    """
-
-    name = "routellm"
-
-    def __init__(
-        self,
-        strong_model: str,
-        weak_model: str,
-        strong_label: str,
-        weak_label: str,
-        threshold: float,
-    ):
-        try:
-            from routellm.controller import Controller
-        except ImportError as exc:
-            raise RuntimeError("routellm adapter requires `pip install routellm`") from exc
-        self.controller = Controller(
-            routers=["mf"], strong_model=strong_model, weak_model=weak_model
-        )
-        self.strong_label = strong_label
-        self.weak_label = weak_label
-        self.threshold = threshold
-
-    def route(self, text: str) -> Prediction:
-        if RulesRouter.LOCAL_ONLY.search(text):
-            return Prediction("local_only", 1.0, {"reason": "privacy/security rule"})
-        score = float(self.controller.calculate_strong_win_rate(prompt=text, router="mf"))
-        label = self.strong_label if score >= self.threshold else self.weak_label
-        confidence = score if label == self.strong_label else 1.0 - score
-        return Prediction(label, confidence, {"strong_win_rate": score})
-
-
-class ExternalJSONRouter:
-    """Generic adapter for academic/custom routers.
-
-    The command is invoked once per classification and receives the text on
-    stdin. It must return one JSON object: {"label":"glm","confidence":0.9}.
-    This intentionally makes it easy to test a Rust/Swift/ONNX daemon, a custom
-    logic gate, or a RouteLLM service without coupling this benchmark to its API.
-    """
-
-    def __init__(self, name: str, command: str):
-        self.name = name
-        self.command = command
-
-    def route(self, text: str) -> Prediction:
-        if RulesRouter.LOCAL_ONLY.search(text):
-            return Prediction("local_only", 1.0, {"reason": "privacy/security rule"})
-        cp = subprocess.run(
-            self.command,
-            input=text,
-            text=True,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            timeout=30,
-            check=False,
-        )
-        if cp.returncode != 0:
-            raise RuntimeError(f"external router failed ({cp.returncode}): {cp.stderr[-1000:]}")
-        obj = json.loads(cp.stdout)
-        label = str(obj["label"]).lower()
-        if label not in LABELS:
-            label = "abstain"
-        return Prediction(label, _safe_confidence(obj.get("confidence")), obj.get("detail"))
-
-
-def make_router(name: str, args: argparse.Namespace) -> Router:
-    if name == "rules":
-        return RulesRouter()
-    if name == "prototype":
-        return PrototypeEmbeddingRouter(args.embedding_model, args.embedding_threshold, args.embedding_margin)
-    if name == "semantic-router":
-        return SemanticRouterAdapter(args.semantic_model, args.semantic_threshold)
-    if name == "modernbert":
-        return ModernBERTRouter(args.modernbert_model, args.modernbert_threshold)
-    if name == "routellm":
-        return RouteLLMDifficultyAdapter(
-            args.routellm_strong_model,
-            args.routellm_weak_model,
-            args.routellm_strong_label,
-            args.routellm_weak_label,
-            args.routellm_threshold,
-        )
-    for spec in args.external or []:
-        ext_name, sep, command = spec.partition("=")
-        if sep and ext_name == name:
-            return ExternalJSONRouter(ext_name, command)
-    raise RuntimeError(f"unknown router {name!r}")
-
-
-def percentile(xs: list[float], p: float) -> float:
-    if not xs:
-        return 0.0
-    ys = sorted(xs)
-    k = (len(ys) - 1) * p
-    lo, hi = math.floor(k), math.ceil(k)
-    if lo == hi:
-        return ys[lo]
-    return ys[lo] * (hi - k) + ys[hi] * (k - lo)
-
-
-def metrics(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    # Accuracy is on every repeated row. F1 is macro across expected production labels,
-    # with abstain treated as an error unless the reference label itself is abstain.
-    expected_labels = sorted({r["expected"] for r in rows})
-    correct = sum(r["expected"] == r["predicted"] for r in rows)
-    per_label: dict[str, dict[str, float]] = {}
-    f1s: list[float] = []
-    for label in expected_labels:
-        tp = sum(r["expected"] == label and r["predicted"] == label for r in rows)
-        fp = sum(r["expected"] != label and r["predicted"] == label for r in rows)
-        fn = sum(r["expected"] == label and r["predicted"] != label for r in rows)
-        precision = tp / (tp + fp) if tp + fp else 0.0
-        recall = tp / (tp + fn) if tp + fn else 0.0
-        f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
-        f1s.append(f1)
-        per_label[label] = {"precision": precision, "recall": recall, "f1": f1}
-
-    lat = [float(r["latency_ms"]) for r in rows]
-    by_id: dict[str, list[str]] = defaultdict(list)
-    for row in rows:
-        by_id[row["id"]].append(row["predicted"])
-    deterministic = sum(len(set(values)) == 1 for values in by_id.values()) / len(by_id)
-    dangerous = sum(
-        r["expected"] == "local_only" and r["predicted"] in CLOUD_LABELS for r in rows
-    )
-    code_to_research = sum(
-        r["expected"] == "glm" and r["predicted"] == "deepseek" for r in rows
-    )
-    research_to_code = sum(
-        r["expected"] == "deepseek" and r["predicted"] == "glm" for r in rows
-    )
-    return {
-        "accuracy": correct / len(rows),
-        "macro_f1": statistics.mean(f1s) if f1s else 0.0,
-        "abstain_rate": sum(r["predicted"] == "abstain" for r in rows) / len(rows),
-        "determinism_rate": deterministic,
-        "latency_ms": {
-            "mean": statistics.mean(lat),
-            "p50": percentile(lat, 0.50),
-            "p95": percentile(lat, 0.95),
-            "p99": percentile(lat, 0.99),
-        },
-        "high_severity_errors": {
-            "local_only_to_cloud": dangerous,
-            "glm_to_deepseek": code_to_research,
-            "deepseek_to_glm": research_to_code,
-        },
-        "per_label": per_label,
-        "confusion": confusion(rows),
-    }
-
-
-def confusion(rows: list[dict[str, Any]]) -> dict[str, dict[str, int]]:
-    out: dict[str, dict[str, int]] = {}
-    for expected in LABELS:
-        bucket = Counter(r["predicted"] for r in rows if r["expected"] == expected)
-        if bucket:
-            out[expected] = {label: int(bucket.get(label, 0)) for label in LABELS}
-    return out
-
-
-def benchmark_one(name: str, args: argparse.Namespace) -> dict[str, Any]:
-    samples = load_dataset(Path(args.dataset))
-    before_mb = _rss_mb()
-    t0 = time.perf_counter()
-    router = make_router(name, args)
-    startup_ms = (time.perf_counter() - t0) * 1000
-    after_load_mb = _rss_mb()
-
-    # Warmup separate from measured passes.
-    for sample in samples[: max(0, args.warmup)]:
-        router.route(sample.text)
-
-    rows: list[dict[str, Any]] = []
-    failures: list[dict[str, str]] = []
-    for repeat in range(args.repeat):
-        for sample in samples:
-            started = time.perf_counter_ns()
-            try:
-                pred = router.route(sample.text)
-            except Exception as exc:  # benchmark should report a broken adapter rather than silently die
-                pred = Prediction("abstain", 0.0, {"error": f"{type(exc).__name__}: {exc}"})
-                failures.append({"id": sample.id, "error": f"{type(exc).__name__}: {exc}"})
-            elapsed_ms = (time.perf_counter_ns() - started) / 1_000_000
-            row: dict[str, Any] = {
-                "id": sample.id,
-                "repeat": repeat,
-                "expected": sample.label,
-                "predicted": pred.label,
-                "confidence": pred.confidence,
-                "latency_ms": elapsed_ms,
-                "text_sha256": hashlib.sha256(sample.text.encode()).hexdigest(),
-            }
-            if args.include_text:
-                row["text"] = sample.text
-            if args.include_detail and pred.detail is not None:
-                row["detail"] = pred.detail
-            rows.append(row)
-
-    return {
-        "router": name,
-        "dataset": str(Path(args.dataset).resolve()),
-        "samples": len(samples),
-        "repeat": args.repeat,
-        "startup_ms": startup_ms,
-        "max_rss_mb_before": before_mb,
-        "max_rss_mb_after_load": after_load_mb,
-        "max_rss_mb_end": _rss_mb(),
-        "metrics": metrics(rows),
-        "failures": failures[:100],
-        "rows": rows,
-    }
-
-
-def child_args(argv: list[str], router: str) -> list[str]:
-    # Reconstruct all user options while stripping parent-only switches.
-    out = [sys.executable, str(Path(__file__).resolve())]
-    skip_next = False
-    i = 0
-    while i < len(argv):
-        token = argv[i]
-        if token in ("--routers", "--output", "--child-router"):
-            i += 2
-            continue
-        if token in ("--in-process", "--pretty"):
-            i += 1
-            continue
-        out.append(token)
-        i += 1
-    out += ["--child-router", router]
-    return out
-
-
-def run_isolated(router_names: list[str], args: argparse.Namespace, original_argv: list[str]) -> dict[str, Any]:
-    results: list[dict[str, Any]] = []
-    for name in router_names:
-        started = time.perf_counter()
-        cp = subprocess.run(
-            child_args(original_argv, name),
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
-        )
-        wall_ms = (time.perf_counter() - started) * 1000
-        if cp.returncode != 0:
-            results.append({
-                "router": name,
-                "fatal_error": cp.stderr.strip() or cp.stdout.strip(),
-                "process_wall_ms": wall_ms,
-            })
-            continue
-        try:
-            result = json.loads(cp.stdout)
-        except json.JSONDecodeError:
-            results.append({
-                "router": name,
-                "fatal_error": "child did not emit JSON",
-                "stdout": cp.stdout[-2000:],
-                "stderr": cp.stderr[-2000:],
-                "process_wall_ms": wall_ms,
-            })
-            continue
-        result["process_wall_ms"] = wall_ms
-        if cp.stderr.strip():
-            result["child_stderr_tail"] = cp.stderr[-2000:]
-        results.append(result)
-    return envelope(results, args)
-
-
-def envelope(results: list[dict[str, Any]], args: argparse.Namespace) -> dict[str, Any]:
-    return {
-        "schema_version": 1,
-        "generated_at_epoch": time.time(),
-        "host": {
-            "platform": platform.platform(),
-            "python": sys.version.split()[0],
-            "machine": platform.machine(),
-        },
-        "privacy": {
-            "raw_text_included": bool(args.include_text),
-            "note": "Result rows use prompt SHA-256 by default; do not use a sensitive dataset with third-party routers without the egress policy gate.",
-        },
-        "results": results,
-    }
-
-
-def print_summary(doc: dict[str, Any]) -> None:
-    headers = ("router", "acc", "macro-F1", "abstain", "p50 ms", "p95 ms", "startup ms", "RSS MB", "fatal")
-    print("\t".join(headers), file=sys.stderr)
-    for r in doc["results"]:
-        if "fatal_error" in r:
-            print(f"{r['router']}\t-\t-\t-\t-\t-\t-\t-\t{r['fatal_error'][:80]}", file=sys.stderr)
-            continue
-        m = r["metrics"]
-        print(
-            "\t".join([
-                r["router"],
-                f"{m['accuracy']:.3f}",
-                f"{m['macro_f1']:.3f}",
-                f"{m['abstain_rate']:.3f}",
-                f"{m['latency_ms']['p50']:.2f}",
-                f"{m['latency_ms']['p95']:.2f}",
-                f"{r['startup_ms']:.0f}",
-                f"{r['max_rss_mb_end']:.1f}",
-                "",
-            ]),
-            file=sys.stderr,
-        )
-
-
-def parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--dataset", required=True, help="JSONL benchmark dataset")
-    p.add_argument("--routers", default="rules,prototype,semantic-router", help="comma-separated router names")
-    p.add_argument("--repeat", type=int, default=5, help="measured repetitions")
-    p.add_argument("--warmup", type=int, default=3, help="number of sample routes before measurement")
-    p.add_argument("--output", help="write combined JSON results here")
-    p.add_argument("--pretty", action="store_true", help="pretty-print JSON")
-    p.add_argument("--include-text", action="store_true", help="DANGEROUS: store raw prompt text in results")
-    p.add_argument("--include-detail", action="store_true", help="include router score details")
-    p.add_argument("--in-process", action="store_true", help="do not isolate routers in fresh processes")
-    p.add_argument("--child-router", help=argparse.SUPPRESS)
-
-    p.add_argument("--embedding-model", default=os.getenv("ROUTER_EMBEDDING_MODEL", "Qwen/Qwen3-Embedding-0.6B"))
-    p.add_argument("--embedding-threshold", type=float, default=0.35)
-    p.add_argument("--embedding-margin", type=float, default=0.03)
-    p.add_argument("--semantic-model", default=os.getenv("SEMANTIC_ROUTER_MODEL", "sentence-transformers/all-MiniLM-L6-v2"))
-    p.add_argument("--semantic-threshold", type=float, default=0.50)
-    p.add_argument("--modernbert-model", default=os.getenv("MODERNBERT_ROUTER_MODEL", ""))
-    p.add_argument("--modernbert-threshold", type=float, default=0.65)
-
-    p.add_argument("--routellm-strong-model", default=os.getenv("ROUTELLM_STRONG_MODEL", "gpt-4-1106-preview"))
-    p.add_argument("--routellm-weak-model", default=os.getenv("ROUTELLM_WEAK_MODEL", "mixtral-8x7b-instruct-v0.1"))
-    p.add_argument("--routellm-strong-label", choices=LABELS, default="deepseek")
-    p.add_argument("--routellm-weak-label", choices=LABELS, default="glm")
-    p.add_argument("--routellm-threshold", type=float, default=0.5)
-    p.add_argument(
-        "--external",
-        action="append",
-        help="custom adapter NAME='command'; command reads prompt on stdin and returns JSON",
-    )
-    return p
-
-
-def main(argv: list[str] | None = None) -> int:
-    argv = list(sys.argv[1:] if argv is None else argv)
-    p = parser()
-    args = p.parse_args(argv)
-    if args.repeat < 1:
-        p.error("--repeat must be >= 1")
-
-    if args.child_router:
-        result = benchmark_one(args.child_router, args)
-        print(json.dumps(result, separators=(",", ":"), default=str))
-        return 0
-
-    names = [x.strip() for x in args.routers.split(",") if x.strip()]
-    if not names:
-        p.error("--routers is empty")
-    if args.in_process:
-        doc = envelope([benchmark_one(name, args) for name in names], args)
-    else:
-        doc = run_isolated(names, args, argv)
-
-    print_summary(doc)
-    text = json.dumps(doc, indent=2 if args.pretty else None, default=str)
-    if args.output:
-        Path(args.output).write_text(text + "\n", encoding="utf-8")
-    else:
-        print(text)
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+LABELS=("deepseek","glm","hybrid","local_only","abstain"); CLOUD=("deepseek","glm","hybrid")
+PROTOTYPES={
+ "deepseek":["research technical evidence and synthesize tradeoffs","compare architectures and recommend a strategy","investigate libraries standards papers and approaches"],
+ "glm":["implement a feature edit files run tests","debug code and patch repository","refactor code using language server diagnostics"],
+ "hybrid":["research an approach then implement and test it","compare libraries select one integrate it and verify code"]}
+
+class Rules:
+ name="rules"
+ LOCAL_ONLY=re.compile(r"(?:\b(?:local[- ]only|do not (?:upload|send|share)|never (?:upload|send|share)|contains? (?:real |actual )?(?:pii|personal data|customer data)|my (?:passport|ssn|tfn|tax file number)|private key|seed phrase|production database dump)\b|\b(?:client secret|access token)\s*[:=])",re.I)
+ CODE=re.compile(r"\b(implement|code|fix|debug|refactor|compile|build|test|rename symbol|edit (?:the )?file|patch|pull request|commit|typescript|javascript|python|java|kotlin|gradle|maven|npm|pnpm|pytest|junit|stack trace|exception|terminal|shell command|cli|api endpoint|migration)\b",re.I)
+ RESEARCH=re.compile(r"\b(research|investigate|compare|evaluate|architecture|strategy|ideat|brainstorm|landscape|trade[- ]?off|design options|literature|survey|systems map|recommend|decision memo)\b",re.I)
+ def route(self,text):
+  if self.LOCAL_ONLY.search(text): return ("local_only",1.0,{"reason":"privacy/security rule"})
+  c=bool(self.CODE.search(text)); r=bool(self.RESEARCH.search(text))
+  if c and r:return ("hybrid",.90,{"reason":"code + research"})
+  if c:return ("glm",.93,{"reason":"coding/tool"})
+  if r:return ("deepseek",.93,{"reason":"research/design"})
+  return ("abstain",0.0,{"reason":"no deterministic signal"})
+
+class Prototype:
+ name="prototype"
+ def __init__(self,a):
+  from sentence_transformers import SentenceTransformer
+  self.m=SentenceTransformer(a.embedding_model,trust_remote_code=True); self.t=a.embedding_threshold; self.margin=a.embedding_margin
+  labs=[]; texts=[]
+  for lab,items in PROTOTYPES.items():
+   for x in items: labs.append(lab); texts.append(x)
+  v=self.m.encode(texts,normalize_embeddings=True); self.c={}
+  for lab in PROTOTYPES:
+   xs=[v[i] for i,x in enumerate(labs) if x==lab]; c=sum(xs)/len(xs); self.c[lab]=c/((c*c).sum()**.5)
+ def route(self,text):
+  if Rules.LOCAL_ONLY.search(text):return ("local_only",1.0,{})
+  v=self.m.encode([text],normalize_embeddings=True)[0]; s={k:float(v@c) for k,c in self.c.items()}; q=sorted(s.items(),key=lambda x:x[1],reverse=True)
+  if q[0][1]<self.t or q[0][1]-q[1][1]<self.margin:return ("abstain",max(0,min(1,(q[0][1]+1)/2)),{"scores":s})
+  return (q[0][0],max(0,min(1,(q[0][1]+1)/2)),{"scores":s})
+
+class Semantic:
+ name="semantic-router"
+ def __init__(self,a):
+  from semantic_router import Route
+  from semantic_router.routers import SemanticRouter
+  try: from semantic_router.encoders import HuggingFaceEncoder
+  except ImportError: from semantic_router.encoders.huggingface import HuggingFaceEncoder
+  try:e=HuggingFaceEncoder(name=a.semantic_model)
+  except TypeError:e=HuggingFaceEncoder(model_name=a.semantic_model)
+  rs=[Route(name=k,utterances=v) for k,v in PROTOTYPES.items()]
+  try:self.r=SemanticRouter(encoder=e,routes=rs,auto_sync="local")
+  except TypeError:self.r=SemanticRouter(encoder=e,routes=rs)
+  self.t=a.semantic_threshold
+ def route(self,text):
+  if Rules.LOCAL_ONLY.search(text):return ("local_only",1.0,{})
+  x=self.r(text); name=getattr(x,"name",None); score=getattr(x,"similarity_score",None)
+  if not name or (score is not None and score<self.t):return ("abstain",float(score or 0),{})
+  return (name,float(score) if score is not None else None,{})
+
+class ModernBERT:
+ name="modernbert"
+ def __init__(self,a):
+  from transformers import pipeline
+  if not a.modernbert_model:raise RuntimeError("--modernbert-model is required")
+  self.p=pipeline("text-classification",model=a.modernbert_model,tokenizer=a.modernbert_model,top_k=None); self.t=a.modernbert_threshold
+ def route(self,text):
+  if Rules.LOCAL_ONLY.search(text):return ("local_only",1.0,{})
+  rows=self.p(text)[0]; best=max(rows,key=lambda x:x["score"]); lab=best["label"].lower().replace("label_","")
+  if lab.isdigit(): lab={"0":"deepseek","1":"glm","2":"hybrid","3":"local_only","4":"abstain"}.get(lab,"abstain")
+  return (lab if best["score"]>=self.t else "abstain",float(best["score"]),{"scores":rows})
+
+class RouteLLM:
+ name="routellm"
+ def __init__(self,a):
+  from routellm.controller import Controller
+  self.c=Controller(routers=["mf"],strong_model=a.routellm_strong_model,weak_model=a.routellm_weak_model); self.a=a
+ def route(self,text):
+  if Rules.LOCAL_ONLY.search(text):return ("local_only",1.0,{})
+  model=self.c.route(prompt=text,router="mf",threshold=self.a.routellm_threshold)
+  lab=self.a.routellm_strong_label if model==self.a.routellm_strong_model else self.a.routellm_weak_label
+  return (lab,None,{"model":model})
+
+class External:
+ def __init__(self,name,cmd):self.name=name;self.cmd=cmd
+ def route(self,text):
+  if Rules.LOCAL_ONLY.search(text):return ("local_only",1.0,{})
+  p=subprocess.run(self.cmd,shell=True,input=text,text=True,capture_output=True,timeout=120)
+  if p.returncode:raise RuntimeError(p.stderr[-500:])
+  o=json.loads(p.stdout);return (o["label"],o.get("confidence"),o)
+
+def rss():
+ x=float(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss);return x/(1024*1024) if sys.platform=="darwin" else x/1024
+
+def load(p):
+ out=[]
+ for n,line in enumerate(Path(p).read_text().splitlines(),1):
+  if not line.strip() or line.lstrip().startswith("#"):continue
+  o=json.loads(line);lab=o["label"].lower()
+  if lab not in LABELS:raise SystemExit(f"{p}:{n}: bad label {lab}")
+  out.append((str(o["id"]),str(o["text"]),lab))
+ return out
+
+def make(name,a):
+ if name=="rules":return Rules()
+ if name=="prototype":return Prototype(a)
+ if name=="semantic-router":return Semantic(a)
+ if name=="modernbert":return ModernBERT(a)
+ if name=="routellm":return RouteLLM(a)
+ for x in a.external or []:
+  n,cmd=x.split("=",1)
+  if n==name:return External(n,cmd)
+ raise RuntimeError(f"unknown router {name}")
+
+def pct(xs,q):
+ s=sorted(xs);return s[min(len(s)-1,max(0,int((len(s)-1)*q)))] if s else 0
+
+def metrics(rows):
+ f=[]; per={}
+ for lab in LABELS:
+  tp=sum(r[2]==lab and r[3]==lab for r in rows); fp=sum(r[2]!=lab and r[3]==lab for r in rows); fn=sum(r[2]==lab and r[3]!=lab for r in rows)
+  if tp+fp+fn:
+   pr=tp/(tp+fp) if tp+fp else 0; rc=tp/(tp+fn) if tp+fn else 0; z=2*pr*rc/(pr+rc) if pr+rc else 0; f.append(z); per[lab]={"precision":pr,"recall":rc,"f1":z}
+ by={}
+ for r in rows:by.setdefault(r[0],set()).add(r[3])
+ lat=[r[5] for r in rows]
+ return {"accuracy":sum(r[2]==r[3] for r in rows)/len(rows),"macro_f1":statistics.mean(f),"abstain_rate":sum(r[3]=="abstain" for r in rows)/len(rows),"determinism_rate":sum(len(v)==1 for v in by.values())/len(by),"latency_ms":{"mean":statistics.mean(lat),"p50":pct(lat,.5),"p95":pct(lat,.95),"p99":pct(lat,.99)},"high_severity_errors":{"local_only_to_cloud":sum(r[2]=="local_only" and r[3] in CLOUD for r in rows),"glm_to_deepseek":sum(r[2]=="glm" and r[3]=="deepseek" for r in rows),"deepseek_to_glm":sum(r[2]=="deepseek" and r[3]=="glm" for r in rows)},"per_label":per}
+
+def bench(name,a):
+ data=load(a.dataset); before=rss(); t=time.perf_counter(); r=make(name,a); startup=(time.perf_counter()-t)*1000; loaded=rss()
+ for _,text,_ in data[:a.warmup]:r.route(text)
+ rows=[]; failures=[]
+ for rep in range(a.repeat):
+  for id,text,exp in data:
+   t=time.perf_counter_ns()
+   try:pred,conf,detail=r.route(text)
+   except Exception as e:pred,conf,detail="abstain",0,{"error":f"{type(e).__name__}: {e}"};failures.append({"id":id,"error":detail["error"]})
+   ms=(time.perf_counter_ns()-t)/1e6; rows.append((id,rep,exp,pred,conf,ms,text,detail))
+ result={"router":name,"dataset":str(Path(a.dataset).resolve()),"samples":len(data),"repeat":a.repeat,"startup_ms":startup,"max_rss_mb_before":before,"max_rss_mb_after_load":loaded,"max_rss_mb_end":rss(),"metrics":metrics(rows),"failures":failures[:100],"rows":[]}
+ for id,rep,exp,pred,conf,ms,text,detail in rows:
+  x={"id":id,"repeat":rep,"expected":exp,"predicted":pred,"confidence":conf,"latency_ms":ms,"text_sha256":hashlib.sha256(text.encode()).hexdigest()}
+  if a.include_text:x["text"]=text
+  if a.include_detail:x["detail"]=detail
+  result["rows"].append(x)
+ return result
+
+def args_parser():
+ p=argparse.ArgumentParser(description=__doc__);p.add_argument("--dataset",required=True);p.add_argument("--routers",default="rules,prototype,semantic-router");p.add_argument("--repeat",type=int,default=5);p.add_argument("--warmup",type=int,default=3);p.add_argument("--output");p.add_argument("--pretty",action="store_true");p.add_argument("--include-text",action="store_true");p.add_argument("--include-detail",action="store_true");p.add_argument("--child-router",help=argparse.SUPPRESS);p.add_argument("--embedding-model",default=os.getenv("ROUTER_EMBEDDING_MODEL","Qwen/Qwen3-Embedding-0.6B"));p.add_argument("--embedding-threshold",type=float,default=.35);p.add_argument("--embedding-margin",type=float,default=.03);p.add_argument("--semantic-model",default=os.getenv("SEMANTIC_ROUTER_MODEL","sentence-transformers/all-MiniLM-L6-v2"));p.add_argument("--semantic-threshold",type=float,default=.5);p.add_argument("--modernbert-model",default=os.getenv("MODERNBERT_ROUTER_MODEL",""));p.add_argument("--modernbert-threshold",type=float,default=.65);p.add_argument("--routellm-strong-model",default=os.getenv("ROUTELLM_STRONG_MODEL","gpt-4-1106-preview"));p.add_argument("--routellm-weak-model",default=os.getenv("ROUTELLM_WEAK_MODEL","mixtral-8x7b-instruct-v0.1"));p.add_argument("--routellm-strong-label",choices=LABELS,default="deepseek");p.add_argument("--routellm-weak-label",choices=LABELS,default="glm");p.add_argument("--routellm-threshold",type=float,default=.5);p.add_argument("--external",action="append");return p
+
+def main():
+ a=args_parser().parse_args()
+ if a.child_router:print(json.dumps(bench(a.child_router,a),separators=(",",":")));return
+ names=[x.strip() for x in a.routers.split(",") if x.strip()]; results=[]
+ for name in names:
+  cmd=[sys.executable,__file__,"--dataset",a.dataset,"--routers",name,"--repeat",str(a.repeat),"--warmup",str(a.warmup),"--child-router",name]
+  for opt in ("embedding_model","semantic_model","modernbert_model","routellm_strong_model","routellm_weak_model","routellm_strong_label","routellm_weak_label"):
+   v=getattr(a,opt);cmd += ["--"+opt.replace("_","-"),str(v)] if v else []
+  for opt in ("embedding_threshold","embedding_margin","semantic_threshold","modernbert_threshold","routellm_threshold"):cmd += ["--"+opt.replace("_","-"),str(getattr(a,opt))]
+  for x in a.external or []:cmd += ["--external",x]
+  if a.include_text:cmd.append("--include-text")
+  if a.include_detail:cmd.append("--include-detail")
+  p=subprocess.run(cmd,text=True,capture_output=True)
+  results.append(json.loads(p.stdout) if p.returncode==0 else {"router":name,"fatal_error":p.stderr[-1000:]})
+ doc={"schema_version":1,"generated_at_epoch":time.time(),"host":{"platform":platform.platform(),"python":sys.version.split()[0],"machine":platform.machine()},"privacy":{"raw_text_included":a.include_text,"note":"Prompt SHA-256 only by default; apply egress policy before third-party routers."},"results":results}
+ for r in results:
+  if "metrics" in r:
+   m=r["metrics"];print(f"{r['router']}\tacc={m['accuracy']:.3f}\tmacro-F1={m['macro_f1']:.3f}\tabstain={m['abstain_rate']:.3f}\tp50={m['latency_ms']['p50']:.2f}ms\tp95={m['latency_ms']['p95']:.2f}ms",file=sys.stderr)
+ text=json.dumps(doc,indent=2 if a.pretty else None);Path(a.output).write_text(text+"\n") if a.output else print(text)
+if __name__=="__main__":main()

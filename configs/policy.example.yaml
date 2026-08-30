@@ -1,89 +1,66 @@
-version: 1
+# SECURITY NOTE: this file expresses policy intent. It is NOT an enforcement
+# boundary by itself. Production must compile these rules into process,
+# filesystem, network, credential, egress and merge controls outside the LLM.
+version: 2
+policy_id: hermes-pi-uplift-default
+fail_closed: true
 
 roles:
   orchestrator:
-    tools:
-      - repo_read
-      - artifact_search
-      - session_search
-      - kanban
-      - delegate_research
-      - delegate_pi
-      - delegate_review
+    tools: [repo_read, artifact_search, session_search, kanban, delegate_research, delegate_pi, delegate_review]
     shell: none
     source_write: false
     git_merge: false
-    network: approved-model-gateways
-
+    network: approved_model_gateways
   coder:
-    shell: build-test
+    tools: [file_read, file_edit, lsp, build_test]
+    shell: build_test_only
     source_write: workspace_only
     git_merge: false
-    network: registries
-    tools:
-      - file_read
-      - file_edit
-      - lsp
-      - build_test
-
+    network: approved_registries
   reviewer:
-    shell: build-test
+    tools: [file_read, diff_read, lsp, build_test, security_scan]
+    shell: build_test_only
     source_write: false
     git_merge: false
     network: none
-    tools:
-      - file_read
-      - diff_read
-      - lsp
-      - build_test
-      - security_scan
 
 privacy:
   default_class: INTERNAL
   classes:
-    PUBLIC:
-      cloud: true
-      pii_action: redact
-      secret_action: block
-    INTERNAL:
-      cloud: true
-      pii_action: redact
-      secret_action: block
-    CONFIDENTIAL:
-      cloud: conditional
-      require_zdr: true
-      pii_action: tokenize
-      secret_action: block
-    LOCAL_ONLY:
-      cloud: false
-      pii_action: block
-      secret_action: block
-
-providers:
-  research.default:
-    model: deepseek-v4-flash
-    provider_sticky: true
-    fallbacks: []
-  coding.default:
-    model: glm-5.3-flash
-    provider_sticky: true
-    fallbacks: []
+    PUBLIC:       {cloud: true,        pii_action: redact,   secret_action: block}
+    INTERNAL:     {cloud: true,        pii_action: redact,   secret_action: block}
+    CONFIDENTIAL: {cloud: conditional, pii_action: tokenize, secret_action: block, require_zdr: true}
+    LOCAL_ONLY:   {cloud: false,       pii_action: block,    secret_action: block}
+  egress:
+    require_secret_scan: true
+    require_pii_scan: true
+    raw_prompt_logging: false
+    redact_before_persistence: true
 
 routing:
   abstain_below: 0.72
   minimum_margin: 0.12
   hybrid_enabled: true
-  local_only_overrides_model_router: true
+  privacy_gate_precedes_model_router: true
+  explicit_local_only_overrides_model_router: true
 
 worker:
-  worktree_root: "~/.hermes-uplift/worktrees"
+  worktree_root: ~/.hermes-uplift/worktrees
   temp_home: true
   inherit_environment: false
+  credential_broker: scoped
   deny_paths:
-    - "~/.ssh"
-    - "~/Library/Keychains"
-    - "~/Library/Application Support/*browser*"
+    - ~/.ssh
+    - ~/Library/Keychains
+    - ~/Library/Application Support/*browser*
   destructive_commands_require_gate: true
+  network_default: deny
+
+review:
+  implementer_may_approve_own_change: false
+  required_evidence: [diff, tests, lsp_diagnostics, pii_scan, secret_scan]
+  merge_requires_gate: true
 
 telemetry:
   raw_prompt_logging: false
