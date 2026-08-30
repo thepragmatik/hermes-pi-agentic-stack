@@ -1,129 +1,114 @@
-# Projected Savings Model
+# Savings and Accepted-Task Economics
 
-Baseline supplied: **3,888,531,773 logical tokens/month**.
+Planning baseline supplied: **3,888,531,773 logical tokens/month**.
 
-## Important distinction
+## Measure three different things
 
-Prompt caching often discounts cached input but does **not** remove it from logical token counts. Therefore there are two savings dimensions:
+Prompt/context work affects different metrics:
 
-- **token-volume reduction** from smaller prompts/specs/tool output/context;
-- **bill reduction and TTFT reduction** from cached repeated prefixes.
+1. **logical token volume** — smaller prompts/specs/tool output/context;
+2. **fresh vs cached input** — stable prefixes/provider affinity may lower input cost/TTFT even when logical tokens remain visible;
+3. **accepted-task economics** — retries, bad tool calls, queue time, reviewer/human intervention and escaped defects can dominate nominal token price.
 
-## Token-volume opportunity
+Do not collapse these into one “token savings” percentage.
 
-Reasonable targets to validate experimentally rather than promise:
+## Token-volume targets are hypotheses
 
-| Optimization maturity | Logical token reduction target | Monthly tokens avoided at baseline |
+Reasonable experiment bands, not promises:
+
+| Hypothesis | Logical token reduction | Monthly tokens avoided at supplied baseline |
 |---|---:|---:|
-| Conservative | 20% | ~777.7M |
-| Strong | 35% | ~1.361B |
-| Aggressive but plausible | 50% | ~1.944B |
-| Stretch | 55% | ~2.138B |
+| conservative | 20% | ~777.7M |
+| strong | 35% | ~1.361B |
+| aggressive | 50% | ~1.944B |
 
-The largest volume levers are Spec Kit profile selection, tool-schema separation, retrieval instead of artifact replay, bounded tool output and earlier compaction.
+The likely levers are Phase-20 prompt/skill/tool-schema slimming, T2 retrieval instead of artifact replay, Spec Kit profile selection, bounded diagnostics/tool output and compaction/recovery behaviour.
 
-## Cache opportunity
+## Cache economics
 
-If a fraction `H` of *input* tokens hits a cache priced at fraction `R` of fresh input, the input-cost multiplier before volume reduction is:
+If fraction `H` of input is served at cache-price fraction `R` of fresh input, the input-cost multiplier is:
 
 ```text
 (1 - H) + H * R
 ```
 
-Example: 70% input cache hit at 20% cached-input price => `0.30 + 0.70*0.20 = 0.44`, a **56% input-cost reduction** even though those cached tokens may still appear in usage.
+This is only an accounting identity. The actual `H` and `R` must come from the selected model/physical provider and measured OpenRouter/provider response metadata. Do not assume one provider's cache pricing applies after a provider switch.
 
-At a 10% cache-read price, 70% hits => 63% input-cost reduction.
+Provider churn can reduce nominal price while destroying cache affinity. Therefore record model + physical provider continuity alongside cache-read tokens.
 
-## Current model-price observations (snapshot, verify before purchasing)
+## OpenRouter-first price snapshot
 
-### GLM-5.3-Flash
+OpenRouter is the default external gateway, so the primary economic comparison is **model role + effective OpenRouter physical provider**, not a direct-provider rate card.
 
-Public 2026 launch listings show approximately:
+At the 2026-08-30 research snapshot, OpenRouter's comparison page lists approximately:
 
-- current promotion: **$0.075/M input, $0.015/M cached input, $0.25/M output**;
-- published list/reversion around **$0.15/M input, $0.03/M cached, $0.50/M output**.
+- `z-ai/glm-5.3-flash`: **$0.075/M input, $0.25/M output**;
+- `deepseek/deepseek-v4-flash-0731`: **$0.03/M input, $0.10/M output**.
 
-The promotion has a short published end date in September 2026, so use **list price** for steady-state planning.
+These are volatile headline rates and may differ by physical provider, cache behaviour, routing policy, time or future model revision. They are not budget constants and are deliberately not embedded into security/routing policy.
 
-### DeepSeek V4 Flash
+Use the live OpenRouter/Hermes model/provider view at execution time and persist the actual tested model/provider/rate snapshot in evidence.
 
-DeepSeek native pricing currently uses peak/off-peak bands and automatic context caching. For DeepSeek-V4-Flash-0731, the official rate card observed on 2026-08-30 is **$0.44/M fresh input, $0.014/M cache-hit input, $1.32/M output at peak**, with off-peak rates exactly half.
+## Why there is no hard monthly-dollar promise
 
-OpenRouter's current `deepseek/deepseek-v4-flash-0731` page is materially cheaper at **$0.03/M input, $0.007/M cache read and $0.10/M output** on the cheapest displayed route. This is an unusually large provider spread. Do not choose from price alone: benchmark exact provider, p95 TTFT/throughput, tool-call correctness, cache behavior, data policy, rate limits and failure/fallback semantics. Pin the serving provider for a session when cache affinity and determinism matter.
+The supplied baseline does not contain the real input/output/reasoning mix, cache-read share, provider distribution, retries or accepted-task outcomes. A single monthly-dollar number would therefore be false precision.
 
-## Worked cost examples
-
-Because the exact input/output split was not supplied, the examples assume **85% input / 15% output**, typical of a context-heavy agent loop but not a claim about your actual telemetry.
-
-### GLM-5.3-Flash at list price
-
-No input caching:
-
-- estimated monthly cost at 3.888B tokens: **~$787**.
-
-With 70% of input hitting cached-input price:
-
-- estimated cost: **~$510**.
-
-With the same 70% input-cache hit plus 40% logical-token reduction:
-
-- estimated cost: **~$306**.
-
-That is roughly **61% lower** than the uncached/unoptimized list-price example.
-
-### DeepSeek V4 Flash — current OpenRouter low-cost route
-
-Using the current OpenRouter 0731 headline route at $0.03/M fresh input, $0.007/M cache read and $0.10/M output, at the same 85/15 split:
-
-- no caching: **~$157/month**;
-- with 70% of input hitting the $0.007/M cache-read rate: **~$104/month**;
-- plus 40% logical-token reduction: **~$63/month**.
-
-For comparison, the current DeepSeek **native peak** card at $0.44/M fresh input and $1.32/M output is about **~$2,224/month** without cache on the same assumed token mix; running entirely off-peak halves that. Native may still win on official serving guarantees, concurrency or consistency, so the provider bake-off must measure accepted-task economics rather than blindly selecting the cheapest token rate.
-
-These surprisingly small OpenRouter totals are a consequence of extraordinary 2026 Flash-provider pricing, not an error in the token baseline. At these prices, engineering time and reliability can be worth more than the raw API bill.
-
-## Expected overall range
-
-A defensible target for the uplift is:
-
-- **25–50% logical token reduction** after Spec Kit/context/tool optimization;
-- **60–90% cache-hit rate on the stable repeated input prefix** for long sequential sessions, where the provider supports it and routing remains sticky;
-- **45–75% reduction in input-side spend/compute** versus an uncached, prompt-heavy baseline;
-- **30–65% overall API spend reduction** as an initial planning band when output/reasoning remains a meaningful share.
-
-An aggressive workload with very high repeated-input share can exceed this; a workload dominated by generated reasoning/output will save less.
-
-## More valuable than raw API dollars
-
-At Flash-model pricing, the economic win may come primarily from:
-
-- lower TTFT and faster agent loops;
-- fewer retries and invalid tool calls;
-- less workstation memory pressure;
-- higher concurrency before provider quotas;
-- reduced context-decay defects;
-- less human supervision;
-- predictable security behavior.
-
-Track **cost per accepted task**, **minutes per accepted task**, and **human interventions per accepted task** as the top-line measures.
-
-## Savings experiment
-
-For a statistically useful mission sample, record baseline and uplift variants. Stratify by research/coding/hybrid and task size. Do not compare different tasks.
-
-Report:
+Compute actual cost from captured telemetry:
 
 ```text
-logical input/output tokens
-fresh vs cached input
-provider/model
-TTFT and total wall time
-number of model requests
-number of tool calls/retries
-accepted outcome
-reviewer interventions
-escaped defects within observation window
+cost =
+  fresh_input_tokens * fresh_input_rate
++ cached_input_tokens * cached_input_rate_if_applicable
++ output_or_reasoning_tokens * output_rate
++ retry/fallback costs
 ```
 
-Calculate bootstrap confidence intervals for the median/mean cost and time deltas. Promote the uplift only if quality is non-inferior.
+Then compare **matched tasks**, not different workloads.
+
+## Direct provider economics are a challenger
+
+Direct Z.ai/DeepSeek APIs are not the default architecture. Periodically run matched benchmarks only if useful and include the operational cost of:
+
+- another credential;
+- another client/integration path;
+- different cache semantics;
+- different privacy/data controls;
+- rate-limit/failover logic;
+- monitoring/reconciliation complexity.
+
+A direct provider is promoted only when its material advantage on accepted-task cost/latency/reliability/privacy justifies that added surface.
+
+## Phase-aligned economic evidence
+
+### Phase 10 — baseline
+Record current logical/fresh/cached tokens, TTFT/wall time, provider/model, tool calls/retries, human intervention and accepted outcome.
+
+### Phase 20 — first self-benefit
+Measure hot-prefix size, skill/tool-schema tokens, T1 size/update count, T2 bytes produced vs loaded, LCM compaction/recovery and Mnemosyne injection. This is where token/context savings should first become real.
+
+### Phase 30 — routing shadow
+Record router decision cost/RSS/latency, route switches, hypothetical role selection and OpenRouter model/physical-provider cache continuity. Shadow predictions do not get credited as savings until authority is promoted.
+
+### Phase 40/50 — enforcement + Pi
+Include security scan/containment overhead, worker startup, retries, test/LSP evidence and invalid/blocked attempts. A security control that prevents an unsafe cheap request is a success even if it increases nominal cost.
+
+### Phase 60 — promotion
+Compare the whole system on matched representative tasks and bootstrap confidence intervals for accepted-task quality, cost and time.
+
+## Top-line metrics
+
+Promote on:
+
+- accepted-task quality/success;
+- **cost per accepted task**;
+- **minutes per accepted task**;
+- retries/rework per accepted task;
+- human interventions per accepted task;
+- fresh/cached/logical token mix;
+- TTFT/wall time;
+- cache/provider continuity;
+- memory/context/tool-schema overhead;
+- workstation resource pressure;
+- security/privacy incidents (mandatory zero for prohibited paths).
+
+A token-saving design that increases rework, stale-memory influence, tool failures or human recovery has failed.
