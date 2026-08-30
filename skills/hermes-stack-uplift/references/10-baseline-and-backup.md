@@ -1,25 +1,21 @@
 # Phase 10 — Baseline, Backup and Optional Legacy Salvage
 
-Snapshot current Hermes/Pi installs and configuration. Preserve the previous Hermes home and `state.db` as immutable evidence; never attach or migrate the old database into the clean production profile.
+Use the single configured OpenRouter bootstrap model; do not introduce intelligent multi-model routing yet.
 
-Capture representative mission telemetry: prompt/input/output/cache tokens, TTFT, retries, tool errors, accepted-task success, human intervention and workstation memory pressure. Create a rollback tag/checkpoint.
+Snapshot current Hermes/Pi/profile configuration and preserve prior Hermes/LCM/Mnemosyne state as immutable evidence. Never attach or migrate an old database into the clean production profile.
+
+Capture representative before-state telemetry: total/fresh/cached tokens, prompt/tool/skill/project-context contribution, TTFT/wall time, retries/tool errors, accepted-task quality, human intervention, provider continuity where observable, and workstation memory pressure. Do not optimize during baseline collection.
+
+Create/check a rollback checkpoint and prove restore instructions are usable.
 
 ## Legacy-state decision
 
-Legacy salvage is **optional**. Default to `SKIPPED` when current repositories/ADRs already contain the truth, old sessions are known to be noisy/context-corrupted, privacy sanitization is ambiguous, or rediscovery is cheaper than curation.
+Legacy salvage is optional and defaults to `SKIPPED`. If historical knowledge is genuinely needed, follow `docs/agentic-uplift/research/legacy-state-curation.md`: immutable original, disposable copy, local discovery, selected prompts-first export, independent secret/typed-PII sanitization, separate raw/sanitized hashes, provenance-bearing extraction and adversarial current-truth reconciliation.
 
-If historical context is genuinely valuable, follow `docs/agentic-uplift/research/legacy-state-curation.md`:
+Sanitizer uncertainty or missing provenance means `BLOCKED`/`SKIPPED`, never cloud fallback. The clean uplift must work without salvaged context.
 
-1. freeze and checksum the original old Hermes state;
-2. work only from a disposable copy;
-3. discover relevant sessions locally before export;
-4. prefer selected `--only user-prompts` exports first;
-5. treat Hermes `--redact` as secret-scrubbing defense in depth, not a complete PII boundary;
-6. independently scan/sanitize locally before a clean Hermes agent sees candidate content;
-7. extract only durable facts/decisions/preferences/risks/procedures with provenance;
-8. adversarially compare every candidate to current authoritative project truth;
-9. admit accepted knowledge to the correct durable surface (ADR/doc, compact `USER.md`, skill/script, issue), not a bulk `MEMORY.md` dump.
+**Gate:** baseline is measurable, backup/checksum/restore evidence is durable, and any salvage is independently safe.
 
-Sanitizer uncertainty or missing provenance produces `BLOCKED` or `SKIPPED`; it never triggers cloud fallback. The uplift must remain fully operable with no salvaged context.
+**Adoption:** baseline only; no optimization yet. Restart only if backup tooling required quiescing a component.
 
-Evidence: backup/archive location, SHA-256 manifest, baseline metrics, rollback rehearsal, salvage status (`SKIPPED`, `DISCOVERY_ONLY`, `CANDIDATES_REVIEWED`, or `ADMITTED`), selection manifest if used, sanitizer evidence, and provenance/truth-check records for every admitted item.
+Persist evidence/state, send the required phase-boundary report, then stop before Phase 20.
