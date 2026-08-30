@@ -1,0 +1,91 @@
+version: 1
+
+roles:
+  orchestrator:
+    tools:
+      - repo_read
+      - artifact_search
+      - session_search
+      - kanban
+      - delegate_research
+      - delegate_pi
+      - delegate_review
+    shell: none
+    source_write: false
+    git_merge: false
+    network: approved-model-gateways
+
+  coder:
+    shell: build-test
+    source_write: workspace_only
+    git_merge: false
+    network: registries
+    tools:
+      - file_read
+      - file_edit
+      - lsp
+      - build_test
+
+  reviewer:
+    shell: build-test
+    source_write: false
+    git_merge: false
+    network: none
+    tools:
+      - file_read
+      - diff_read
+      - lsp
+      - build_test
+      - security_scan
+
+privacy:
+  default_class: INTERNAL
+  classes:
+    PUBLIC:
+      cloud: true
+      pii_action: redact
+      secret_action: block
+    INTERNAL:
+      cloud: true
+      pii_action: redact
+      secret_action: block
+    CONFIDENTIAL:
+      cloud: conditional
+      require_zdr: true
+      pii_action: tokenize
+      secret_action: block
+    LOCAL_ONLY:
+      cloud: false
+      pii_action: block
+      secret_action: block
+
+providers:
+  research.default:
+    model: deepseek-v4-flash
+    provider_sticky: true
+    fallbacks: []
+  coding.default:
+    model: glm-5.3-flash
+    provider_sticky: true
+    fallbacks: []
+
+routing:
+  abstain_below: 0.72
+  minimum_margin: 0.12
+  hybrid_enabled: true
+  local_only_overrides_model_router: true
+
+worker:
+  worktree_root: "~/.hermes-uplift/worktrees"
+  temp_home: true
+  inherit_environment: false
+  deny_paths:
+    - "~/.ssh"
+    - "~/Library/Keychains"
+    - "~/Library/Application Support/*browser*"
+  destructive_commands_require_gate: true
+
+telemetry:
+  raw_prompt_logging: false
+  redact_before_write: true
+  retention_days: 30
