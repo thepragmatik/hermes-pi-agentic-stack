@@ -1,6 +1,6 @@
 # Research Sources — snapshot 2026-08-30
 
-Primary/authoritative sources are preferred; volatile model/provider details must be re-verified before implementation.
+Primary/authoritative sources are preferred; volatile model/provider/plugin details must be re-verified before implementation.
 
 ## Hermes / sessions / skills / context
 - https://github.com/NousResearch/hermes-agent
@@ -9,6 +9,10 @@ Primary/authoritative sources are preferred; volatile model/provider details mus
 - https://hermes-agent.nousresearch.com/docs/developer-guide/session-storage
 - https://hermes-agent.nousresearch.com/docs/developer-guide/prompt-assembly
 - https://hermes-agent.nousresearch.com/docs/developer-guide/context-compression-and-caching
+- https://hermes-agent.nousresearch.com/docs/developer-guide/context-engine-plugin
+- https://hermes-agent.nousresearch.com/docs/developer-guide/memory-provider-plugin/
+- https://hermes-agent.nousresearch.com/docs/user-guide/features/memory-providers/
+- https://hermes-agent.nousresearch.com/docs/user-guide/features/tool-search
 - https://hermes-agent.nousresearch.com/docs/user-guide/features/memory/
 - https://hermes-agent.nousresearch.com/docs/user-guide/features/built-in-plugins
 - https://hermes-agent.nousresearch.com/docs/user-guide/features/kanban
@@ -16,6 +20,16 @@ Primary/authoritative sources are preferred; volatile model/provider details mus
 - https://hermes-agent.nousresearch.com/docs/reference/tools-reference/
 - https://hermes-agent.nousresearch.com/docs/user-guide/features/curator
 - https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills
+
+## Local context / memory
+- https://github.com/stephenschoettler/hermes-lcm
+- https://github.com/stephenschoettler/hermes-lcm/releases
+- https://github.com/stephenschoettler/hermes-lcm/blob/main/docs/operator-guide.md
+- https://github.com/mnemosyne-oss/mnemosyne
+- https://github.com/mnemosyne-oss/mnemosyne/releases
+- https://github.com/mnemosyne-oss/mnemosyne/blob/main/docs/hermes-integration.md
+- https://github.com/mnemosyne-oss/mnemosyne/blob/main/docs/api/configuration.mdx
+- https://github.com/mnemosyne-oss/mnemosyne/blob/main/docs/hygiene.md
 
 ## Pi / sandboxing / LSP
 - https://github.com/earendil-works/pi
