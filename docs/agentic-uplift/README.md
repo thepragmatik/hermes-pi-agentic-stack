@@ -8,49 +8,65 @@ This directory is the canonical research/design source behind the human Pages ma
 2. `fresh-install-bootstrap.md` — verified fresh-install/manual foundation.
 3. `../../UPLIFT_MISSION.md` — exact staged mission handed to Hermes.
 4. `agent-execution-contract.md` — durable state/evidence/restart authority.
-5. `implementation-playbook.md` — the single canonical `00 -> 70` lifecycle.
+5. `implementation-playbook.md` — single canonical `00 -> 70` lifecycle.
 6. `../../skills/hermes-stack-uplift/SKILL.md` — progressive-disclosure phase map; load only the current slice.
 7. `architecture.md` / `architecture.graph.json` — deterministic architecture and trust boundaries.
-8. `research/openrouter-routing.md` — privacy/mission/model/provider responsibility split.
-9. `local-context-memory-setup.md` — fixed LCM + Mnemosyne installation/config/verification/backup/rollback path.
-10. `artifact-usability-review.md` — what is actually ready vs merely designed.
-11. `adversarial-review.md` — failure catalogue and kill criteria.
-12. `validation-report.md` — executed checks and remaining evidence gaps.
-13. `SOURCES.md` — current primary/upstream sources.
+8. `../../protocols/routing-mission.schema.json` + `routing-decision.schema.json` — stable internal routing interface.
+9. `research/local-routing-models.md` — broad routing/framework assessment and bake-off.
+10. `research/router-training-control.md` — outcome learning and ModernBERT graduation rules.
+11. `research/openrouter-routing.md` — gateway/provider ownership and effective-policy requirements.
+12. `local-context-memory-setup.md` — fixed LCM + Mnemosyne setup/verification/backup/rollback.
+13. `artifact-usability-review.md`, `adversarial-review.md`, `validation-report.md` — readiness, failure catalogue and executed evidence.
+14. `SOURCES.md` — current primary/upstream sources.
 
 ## Executive topology
 
 ```text
-mission
- -> deterministic local privacy/security/policy
- -> local mission router
- -> model-role binding
- -> OpenRouter model ID
- -> policy-compatible physical provider
- -> {research/review | typed Pi coding worker}
- -> evidence/review/merge gate
+mission + durable state
+ -> Tier 0 deterministic eligibility/security
+ -> Tier 1 multi-label mission profile
+ -> Tier 2 bounded workflow/agent selection
+ -> Tier 3 model-role/model optimization
+ -> Tier 4 OpenRouter-first provider execution
+ -> evidence/outcomes -> offline router research/training
 ```
 
-**OpenRouter is the default external inference gateway.** It is downstream of local privacy/security and mission/model decisions. OpenRouter Auto may be benchmarked for bounded bootstrap/shadow/fallback use but never becomes the privacy boundary or final mission classifier. Direct Z.ai/DeepSeek access remains a measured exception only.
+Research and coding are important first-class task families, not the complete routing ontology. A mission such as `research -> architecture_design -> coding_implementation -> testing -> review` remains an ordered workflow instead of becoming `hybrid`.
 
-Bootstrap avoids the router paradox: a clean narrow Hermes profile uses one verified GLM-Flash-class OpenRouter model through Phases 00–20, then Phase 30 builds the local router in shadow mode. Exact model IDs are runtime config/lock evidence, not permanent architecture constants.
+**OpenRouter is the default external inference gateway.** It is downstream of local eligibility/privacy/security and workflow/model decisions. OpenRouter Auto may be benchmarked for bounded bootstrap/shadow/teacher/fallback use only after Tier-0 approval; it never becomes the privacy boundary. Direct provider/local adapters remain measured exceptions behind the same contract.
 
-## One lifecycle and six adoption checkpoints
+## Router progression
+
+Bootstrap avoids the router paradox: a clean narrow Hermes profile uses one verified OpenRouter model through Phases 00–20. Phase 30 first builds **rules + explicit state + abstention** and uses that only in shadow. Then the common benchmark may shadow minimal embeddings, Aurelio Semantic Router, vLLM Semantic Router, LLMRouter experiments, RouteLLM-style Tier-3 scoring and OpenRouter Auto. ModernBERT remains deferred until representative redacted outcomes justify it.
+
+Current strategic posture:
+
+- **initial router:** deterministic eligibility + rules/state + abstention;
+- **lightweight semantic challenger:** Aurelio Semantic Router / small embedding path;
+- **strongest medium-term adoption candidate:** vLLM Semantic Router behind our interface, if its measured benefit earns its heavier runtime;
+- **research plane:** LLMRouter and RouteLLM experiments/training;
+- **future learned model:** multi-label/multi-head ModernBERT only after stable ontology, temporal holdout and simpler-baseline plateau.
+
+Prefer upstream/config/adapters over a fork. A fork requires a materially valuable unmet requirement, failed/unavailable upstream path, small isolated patch set, conformance/security tests, rebase capacity and measured benefit greater than maintenance cost.
+
+## One lifecycle and adoption checkpoints
 
 ```text
 00 preflight
 10 baseline + backup
-20 context + skills + LCM/Mnemosyne -> Checkpoint A fresh optimized session
-30 local router/OpenRouter roles       -> Checkpoint B shadow
-40 security/policy enforcement         -> Checkpoint C human authority gate
-50 Hermes->Pi + LSP                    -> Checkpoint D recreate workers
-60 evaluation/promotion                -> Checkpoint E multi-role operation
-70 upgrades/rollback                   -> Checkpoint F recurring canary cycle
+20 context + skills + LCM/Mnemosyne -> A0 dogfood + A fresh optimized session
+30 routing contracts/simple router/bake-off -> B shadow only
+40 security/policy enforcement             -> C human authority gate
+50 Hermes->Pi + LSP + routing provenance   -> D recreate workers
+60 evaluation/promotion                    -> E ordinary multi-role/workflow operation
+70 upgrades/rollback                       -> F recurring canary cycle
 ```
 
-Phase 20 is the first self-benefit boundary. Once its acceptance gate passes, Hermes reports **“The first token/context improvements are ready to use.”** and closes the pre-optimization session before Phase 30.
+Phase 20 remains the first self-benefit boundary. Phase 30 does not block the uplift on advanced routing infrastructure.
 
-Every phase persists its evidence and v1.1 `boundary_report`, sends the same concise progress report to the human, and stops before the next phase.
+## Hard routing facts vs learned signals
+
+Deterministic/runtime-derived facts include privacy class, `LOCAL_ONLY`, cloud eligibility, secret/PII policy, available tools/capabilities, required modality, actual context-window requirement, network/sandbox permissions and ZDR requirements. Learned/framework signals may infer task families, domain, complexity, uncertainty, tool/reasoning intensity and likely workflow—but cannot override hard facts.
 
 ## Context/memory ownership
 
@@ -64,10 +80,8 @@ Git/ADR/spec = project truth
 Kanban       = optional operational projection
 ```
 
-Built-in MEMORY/USER are disabled in the selected baseline to avoid duplicate durable-memory authority. Diagnostic one-component profiles may isolate faults but do not replace LCM + Mnemosyne autonomously.
-
 ## Maturity
 
-The package is **designed/execution-ready for controlled Phase-00 startup**, not yet an unattended production self-uplift system. Repository/site/router fixtures are smoke-tested where stated; target-Mac runtime qualification, OpenRouter effective-policy evidence, external security/Pi containment and production promotion remain P0 gates.
+The package is **designed/execution-ready for controlled Phase-00 startup**, not yet an unattended production self-uplift system. Routing contracts and benchmark are designed/prototype; deterministic rules fixture is smoke-tested; all advanced router candidates remain researched/designed or future shadow candidates until target-Mac/representative mission evidence exists.
 
 Use only the maturity labels defined in the canonical playbook: `researched`, `designed`, `prototype`, `smoke-tested`, `target-Mac-validated`, `shadow`, `canary`, `production-approved`.
