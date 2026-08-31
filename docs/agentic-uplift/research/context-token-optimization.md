@@ -1,180 +1,112 @@
 # Hermes/Pi Context, Prefill and Token Optimization
 
-## First principle: separate four different costs
+## First principle: separate costs
 
 1. **Logical input tokens** — what the harness serializes/sends.
 2. **Billable fresh input** — provider tokens that miss prompt cache.
-3. **Billable cached input** — often strongly discounted but still reported as tokens.
-4. **Prefill/TTFT compute** — latency cost of processing uncached prefixes.
+3. **Billable cached input** — discounted but still visible tokens.
+4. **Prefill/TTFT compute** — latency cost of uncached prefixes.
+5. **Workflow/model/provider switch cost** — lost cache/context continuity, transfer/summarization, new tool schemas and behavior/retry risk.
 
-A provider cache can dramatically reduce #2 and #4 while your telemetry still shows a large #1. Spec/context pruning reduces all four. This distinction is essential when evaluating whether an optimization worked.
+A provider cache can reduce billable fresh input/TTFT while telemetry still shows large logical input. Context pruning reduces more dimensions. Routing should therefore preserve useful session/stage affinity when its measured benefit exceeds staying on a degraded model/provider.
 
-## Current Hermes behavior that should be preserved
+## Current Hermes behavior worth preserving
 
-Recent Hermes documentation/source indicates several good modern choices:
-
-- USER/MEMORY-style persistent context can be frozen at session start so the system prefix remains stable.
-- Context-file discovery is bounded and security-scanned.
-- The context engine can prune old tool output before expensive summarization.
-- Lean compaction keeps a small tail and searchable historical material rather than replaying everything.
-- Compression thresholds can be model-specific.
-- In-place compaction allows old material to remain discoverable through session search rather than injected on every turn.
-
-A clean current install should therefore be tuned before replacing its context engine.
+A clean current install should be measured/tuned before replacing its context engine. Preserve bounded context discovery, security scanning, tool-output pruning, searchable history, model-specific compression and stable session-prefix behavior where supported.
 
 ## Prompt layout: optimize for cacheable prefix
 
-Use this conceptual order for model calls:
-
 ```text
 [stable provider/model system framing]
-[stable security/behavioral policy]
+[stable behavioral invariants; security authority lives outside prompt]
 [stable minimal tool definitions]
 [stable compact project identity/invariants]
-[session-start durable-memory snapshot]
 ---------------- CACHE STABILITY BOUNDARY ----------------
-[mission/task contract]
+[mission/routing stage contract]
 [small retrieved spec/code/context slices]
 [conversation/tool events]
 [current tool result]
 [user turn]
 ```
 
-Do not put timestamps, random nonces, mutable counters, dynamic directory listings or telemetry before stable material. If a request identifier is needed for tracing, put it in metadata/headers where possible or after the reusable prefix.
+Keep volatile IDs/timestamps/telemetry out of the stable prefix where possible. The routing decision/durable state should carry traceability rather than rewriting the full model prompt every turn.
 
-## SOUL.md / USER.md / project context design
+## SOUL / durable memory / project context
 
-### SOUL.md
-
-Keep personality and universal working style only. **Do not put security policy, role permissions, provider routing logic or procedural manuals here.** Security needs code enforcement; procedural knowledge belongs in skills/explicit task artifacts.
-
-Target: small enough that humans can audit the entire file quickly. Remove duplicated mission rules already represented in tools/policy.
-
-### USER.md / durable memory
-
-Persist stable preferences/facts only. Avoid accumulating temporary mission state or imperative instructions. Session-specific requirements belong in the mission contract/spec.
-
-### Project context (`HERMES.md`, `.hermes.md`, AGENTS.md etc.)
-
-Keep an index and invariants, not a repository encyclopedia. Example:
-
-```markdown
-# Project context
-- Architecture map: docs/architecture/index.md
-- Build/test commands: docs/dev/commands.md
-- Security constraints: policy/security.yaml (enforced by launcher)
-- Coding conventions: docs/dev/style.md
-- Current feature specs: specs/ (retrieve only active feature)
-- Never assume generated files are authoritative; regenerate from source.
-```
-
-Retrieval should materialize the relevant referenced sections only when a task needs them.
+SOUL contains personality/universal working style, not security policy, permissions, provider routing or the operating manual. Durable memory stores stable accepted facts/preferences, not mission execution state. Project context is an index/invariants surface; large research/spec/code artifacts remain retrievable T2 material.
 
 ## Tool-schema minimization
 
-Agentic harnesses often pay more for tool definitions than expected because the same schemas are repeated in every model request.
+- Hermes orchestrator sees only coordination/read/delegate/review capabilities needed for the current workflow stage.
+- Pi sees only task-scoped code/LSP/test tools.
+- Do not advertise every MCP/plugin/tool to every stage.
+- Progressive disclosure/Tool Search should keep niche schemas cold.
+- Required tools are a deterministic Tier-0 routing fact; semantic inference does not invent unavailable tools.
+- Measure schema tokens and cold-tool lookup cost.
 
-- In orchestrator mode expose only coordination/read/delegate tools.
-- In Pi coding mode expose only task-scoped code/LSP/test tools.
-- Do not advertise every MCP server to every turn.
-- Lazy-register niche tools after a classifier or explicit user intent requests them.
-- Prefer compact typed schemas and stable descriptions.
-- Measure prompt-size before/after each toolset change.
+## Provider-side caching and routing
 
-This also improves zero-trust behavior: fewer tools means fewer accidental capabilities.
+OpenRouter can benefit from upstream prompt caching, but provider/model switching can destroy locality. Treat `cache_affinity`/`session_affinity` as explicit routing optimization fields, not an unconditional rule.
 
-## Provider-side caching strategy
+For long stages/sessions:
 
-### DeepSeek V4 Flash
+- keep stable model/provider/session identity when the actual integration proves it and the route remains healthy/eligible;
+- benchmark provider `price`, `throughput`, `latency` and explicit order/allowlist policies against accepted-mission outcomes;
+- measure cached-token share and TTFT before crediting cache economics;
+- record every model/provider/workflow switch and reason;
+- permit reliability/failure escape only to another Tier-0/Tier-3 eligible route.
 
-DeepSeek documents automatic disk/context caching for repeated prefixes. Exact overlapping prefixes are the key. Therefore:
+Raw OpenRouter `session_id`/sticky behavior or ZDR/provider controls are not assumed available through Hermes merely because OpenRouter supports them. Prove forwarding/account policy/audited adapter behavior first.
 
-- pin model + provider for a session;
-- keep stable prefix exact;
-- append new turns rather than rewriting earlier blocks;
-- avoid reserializing semantically identical JSON/tool schemas with different key/order/whitespace if the API cache is byte/token-prefix sensitive;
-- measure cached-token counters rather than assuming hits.
+A nominally cheaper endpoint can be more expensive if it destroys a warm prefix or raises retry/tool-failure rate.
 
-Native DeepSeek uses peak/off-peak pricing and very cheap cached input relative to fresh input. This creates a strong incentive to stabilize prefixes even if OpenRouter is used for other reasons.
+## Local model caching
 
-### GLM-5.3-Flash / Z.ai
+MLX-LM remains a sensible Apple-Silicon local-serving challenger where local model/reviewer use earns its memory footprint. Validate prompt/KV cache, quantization and persistence against the exact deployed version.
 
-Current Z.ai pricing infrastructure supports cached-input billing in its model families; 5.3-Flash launch pricing is especially aggressive. Treat launch discounts as temporary. The architecture should remain viable at list price.
-
-### OpenRouter
-
-OpenRouter can automatically benefit from upstream prompt caching and exposes cached-token accounting, but provider routing can hurt cache locality. For long agent loops:
-
-- pin or strongly prefer a provider after the first successful request;
-- disable/avoid routing modes that freely switch providers if cache reuse matters more than tiny per-request price differences;
-- benchmark `price`, `throughput`, `latency` routing and explicit provider order separately;
-- include cache-hit ratio and p95 TTFT in the provider score, not just $/M token.
-
-A nominally cheaper endpoint can be more expensive/slower if it destroys a 90% cache-hit prefix.
-
-## Local model prompt/KV caching
-
-### MLX-LM
-
-Use MLX-LM as the first local serving experiment on Apple Silicon. Relevant capabilities include saved/loaded prompt caches, server prefix-cache behavior, rotating/bounded KV caches, KV quantization and speculative decoding. For a local reviewer that repeatedly sees the same policy/repository prefix, persisted prompt caches can make a material difference.
-
-### vLLM-Metal
-
-Apple Silicon support is provided through the vLLM-Metal path rather than assuming the standard CUDA vLLM stack. Validate each feature needed (prefix cache, quantization, offload/tiering) against the exact deployed release. Do not copy Linux GPU flags blindly into a macOS runbook.
+Do not assume standard CUDA-vLLM runtime behavior on macOS; vLLM Semantic Router as a routing control-plane candidate is a separate evaluation from local vLLM inference serving.
 
 ## Context compaction policy
 
-Use compaction as a *loss-managed archival process*, not just summarization.
+Use compaction as loss-managed archival:
 
-Recommended state classes:
+- `must_preserve`: mission goal, acceptance, authoritative Tier-0 constraints, current routing stage, blockers;
+- `active`: current plan/files/failures/tests;
+- `retrievable`: older tool/research/evidence with pointers;
+- `discardable`: duplicate acknowledgements/listings/verbose superseded output.
 
-- `must_preserve`: mission goal, non-negotiable constraints, acceptance criteria, security/privacy class, unresolved blockers;
-- `active`: current implementation plan, open files, current failures, latest test results;
-- `retrievable`: earlier tool outputs, research evidence, superseded attempts, detailed logs;
-- `discardable`: duplicated acknowledgements, old directory listings, redundant test successes, verbose command output.
-
-At compaction:
-
-1. deterministically extract/refresh the `must_preserve` state object;
-2. prune discardable and superseded tool output;
-3. summarize active state with source pointers;
-4. archive retrievable material in session history/artifacts;
-5. verify the new context still contains mission + acceptance + security class.
-
-Add a post-compaction invariant test. Do not trust a free-form summary to remember security constraints.
+At compaction, refresh deterministic `must_preserve` state first, archive retrievable evidence, then verify mission + acceptance + security/eligibility + current stage survived. Free-form summary is not security/state authority.
 
 ## Pi context policy
 
-A Pi worker should be **ephemeral per coding task** by default. It receives:
+A Pi worker is ephemeral per bounded coding/diagnostic/test stage by default. It receives:
 
-- a typed task envelope;
-- a small project invariant/index file;
-- relevant spec slices;
-- a worktree path;
-- explicit tool/LSP capabilities.
+- Pi task envelope v2.2 with `mission_id`, `stage_id`, workflow and routing-decision digest;
+- small project invariants/index;
+- relevant spec/context slices;
+- isolated worktree;
+- explicit tools/LSP/capabilities.
 
-It should *not* inherit the full Hermes conversation or durable memory. Return a structured handoff containing patch/diff, tests, diagnostics, assumptions and unresolved items. This prevents parent-context bloat and child mission drift.
+It does not inherit the full Hermes conversation or durable memory. Return compact typed diff/tests/diagnostics/assumptions/evidence.
 
 ## Spec artifacts: pointers over replay
 
-Spec Kit generates useful durable Markdown. The expensive pattern is replaying every artifact on every loop. Treat specs like a queryable local knowledge base:
+Keep feature indexes and active acceptance criteria compact; retrieve only the stage-relevant spec/research sections. Completed rationale moves to durable ADR/change record rather than remaining hot prompt context.
 
-- active feature index: <= ~1–2k tokens;
-- retrieve headings/sections by task ID;
-- cache stable spec digest and acceptance criteria in the session prefix;
-- keep research/data-model/contracts on disk and load on demand;
-- when a task is complete, compact its detailed rationale into an ADR/change record, not the active prompt.
+## Routing-aware measurement protocol
 
-## Measurement protocol
-
-For every representative mission, log:
+For representative missions, persist redacted structured telemetry such as:
 
 ```json
 {
-  "mission_class": "coding",
+  "mission_id_hash": "...",
+  "task_families": ["debugging_diagnosis", "coding_implementation", "testing"],
+  "workflow": "multi_stage",
+  "stage_id": "implement-fix",
+  "router": "rules",
+  "model_role": "coding.default",
   "model": "...",
-  "provider": "...",
-  "request": 12,
+  "provider": "unknown-or-observed",
   "input_tokens": 12345,
   "cached_input_tokens": 10000,
   "output_tokens": 800,
@@ -184,20 +116,24 @@ For every representative mission, log:
   "context_file_tokens_est": 1600,
   "spec_tokens_est": 2200,
   "compaction_count": 1,
+  "workflow_switches": 1,
+  "model_switches": 0,
+  "provider_switches": 0,
+  "retries": 0,
   "accepted": true
 }
 ```
 
-Redact before persistence. Never store raw PII merely to optimize tokens.
+Do not persist sensitive raw prompts merely to optimize routing/context. Training samples are separately sampled, redacted and governed.
 
 ## High-leverage experiments in order
 
 1. Remove duplicated policy/procedural prompt content.
-2. Split orchestrator/coder toolsets.
-3. Introduce Spec Kit mission profiles and on-demand artifact retrieval.
-4. Stabilize provider/model/system prefix and pin provider per session.
-5. Tune Hermes compression thresholds and lean mode using accepted-task quality.
-6. Move verbose tool outputs to artifacts with short indexed summaries.
-7. Only then evaluate alternate context engines or local long-context models.
+2. Split orchestrator/Pi/reviewer tool surfaces by workflow stage.
+3. Use Spec Kit/T2 on-demand retrieval.
+4. Stabilize cacheable prefixes and measure real session/model/provider affinity.
+5. Tune LCM/compaction using accepted-mission quality.
+6. Move verbose outputs to indexed artifacts.
+7. In Phase 30, compare simple routing against semantic/advanced challengers while including switch/cache costs.
 
-The first four are lower-risk and often deliver most of the savings.
+The production router does not need to be sophisticated to exploit these savings; the simplest router that preserves correct capabilities/workflows and most accepted-mission economics should win.
