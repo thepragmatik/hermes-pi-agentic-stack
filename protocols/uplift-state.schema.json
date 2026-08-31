@@ -26,6 +26,19 @@
         "human_approval_required":{"type":"boolean"},
         "adoption_state":{"enum":["observed","staged","active","shadow","canary","production-approved","control-only"]}
       }
+    },
+    "phaseState": {
+      "type":"object","additionalProperties":false,
+      "required":["id","status","attempts","evidence","blocker"],
+      "properties":{
+        "id":{"$ref":"#/$defs/phaseId"},
+        "status":{"$ref":"#/$defs/phaseStatus"},
+        "attempts":{"type":"integer","minimum":0},
+        "evidence":{"type":"array","items":{"type":"string"}},
+        "blocker":{"type":["string","null"]},
+        "boundary_report":{"$ref":"#/$defs/boundaryReport"}
+      },
+      "allOf":[{"if":{"properties":{"status":{"enum":["COMPLETE","BLOCKED","ROLLBACK"]}},"required":["status"]},"then":{"required":["boundary_report"]}}]
     }
   },
   "properties": {
@@ -54,7 +67,7 @@
         "required":["id","kind","git_ref","created_at"],
         "properties":{
           "id":{"type":"string"},
-          "kind":{"enum":["baseline","restart-A","router-B","authority-C","worker-D","promotion-E","upgrade-F","rollback"]},
+          "kind":{"enum":["baseline","dogfood-A0","restart-A","router-B","authority-C","worker-D","promotion-E","upgrade-F","rollback"]},
           "git_ref":{"type":"string"},
           "created_at":{"type":"string","format":"date-time"},
           "evidence":{"type":"array","items":{"type":"string"}}
@@ -63,19 +76,17 @@
     },
     "phases":{
       "type":"array","minItems":8,"maxItems":8,
-      "items":{
-        "type":"object","additionalProperties":false,
-        "required":["id","status","attempts","evidence","blocker"],
-        "properties":{
-          "id":{"$ref":"#/$defs/phaseId"},
-          "status":{"$ref":"#/$defs/phaseStatus"},
-          "attempts":{"type":"integer","minimum":0},
-          "evidence":{"type":"array","items":{"type":"string"}},
-          "blocker":{"type":["string","null"]},
-          "boundary_report":{"$ref":"#/$defs/boundaryReport"}
-        },
-        "allOf":[{"if":{"properties":{"status":{"enum":["COMPLETE","BLOCKED","ROLLBACK"]}},"required":["status"]},"then":{"required":["boundary_report"]}}]
-      }
+      "prefixItems":[
+        {"allOf":[{"$ref":"#/$defs/phaseState"},{"properties":{"id":{"const":"00-preflight"}}}]},
+        {"allOf":[{"$ref":"#/$defs/phaseState"},{"properties":{"id":{"const":"10-baseline-and-backup"}}}]},
+        {"allOf":[{"$ref":"#/$defs/phaseState"},{"properties":{"id":{"const":"20-context-and-skills"}}}]},
+        {"allOf":[{"$ref":"#/$defs/phaseState"},{"properties":{"id":{"const":"30-router"}}}]},
+        {"allOf":[{"$ref":"#/$defs/phaseState"},{"properties":{"id":{"const":"40-security-and-policy"}}}]},
+        {"allOf":[{"$ref":"#/$defs/phaseState"},{"properties":{"id":{"const":"50-pi-and-lsp"}}}]},
+        {"allOf":[{"$ref":"#/$defs/phaseState"},{"properties":{"id":{"const":"60-evaluation-and-promotion"}}}]},
+        {"allOf":[{"$ref":"#/$defs/phaseState"},{"properties":{"id":{"const":"70-upgrades-and-rollback"}}}]}
+      ],
+      "items":false
     },
     "updated_at":{"type":"string","format":"date-time"}
   }
