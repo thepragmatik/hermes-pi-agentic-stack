@@ -2,178 +2,272 @@
 
 Assume the proposed system is wrong until evidence proves otherwise. Each item is a failure hypothesis to test, not a claim that the control is already implemented.
 
-## Routing, models and economics
+## Routing ontology, eligibility and workflow
 
-### 1. Hybrid mission is forced into one lane
-**Failure:** architecture + implementation work is routed wholly to research or coding. **Control:** explicit `hybrid`/abstain; research artifact then typed coding task; score margin and downstream regret. **Kill:** >1% high-severity wrong-lane errors on representative holdout.
+### 1. Multi-stage mission is collapsed into `hybrid`
+**Failure:** `research -> design -> implementation -> tests -> review` loses stage ownership/tool/model/review semantics. **Control:** multi-label task families + ordered workflow stages in routing contracts. **Kill:** representative multi-stage mission cannot be reconstructed from routing-decision evidence.
 
-### 2. Router overfits synthetic prompts
-**Control:** redacted real missions, mission/repo/session/time holdout, near-duplicate removal, shadow before authority.
+### 2. Task-family vocabulary becomes a new rigid taxonomy
+**Control:** task families are routing features, not product ontology; add/change only when real outcomes show material routing consequence. Unknown/OOD may abstain.
 
-### 3. Router consumes workstation headroom
-**Control:** small encoder/head; local control-plane memory SLO; generative models on demand only.
+### 3. Learned router overrides deterministic eligibility
+**Failure:** semantic confidence makes `LOCAL_ONLY`, network, ZDR or unavailable capability eligible. **Control:** Tier 0 executes first and wins conflicts; derivation provenance recorded. **Kill:** any learned/framework output changes a hard constraint.
 
-### 4. Provider churn destroys prefix cache
-**Failure:** cheapest/fastest physical provider is reconsidered every request. **Control:** phase/session affinity, track physical-provider continuity + cache-read share, switch only on explicit failure/regret policy.
+### 4. Stale capability metadata authorizes impossible route
+**Failure:** model/tool context/modality/structured-output capability changed upstream. **Control:** runtime capability catalog/version evidence; fail closed and refresh before selection. **Kill:** task reaches a model/agent lacking a required capability.
 
-### 5. Cheap endpoint creates expensive retries
-**Control:** optimize cost/minutes/retries/human intervention per **accepted task**, not nominal $/M.
+### 5. Context-window arithmetic is wrong
+**Control:** measured request/context/reserve accounting, not model-name assumptions. Include tools/system/output budget. **Kill:** selected model truncates a mandatory input or cannot reserve required output/tool loop.
 
-### 6. Promotional pricing becomes architecture
-**Control:** volatile prices live in measured config/evidence; steady-state decisions survive promotion expiry.
+### 6. Workflow planner creates an unbounded swarm
+**Control:** bounded stage graph, explicit agents/capabilities/budget/review; Hermes retains workflow authority. **Kill:** router framework can dynamically create unrestricted agents/tools.
 
-### 7. Cached tokens are misread as no savings
-**Control:** separate logical/fresh/cached input, output/reasoning, cost and TTFT.
+### 7. Router overfits synthetic prompt wording
+**Control:** locally redacted real missions/outcomes, mission/repo/session/time holdouts, duplicate removal, temporal canary, shadow before authority.
 
-### 8. RouteLLM score is misnamed mission probability
-**Control:** RouteLLM-style logic is optional difficulty/preference escalation only after pair-specific recalibration.
+### 8. Short follow-up text causes stage thrashing
+**Control:** durable workflow/session state, hysteresis and switch budget; route stages rather than isolated turns. Measure workflow/model/provider switches.
 
-### 9. ModernBERT is fine-tuned prematurely
-**Failure:** synthetic labels create a sophisticated wrong boundary. **Control:** rules -> frozen embeddings/head -> representative redacted outcomes -> fine-tune only after stable ontology/holdout/plateau.
+### 9. Multi-label thresholds explode task count
+**Failure:** low thresholds predict every related capability, causing complex workflow/model choice. **Control:** calibrated per-head thresholds, max/compatibility logic, abstention/OOD, stage evidence. **Kill:** task-set size/false-positive rate causes material workflow regret.
 
-### 10. Router telemetry becomes a privacy corpus
-**Control:** outcome/features over raw prompts; local redaction; short retention; controlled sampled training records.
+### 10. Correlated multi-head ModernBERT errors look like confidence
+**Control:** head-wise calibration plus joint error analysis/OOD; deterministic constraints remain external; temporal holdout and shadow.
 
-## OpenRouter gateway
+### 11. Router consumes workstation headroom
+**Control:** startup/RSS/CPU/p95/p99 SLO under realistic workstation load; heavy research frameworks stay off hot path.
 
-### 11. OpenRouter Auto becomes the privacy router
-**Failure:** Auto/fallback sends data that local policy should keep local. **Control:** deterministic privacy decision executes before any OpenRouter call; `LOCAL_ONLY` exits the cloud path. **Kill:** any seeded `LOCAL_ONLY` payload reaches OpenRouter.
+### 12. Semantic classifier is accurate but workflow is wrong
+**Control:** evaluate task/profile inference and whole-workflow outcome separately. Primary decision uses accepted-mission regret/economics.
 
-### 12. OpenRouter Auto replaces the final mission classifier
-**Failure:** local router is built but ignored because Auto is convenient. **Control:** Auto only bootstrap/shadow/bounded fallback; evidence records actual role/model; production lane comes from local router.
+### 13. Rules look weak only because benchmark labels favor semantics
+**Control:** adjudicate workflow/constraint consequences; include economics and abstention. A simpler router is allowed to win.
 
-### 13. Model selection and provider selection are conflated
-**Failure:** physical provider choice silently changes the model/mission semantics. **Control:** local router -> role/model binding -> OpenRouter model ID -> physical-provider routing; log both layers distinctly.
+### 14. OOD mission is confidently forced into known tasks
+**Control:** uncertainty/OOD/abstention evaluation; human/resolver path; do not reward forced coverage.
 
-### 14. Hermes request policy overrides OpenRouter preset policy
-**Failure:** a preset looks privacy-restricted, but request-level `provider_routing` changes provider constraints. **Control:** do not use preset as sole authority; one canonical Hermes request policy + account/workspace guardrails; effective-policy canary. **Kill:** observed provider violates intended privacy/parameter constraint.
+### 15. Deterministic rules accidentally infer privacy from keywords alone
+**Failure:** discussing PII is mistaken for containing PII. **Control:** authoritative privacy input/state + typed secret/PII scanners; keyword rules only seed fixture cases, not final DLP.
 
-### 15. OpenRouter account guardrail is mistaken for local DLP
-**Control:** account ZDR/data restrictions are defense in depth. Local secret/PII/egress gate still decides whether the request exists at all.
+## Framework adoption / fork risks
 
-### 16. Exacto/tool routing fights cache stickiness
-**Failure:** tool-accuracy provider reordering constantly changes provider and destroys prefix cache. **Control:** benchmark accepted-task quality vs cache loss; use sticky/explicit routing policy where it wins.
+### 16. Aurelio Semantic Router becomes the whole architecture
+**Control:** use as a Tier-1 component behind contracts; hard eligibility/workflow/economics remain external.
 
-### 17. Stale model slug breaks bootstrap
-**Control:** `hermes model` live picker at install; record resolved ID; snapshot slugs are examples only; stop on unavailable/incompatible tool model.
+### 17. vLLM Semantic Router signal is mistaken for security authority
+**Control:** its PII/jailbreak/auth/etc signals are defense-in-depth or routing features; our external Tier-0 boundary remains authoritative.
 
-### 18. One bootstrap model becomes permanent by inertia
-**Control:** Phase 30/60 explicitly benchmark role separation; Bootstrap Mode ends only by evidence, not convenience.
+### 18. vLLM Semantic Router runtime is heavier than its savings
+**Control:** compare full control-plane/Envoy/process/RSS/ops cost against rules/embedding/Aurelio on cost per accepted mission. **Kill:** no material outcome benefit after operational cost.
 
-### 19. Direct-provider fallback silently expands credential surface
-**Control:** no direct key by default. Add direct Z.ai/DeepSeek only after matched benchmark justifies the additional secret/integration; fallback cannot activate merely because a key exists.
+### 19. vLLM roadmap feature is treated as stable capability
+**Control:** pin stable release/docs; distinguish released session-aware routing from evolving agent/workflow/context roadmap; no production dependency on backlog claims.
 
-### 20. OpenRouter/provider rate limit is the real bottleneck
-**Control:** concurrency/load/queue/fallback testing; include queue delay and reliability in accepted-task economics.
+### 20. Router replay/body capture becomes a privacy store
+**Control:** disable or tightly scope request/response capture; redacted hashes/features by default; explicit retention/permissions if replay is needed. **Kill:** sensitive raw missions accumulate unintentionally.
+
+### 21. Semantic cache crosses privacy/tenant boundaries
+**Control:** cache namespace/privacy review; exclude sensitive classes; verify no cross-session/tenant semantic retrieval.
+
+### 22. LLMRouter research dependencies leak into hot path
+**Failure:** Torch/Transformers/Gradio/PyG/etc become always-resident dependencies. **Control:** research-plane isolation; export only winning small artifact/adapter.
+
+### 23. RouteLLM score is misnamed mission probability
+**Control:** RouteLLM-style logic is Tier-3 strong-vs-economical scoring only after eligibility/workflow; recalibrate on our actual model outcomes.
+
+### 24. OpenRouter Auto teacher becomes ground truth
+**Control:** Auto disagreement is one weak signal; compare to actual accepted outcomes/human review. Its objective/model pool may drift.
+
+### 25. OpenRouter Auto is queried with unsanitized mission
+**Control:** only Tier-0-approved sanitized work may enter Auto shadow. **Kill:** any ineligible/raw-sensitive mission reaches Auto.
+
+### 26. A fork is created for convenience
+**Control:** fork gate requires materially valuable unmet requirement, failed/unavailable upstream path, small isolated patch, conformance tests, rebase capacity and benefit > maintenance cost.
+
+### 27. Fork misses upstream security/stability fixes
+**Control:** automated upstream delta/security review + canary/conformance suite. **Kill:** fork cannot rebase promptly on a critical upstream fix.
+
+## Model selection and outcome learning
+
+### 28. ModernBERT is trained prematurely
+**Control:** rules/embedding/Aurelio/vLLM-config baselines first; representative redacted outcomes, stable ontology, learning curves and holdouts required.
+
+### 29. ModernBERT learns deterministic policy fields
+**Control:** do not train heads for known privacy/tool/network/modality/context facts. Learned conflicts cannot override Tier 0.
+
+### 30. Temporal leakage inflates router metrics
+**Control:** split by mission/repository/session/time cohort; no adjacent turns/near duplicates across train/test.
+
+### 31. Model quality is confounded with physical provider quality
+**Control:** record model and provider separately where observable; compare gateway/provider effects independently.
+
+### 32. Cost per token replaces cost per accepted mission
+**Control:** include retries, failures, latency, human intervention, cache and acceptance. Promotional pricing is not architecture.
+
+### 33. Outcome labels encode reviewer/model bias
+**Control:** deterministic tests first; independent/blinded review for sampled ambiguous outcomes; record human override and reviewer identity/family class where appropriate.
+
+### 34. Telemetry becomes a sensitive training corpus
+**Control:** redacted feature summary/hash by default; raw prompts only explicit sampled local dataset with privacy review/retention.
+
+### 35. Telemetry misses rejected/failed missions
+**Control:** log failure reason/retry/abstention/override, not only successful paths; otherwise learning optimizes survivorship bias.
+
+### 36. Provider/model switch cost is omitted
+**Control:** model/provider/workflow switch counts, cache-read share, context-transfer cost and behavior regression are part of tertiary objective.
+
+## OpenRouter / Tier-4 gateway
+
+### 37. OpenRouter becomes privacy router
+**Control:** Tier 0 decides before request exists. Account ZDR/data policies are defense in depth.
+
+### 38. Model and provider selection are conflated
+**Control:** routing-decision separates model role/model from provider policy; telemetry records both.
+
+### 39. Hermes request policy and OpenRouter account/preset policy conflict
+**Control:** one tested effective-policy path; do not assume precedence; canary actual provider behavior.
+
+### 40. Unsupported Hermes field is silently assumed enforced
+**Failure:** raw OpenRouter supports ZDR/session/performance option but installed Hermes does not forward it. **Control:** prove Hermes, account policy or audited gateway adapter enforces; otherwise block.
+
+### 41. Missing OpenRouter `session_id` invalidates cache economics
+**Control:** integration test stable session-key propagation; measure provider/model continuity and cached tokens. Do not claim stickiness from docs alone.
+
+### 42. Sticky provider preserves a degraded endpoint too long
+**Control:** session affinity is preference/budgeted state, not absolute; explicit reliability/failure escape and recorded switch reason.
+
+### 43. Cheapest provider causes retries/tool failure
+**Control:** eligible-provider filter then accepted-mission economics; benchmark price/latency/throughput sorts against tool quality/retries.
+
+### 44. Physical-provider fallback crosses data policy
+**Control:** ZDR/data collection/allowlist constraints are hard provider requirements. **Kill:** fallback lands on provider outside them.
+
+### 45. Model fallback crosses capability/quality floor
+**Control:** a different-model fallback must re-run Tier-3 eligibility; gateway cannot silently choose a model missing tools/context/modality/review independence.
+
+### 46. Provider identity is unobservable and attribution is guessed
+**Control:** distinguish `unknown` from inferred; do not blame/credit model/router with unsupported provider attribution.
+
+### 47. Auto/fallback becomes permanent by inertia
+**Control:** explicit maturity/boundary; Phase 60 promotion from measured evidence only.
+
+### 48. Direct-provider credentials silently expand attack surface
+**Control:** no direct keys by default; matched evidence and explicit exception required.
+
+### 49. OpenRouter/provider rate limits dominate latency
+**Control:** load/queue/reliability/rate-limit tests; include in accepted-mission economics.
 
 ## Context, skills and memory
 
-### 21. Compaction drops a security constraint
-**Control:** security/data class lives in deterministic state/policy outside summarised conversation; validate after compaction.
+### 50. Compaction drops a security constraint
+**Control:** security/data class lives in deterministic state/policy outside summary conversation.
 
-### 22. SOUL/skill/memory is treated as authorization
-**Control:** no capability depends on advisory text; external enforcement wins.
+### 51. SOUL/skill/memory is treated as authorization
+**Control:** advisory context never grants structural capability.
 
-### 23. Skill catalogue grows until slicing loses
-**Control:** narrow profile/`--no-skills`, class-level parent, measure catalogue + loaded-support tokens.
+### 52. Skill catalogue regrows until slicing loses
+**Control:** narrow profile/parent skill/phase references; measure catalog + loaded-support tokens.
 
-### 24. Micro-skill explosion creates trigger ambiguity
-**Control:** class-level umbrella skill + phase references/scripts; measure wrong/missed selection.
+### 53. Micro-skill explosion creates trigger ambiguity
+**Control:** class-level umbrella + phase refs/scripts; measure wrong/missed selection.
 
-### 25. Pruned reference is assumed still active
-**Control:** pruned = unloaded; reload current slice before relying on it.
+### 54. Pruned reference is assumed active
+**Control:** pruned = unloaded; reload before reliance.
 
-### 26. LCM + Mnemosyne both become durable semantic authorities
-**Control:** LCM=current-session context/recovery; Mnemosyne=curated cross-session memory; LCM semantic/proactive/temporal cross-session families off in baseline. **Kill:** provenance/owner of a recalled fact cannot be determined.
+### 55. LCM and Mnemosyne both become durable semantic authorities
+**Control:** LCM=current-session exact recovery; Mnemosyne=curated cross-session memory; overlapping LCM semantic/proactive/temporal features off initially.
 
-### 27. Memory poisoning gains authority
-**Control:** recalled/recovered text remains untrusted; policy/uplift-state/Git/immutable evidence outrank memory; strict Mnemosyne admission and seeded injection tests. **Kill:** memory changes security/acceptance without authoritative evidence.
+### 56. Memory poisoning gains authority
+**Control:** policy/uplift-state/Git/evidence outrank recalled text; strict admission and seeded injection tests.
 
-### 28. “Local-only memory” silently calls cloud
-**Control:** remote sync/embedding/host-LLM/auto-synthesis off; after provisioning, deny outbound network and prove compaction/write/recall/restart.
+### 57. “Local-only memory” calls cloud
+**Control:** remote sync/embedding/host LLM off; forced-offline proof after provisioning.
 
-### 29. SQLite upgrade/crash loses the only store
-**Control:** quiescent/plugin-supported backups, WAL consistency, canary schema upgrades, restore/rollback tests, never upgrade only surviving DB first.
+### 58. SQLite upgrade/crash loses only copy
+**Control:** independent safe backup/restore and canary schema upgrade.
 
-### 30. Memory/plugin schemas erase context savings
-**Control:** Hermes Tool Search, narrow Mnemosyne allowlist, measure eager/deferred schema tokens + cold-tool cost.
+### 59. Memory/plugin schemas erase context savings
+**Control:** Tool Search, narrow allowlist, eager/deferred schema token measurement.
 
-### 31. Release defaults silently widen memory behaviour
-**Control:** stable pins + captured effective config; explicit critical values; RC/beta not auto-promoted.
+### 60. Memory release defaults silently widen behavior
+**Control:** stable pins + captured effective config; explicit critical settings.
 
-### 32. Mnemosyne recall is irrelevant/noisy
-**Control:** bounded prefetch, strict admission, relevance/staleness corpus; stable 3.15.x baseline must pass irrelevant-injection tests before authority.
+### 61. Mnemosyne recall is irrelevant/noisy
+**Control:** bounded prefetch/admission, relevance/staleness corpus; irrelevant injection is blocking.
 
-### 33. Old `state.db` reimports stale/injected context
-**Control:** immutable evidence only; local discovery/minimal export/sanitization/provenance/current-truth review; never attach old DB.
+### 62. Old `state.db` reimports stale/injected context
+**Control:** immutable read-only curation pipeline, no attachment/transplant.
 
-## Bootstrap and restart lifecycle
+## Bootstrap / restart lifecycle
 
-### 34. Hermes profile is mistaken for sandbox
-**Control:** dedicated standard macOS account or independently qualified containment. `terminal.cwd`, profile and SOUL are not filesystem security.
+### 63. Hermes profile is mistaken for sandbox
+**Control:** dedicated standard account or independently qualified containment.
 
-### 35. Docker bootstrap mount exposes too much host state
-**Control:** qualify exact Hermes Docker backend/version/mount provenance; minimal mounts/no daemon socket; do not assume `docker_mount_cwd_to_workspace` is safe just because it is named “sandbox”.
+### 64. Docker bootstrap mount exposes too much host state
+**Control:** qualify exact backend/version/mounts; minimal mounts/no daemon socket.
 
-### 36. Phase 20 improvement remains trapped in old chat context
-**Failure:** slim config passes but the same giant bootstrap transcript continues. **Control:** mandatory Checkpoint A fresh Hermes session. **Kill:** Phase 30 benchmark runs in pre-optimization session.
+### 65. Phase-20 slimming stays trapped in old conversation
+**Control:** Dogfood A0 fresh same-phase continuation, then Checkpoint A fresh Phase-30 session.
 
-### 37. Router config is changed but stale process/session is tested
-**Control:** Checkpoint B reload/fresh shadow session and evidence of effective config/hash.
+### 66. Router config changes but stale runtime is tested
+**Control:** Checkpoint B fresh/reloaded shadow session + exact contract/engine/config evidence.
 
-### 38. Security policy changes without process restart
-**Control:** Checkpoint C records active policy digest and restarts/reloads enforcement processes when required.
+### 67. Security policy changes without active-process proof
+**Control:** Checkpoint C active policy digest/restart evidence.
 
-### 39. Pi workers survive the cutover with old env/policy/model
-**Control:** Checkpoint D recreates disposable workers; do not reuse stale long-running worker state.
+### 68. Pi workers survive policy/routing/model cutover
+**Control:** Checkpoint D recreates disposable workers.
 
-### 40. “Promoted” session still uses old bootstrap model/router
-**Control:** Checkpoint E fresh ordinary session + captured model/provider/router/context pins.
+### 69. Promoted session still uses bootstrap router/model
+**Control:** Checkpoint E fresh session and captured routing/model/provider pins.
 
-### 41. Phase report exists only in conversation
-**Failure:** crash/new session loses warnings/restart decision. **Control:** uplift-state v1.1 requires boundary report for COMPLETE/BLOCKED/ROLLBACK.
+### 70. Phase report exists only in conversation
+**Control:** uplift-state boundary report required.
 
-### 42. Agent auto-starts next phase before human sees boundary
-**Control:** mission/skill contract says one phase per observable run; persist/report/stop.
+### 71. Agent auto-starts next phase
+**Control:** one phase per observable run; persist/report/stop.
 
 ## Pi, security and operations
 
-### 43. Orchestrator bypasses Pi after cutover
-**Control:** production orchestrator has no generic source-write/arbitrary-shell capability; direct-edit bypass test must fail structurally.
+### 72. Orchestrator bypasses Pi after cutover
+**Control:** no generic production source-write/arbitrary-shell capability; direct-edit bypass test fails structurally.
 
-### 44. Pi RPC drift creates premature completion
-**Control:** current protocol conformance; `agent_settled` completion; pinned independent versions; retry/reconciliation tests.
+### 73. Pi task cannot be traced to route decision
+**Control:** task-envelope v2.2 binds mission ID, stage ID and decision hash. **Kill:** outcome cannot join to the decision that selected worker/model role.
 
-### 45. Pi containment is assumed from RPC/worktree
-**Control:** external filesystem/process/network/credential boundary; deny actions structurally under malicious instructions.
+### 74. Pi RPC drift creates premature completion
+**Control:** current conformance + `agent_settled` completion + retry/reconciliation tests.
 
-### 46. Task retry repeats destructive operation
-**Control:** idempotency keys, durable operation journal, reconciliation before replay, explicit non-repeatable operation handling.
+### 75. Pi containment is assumed from worktree/RPC
+**Control:** external filesystem/process/network/credential boundary.
 
-### 47. PII false positives corrupt technical text
-**Control:** typed/field-aware scanning; distinguish code/config from prose; block on uncertainty rather than silently mutate.
+### 76. Task retry repeats destructive operation
+**Control:** idempotency keys, operation journal, reconciliation before replay.
 
-### 48. PII false negatives leak organization identifiers
-**Control:** custom deterministic recognizers + seeded canaries + local-only class; secret scanner remains separate and first.
+### 77. PII false positives corrupt technical text
+**Control:** typed/field-aware scan; block on uncertainty rather than silently mutate code/config.
 
-### 49. Same model/provider rubber-stamps its own work
-**Control:** deterministic evidence first, independent reviewer; high-risk review should use independent model family or protected human gate.
+### 78. PII false negatives leak identifiers/secrets
+**Control:** dedicated secret scanner + deterministic recognizers + seeded canaries.
 
-### 50. LSP/package update is a supply-chain path
-**Control:** pin/audit/SBOM/compatibility fixtures; no install from untrusted project instructions; containment.
+### 79. Same model/provider rubber-stamps its own work
+**Control:** deterministic evidence then independent review; high-risk review independence requirement.
 
-### 51. Spec Kit “Lite” removes necessary thinking
-**Control:** minimum acceptance/non-goals/risk fields and deterministic assurance escalation; compare accepted quality.
+### 80. LSP/package update becomes supply-chain path
+**Control:** pin/audit/SBOM/compatibility fixtures; no install from untrusted project instructions.
 
-### 52. High Assurance is chosen for everything
-**Control:** deterministic profile selection bounds; measure context/rework; human may escalate.
+### 81. Spec Kit Lite removes necessary thinking
+**Control:** minimum acceptance/non-goals/risk fields and deterministic assurance escalation.
 
-### 53. Huge local model/offload ruins workstation UX
-**Control:** realistic browser/build/container load; memory pressure/swap SLO; reject steady-state swap dependency.
+### 82. High Assurance is selected for everything
+**Control:** bounded profile selection and measured context/rework.
 
-### 54. Continuous update invalidates overlay assumptions
-**Control:** Phase 70 one-component canary, new session/workers where required, protocol/security/context/memory/router/provider/LSP tests and rollback.
+### 83. Large local router/model ruins workstation UX
+**Control:** realistic browser/build/container load, memory pressure/swap SLO.
+
+### 84. Continuous update invalidates routing contracts
+**Control:** contract conformance tests + Phase-70 one-component canary/rollback.
 
 ## Promotion decision
 
-Production promotion requires evidence that the whole system improves **accepted-task quality/economics and long-horizon recovery without weakening privacy/security**. A cheaper, more cached, more “memory-rich” or more autonomous system has failed if it increases escaped defects, stale influence, retries, hidden egress, human recovery work or rollback uncertainty.
+Production promotion requires evidence that the whole system improves **accepted-mission quality/economics and long-horizon recovery without weakening hard eligibility/security**. A router with better F1, a cheaper provider, a richer memory or a more sophisticated framework has failed if it increases capability bypass, escaped defects, stale influence, retries, hidden egress, switch/cache waste, human recovery work or rollback uncertainty.
