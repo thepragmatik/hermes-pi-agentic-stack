@@ -4,19 +4,22 @@ from html.parser import HTMLParser
 import argparse
 import hashlib
 import json
+import shlex
 import subprocess
 import sys
+import tempfile
 
 ROOT=Path(__file__).resolve().parents[2]
 PHASES=["00-preflight","10-baseline-and-backup","20-context-and-skills","30-router","40-security-and-policy","50-pi-and-lsp","60-evaluation-and-promotion","70-upgrades-and-rollback"]
 TASKS={"research","synthesis","architecture_design","planning_decomposition","coding_implementation","debugging_diagnosis","refactoring","testing","code_review","security_review","devops_configuration","data_analysis","document_generation_transformation","retrieval_memory","agent_supervision_orchestration","long_running_tool_execution","multimodal_analysis","verification_fact_check","other"}
+MATURITY={"researched","designed","prototype","smoke-tested","target-Mac-validated","shadow","canary","production-approved"}
 REQUIRED=[
- "index.html","architecture.html","fresh-install.html","start-uplift.html","playbook.html","execution-contract.html","bootstrap.html","context-memory-setup.html","skills.html","routing-openrouter.html","research/routing.html","research/router-training.html","pi-lsp.html","security.html","adversarial-review.html","artifact-review.html","validation.html","upgrade-rollback.html","publishing.html","sources.html",
+ "index.html","architecture.html","fresh-install.html","start-uplift.html","playbook.html","execution-contract.html","bootstrap.html","context-memory-setup.html","skills.html","routing-openrouter.html","research/routing.html","research/router-training.html","research/context.html","research/mission-context.html","research/legacy-state.html","research/local-context-memory.html","research/spec-kit.html","research/savings.html","pi-lsp.html","security.html","adversarial-review.html","artifact-review.html","validation.html","upgrade-rollback.html","publishing.html","sources.html",
  "llms.txt","agents.txt","agent/START.md","agent/UPLIFT_MISSION.md","agent/manifest.json","agent/architecture.graph.json",
  "agent/protocols/routing-mission.schema.json","agent/protocols/routing-decision.schema.json","agent/protocols/pi-task-envelope.schema.json","agent/protocols/uplift-state.schema.json",
  "agent/protocols/examples/routing-mission.example.json","agent/protocols/examples/routing-decision.example.json","agent/protocols/examples/pi-task-envelope.example.json","agent/protocols/examples/uplift-state.example.json",
  "agent/configs/models.example.yaml","agent/configs/hermes-local-context-memory.example.yaml","agent/configs/lcm-baseline.env.example","agent/configs/mnemosyne-local.example.yaml",
- "raw/UPLIFT_MISSION.md","raw/docs/agentic-uplift/fresh-install-bootstrap.md","raw/docs/agentic-uplift/research/local-routing-models.md","raw/docs/agentic-uplift/research/openrouter-routing.md","raw/tools/router-bench/README.md","raw/tools/router-bench/sample_missions.jsonl"
+ "raw/UPLIFT_MISSION.md","raw/configs/policy.example.yaml","raw/docs/agentic-uplift/fresh-install-bootstrap.md","raw/docs/agentic-uplift/local-context-memory-setup.md","raw/docs/agentic-uplift/research/local-context-memory-stack.md","raw/docs/agentic-uplift/research/mission-context-architecture.md","raw/docs/agentic-uplift/research/local-routing-models.md","raw/docs/agentic-uplift/research/openrouter-routing.md","raw/tools/router-bench/README.md","raw/tools/router-bench/sample_missions.jsonl"
 ]
 
 class Links(HTMLParser):
@@ -29,6 +32,9 @@ class Links(HTMLParser):
 def load_json(path,errors):
     try:return json.loads(Path(path).read_text(encoding="utf-8"))
     except Exception as exc:errors.append(f"{path}: invalid JSON: {exc}");return {}
+
+def source(rel):
+    return (ROOT/rel).read_text(encoding="utf-8")
 
 def router_smoke(errors):
     cmd=[sys.executable,str(ROOT/"tools/router-bench/router_bench.py"),"--dataset",str(ROOT/"tools/router-bench/sample_missions.jsonl"),"--routers","rules","--repeat","3","--fail-on-hard-violations"]
@@ -43,8 +49,59 @@ def router_smoke(errors):
     if m.get("determinism_rate")!=1.0:errors.append("router smoke is not deterministic")
     return m
 
+def external_cloud_guard_smoke(errors):
+    """Prove a cloud-ineligible INTERNAL mission never reaches an external adapter."""
+    with tempfile.TemporaryDirectory(prefix="router-guard-") as td:
+        td=Path(td);dataset=td/"missions.jsonl";adapter=td/"adapter.py";marker=td/"INVOKED"
+        sample={"id":"cloud-ineligible-internal","text":"Research current package options for this internal system.","expected":{"tasks":["research"],"phase":"discovery","workflow":"local_only","privacy":{"class":"INTERNAL","cloud_allowed":False}}}
+        dataset.write_text(json.dumps(sample)+"\n",encoding="utf-8")
+        adapter.write_text("import json,sys\nfrom pathlib import Path\nPath(sys.argv[1]).write_text('invoked')\nprint(json.dumps({'tasks':['research'],'phase':'discovery','workflow':'research_executor','confidence':1.0}))\n",encoding="utf-8")
+        ext_cmd=" ".join(shlex.quote(x) for x in [sys.executable,str(adapter),str(marker)])
+        cmd=[sys.executable,str(ROOT/"tools/router-bench/router_bench.py"),"--dataset",str(dataset),"--routers","probe","--repeat","1","--warmup","0","--external",f"probe={ext_cmd}"]
+        p=subprocess.run(cmd,text=True,capture_output=True)
+        if p.returncode:
+            errors.append("external cloud guard smoke failed: "+(p.stderr[-1000:] or p.stdout[-1000:]));return
+        if marker.exists():errors.append("cloud_allowed=false mission was handed to an external router adapter")
+        try:doc=json.loads(p.stdout);row=doc["results"][0]["rows"][0]
+        except Exception as exc:errors.append(f"external cloud guard smoke invalid output: {exc}");return
+        if row.get("predicted_workflow")!="local_only":errors.append("cloud_allowed=false external-guard route did not fail closed to local_only")
+
+def regression_invariants(errors):
+    policy=source("configs/policy.example.yaml")
+    if "hybrid_enabled" in policy:errors.append("policy regressed to legacy hybrid_enabled routing switch")
+    if "hard_eligibility_precedes_inference: true" not in policy or "cloud_ineligible_never_external: true" not in policy:errors.append("policy lacks deterministic routing hard-gate declarations")
+
+    mission_context=source("docs/agentic-uplift/research/mission-context-architecture.md")
+    for stale in ["current_lane:","research|coding|hybrid|local_only","routing lane"]:
+        if stale in mission_context:errors.append(f"mission-context architecture contains stale routing-lane token: {stale}")
+    for required in ["workflow:","stage_id:","task_families:","model_role:","routing-decision.schema.json"]:
+        if required not in mission_context:errors.append(f"mission-context projection missing {required}")
+
+    for rel in ["docs/agentic-uplift/local-context-memory-setup.md","docs/agentic-uplift/research/local-context-memory-stack.md"]:
+        text=source(rel)
+        for stale in ["Phase 30 becomes `BLOCKED`","mark Phase 30 `BLOCKED`","Phase 00/30"]:
+            if stale in text:errors.append(f"{rel}: memory qualification incorrectly references Phase 30")
+        if "Phase 20" not in text or "`BLOCKED`" not in text:errors.append(f"{rel}: Phase-20 memory blocking semantics missing")
+
+    router=source("tools/router-bench/router_bench.py")
+    if "self.embedding_floor=a.embedding_floor" not in router:errors.append("embedding prototype does not initialize embedding_floor")
+    if 'if not constraints["privacy"].get("cloud_allowed",True):' not in router:errors.append("external router adapter lacks cloud_allowed=false pre-invocation guard")
+
+    approval_docs=[
+        "UPLIFT_MISSION.md",
+        "docs/agentic-uplift/agent-execution-contract.md",
+        "docs/agentic-uplift/implementation-playbook.md",
+        "skills/hermes-stack-uplift/references/40-security-and-policy.md",
+        "skills/hermes-stack-uplift/references/50-pi-and-lsp.md",
+        "skills/hermes-stack-uplift/references/60-evaluation-and-promotion.md",
+    ]
+    for rel in approval_docs:
+        text=source(rel).lower()
+        if "human approval" not in text or "cannot waive" not in text:errors.append(f"{rel}: evidence-first human-approval invariant missing")
+
 def main():
     ap=argparse.ArgumentParser();ap.add_argument("--site",default="_site");args=ap.parse_args();root=Path(args.site);errors=[]
+    regression_invariants(errors)
     for r in REQUIRED:
         if not (root/r).exists():errors.append(f"missing {r}")
     html_pages=list(root.rglob("*.html"))
@@ -100,6 +157,7 @@ def main():
     task_enum=set(mission_schema.get("$defs",{}).get("taskFamily",{}).get("enum",[]))
     if task_enum!=TASKS:errors.append("routing mission task-family vocabulary mismatch")
     if decision_schema.get("properties",{}).get("version",{}).get("const")!="1.0":errors.append("routing decision schema version mismatch")
+    if set(decision_schema.get("properties",{}).get("maturity",{}).get("enum",[]))!=MATURITY:errors.append("routing decision maturity vocabulary mismatch")
     if set(mission_example.get("mission_profile",{}).get("tasks",[]))-TASKS:errors.append("routing mission example has unknown tasks")
     if decision_example.get("execution",{}).get("workflow")!="multi_stage":errors.append("routing decision example must demonstrate multi-stage workflow")
     if "routing" not in (root/"raw/docs/agentic-uplift/research/local-routing-models.md").read_text(encoding="utf-8").lower():errors.append("routing research raw missing")
@@ -107,6 +165,8 @@ def main():
     pi_schema=load_json(root/"agent/protocols/pi-task-envelope.schema.json",errors);pi_example=load_json(root/"agent/protocols/examples/pi-task-envelope.example.json",errors)
     if pi_schema.get("properties",{}).get("version",{}).get("const")!="2.2":errors.append("Pi schema version must be 2.2")
     if pi_schema.get("properties",{}).get("phase",{}).get("enum")!=PHASES:errors.append("Pi schema phase lifecycle mismatch")
+    pi_maturity=set(pi_schema.get("properties",{}).get("routing",{}).get("properties",{}).get("router_maturity",{}).get("enum",[]))
+    if pi_maturity!=MATURITY:errors.append("Pi routing maturity vocabulary mismatch")
     for key in ["model_role","routing"]:
         if key not in pi_schema.get("required",[]):errors.append(f"Pi schema does not require {key}")
     for key in pi_schema.get("required",[]):
@@ -118,17 +178,26 @@ def main():
     uplift_schema=load_json(root/"agent/protocols/uplift-state.schema.json",errors);uplift_example=load_json(root/"agent/protocols/examples/uplift-state.example.json",errors)
     if uplift_schema.get("properties",{}).get("version",{}).get("const")!="1.1":errors.append("uplift-state schema version must be 1.1")
     if uplift_schema.get("$defs",{}).get("phaseId",{}).get("enum")!=PHASES:errors.append("uplift-state phase lifecycle mismatch")
+    if set(uplift_schema.get("$defs",{}).get("maturity",{}).get("enum",[]))!=MATURITY:errors.append("uplift-state maturity vocabulary mismatch")
+    prefix=uplift_schema.get("properties",{}).get("phases",{}).get("prefixItems",[])
+    try:prefix_ids=[x["allOf"][1]["properties"]["id"]["const"] for x in prefix]
+    except Exception:prefix_ids=[]
+    if prefix_ids!=PHASES or uplift_schema.get("properties",{}).get("phases",{}).get("items") is not False:errors.append("uplift-state does not structurally enforce exact ordered eight phases")
+    checkpoint_kinds=uplift_schema.get("properties",{}).get("checkpoints",{}).get("items",{}).get("properties",{}).get("kind",{}).get("enum",[])
+    if "dogfood-A0" not in checkpoint_kinds:errors.append("uplift-state checkpoint vocabulary lacks dogfood-A0")
     if uplift_example.get("version")!="1.1" or [p.get("id") for p in uplift_example.get("phases",[])]!=PHASES:errors.append("uplift-state example mismatch")
     if uplift_example.get("runtime",{}).get("gateway")!="openrouter":errors.append("uplift-state example gateway mismatch")
+    if "dogfood-A0" not in [c.get("kind") for c in uplift_example.get("checkpoints",[])]:errors.append("uplift-state example lacks dogfood-A0 checkpoint")
 
     for src in ["UPLIFT_MISSION.md","protocols/routing-mission.schema.json","protocols/routing-decision.schema.json","protocols/pi-task-envelope.schema.json","protocols/uplift-state.schema.json","protocols/examples/routing-mission.example.json","protocols/examples/routing-decision.example.json","protocols/examples/pi-task-envelope.example.json","protocols/examples/uplift-state.example.json","configs/models.example.yaml","configs/hermes-local-context-memory.example.yaml","configs/lcm-baseline.env.example","configs/mnemosyne-local.example.yaml"]:
         agent=root/"agent"/src;raw=root/"raw"/src
         if agent.exists() and raw.exists() and agent.read_bytes()!=raw.read_bytes():errors.append(f"agent/raw copy mismatch: {src}")
 
     smoke=router_smoke(errors)
+    external_cloud_guard_smoke(errors)
     if errors:raise SystemExit("\n".join(errors))
     summary=""
     if smoke:summary=f", rules smoke task-micro-F1={smoke['task_family']['micro_f1']:.3f}, workflow={smoke['workflow_accuracy']:.3f}, hard=0"
-    print("OK: validated 26 HTML pages, routing contracts, progressive-disclosure agent surface, hashed raw manifest, five-tier OpenRouter architecture, Pi routing traceability, 00-70 lifecycle"+summary)
+    print("OK: validated 26 HTML pages, pre-launch regression invariants, routing contracts, progressive-disclosure agent surface, hashed raw manifest, five-tier OpenRouter architecture, Pi routing traceability, exact 00-70 lifecycle, dogfood-A0, evidence-first authority gates, cloud-ineligible adapter guard"+summary)
 
 if __name__=="__main__":main()
