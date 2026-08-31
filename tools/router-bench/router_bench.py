@@ -115,14 +115,14 @@ class Rules:
   # Explicit local-only language is an additional deterministic fixture signal.
   if LOCAL_ONLY.search(text):constraints={"privacy":{"class":"LOCAL_ONLY","cloud_allowed":False}}
   tasks=[k for k,rx in RX.items() if rx.search(text)]
-  return {"tasks":tasks,"phase":infer_phase(tasks),"workflow":infer_workflow(tasks,constraints),"confidence":1.0 if tasks or constraints["privacy"]["class"]=="LOCAL_ONLY" else 0.0,"constraints":constraints,"detail":{"reason":"deterministic rules/state fixture"}}
+  return {"tasks":tasks,"phase":infer_phase(tasks),"workflow":infer_workflow(tasks,constraints),"confidence":1.0 if tasks or not constraints["privacy"].get("cloud_allowed",True) else 0.0,"constraints":constraints,"detail":{"reason":"deterministic rules/state fixture"}}
 
 class Prototype:
  name="prototype"
  def __init__(self,a):
   from sentence_transformers import SentenceTransformer
   self.m=SentenceTransformer(a.embedding_model,trust_remote_code=True)
-  self.threshold=a.embedding_threshold; self.max_tasks=a.max_tasks
+  self.threshold=a.embedding_threshold; self.embedding_floor=a.embedding_floor; self.max_tasks=a.max_tasks
   labels=[]; texts=[]
   for lab,items in PROTOTYPES.items():
    for text in items:labels.append(lab);texts.append(text)
@@ -147,10 +147,11 @@ class External:
  def route(self,sample):
   constraints=deterministic_constraints(sample)
   if LOCAL_ONLY.search(sample["text"]):constraints={"privacy":{"class":"LOCAL_ONLY","cloud_allowed":False}}
-  # Tier 0 is local and authoritative. Do not invoke a possibly-cloud external adapter for LOCAL_ONLY.
-  if constraints["privacy"]["class"]=="LOCAL_ONLY":
+  # Tier 0 is local and authoritative. Never hand a cloud-ineligible prompt to an
+  # external adapter because the benchmark cannot prove that adapter is local.
+  if not constraints["privacy"].get("cloud_allowed",True):
    tasks=[k for k,rx in RX.items() if rx.search(sample["text"])]
-   return {"tasks":tasks,"phase":infer_phase(tasks),"workflow":"local_only","confidence":1.0,"constraints":constraints,"detail":{"external_skipped":"LOCAL_ONLY hard gate"}}
+   return {"tasks":tasks,"phase":infer_phase(tasks),"workflow":"local_only","confidence":1.0,"constraints":constraints,"detail":{"external_skipped":"cloud_allowed=false hard gate"}}
   payload={"id":sample["id"],"text":sample["text"],"constraints":constraints}
   p=subprocess.run(self.cmd,shell=True,input=json.dumps(payload),text=True,capture_output=True,timeout=180)
   if p.returncode:raise RuntimeError(p.stderr[-800:])
@@ -305,7 +306,7 @@ def main():
   if "metrics" in result:
    m=result["metrics"];print(f"{name}\ttask-micro-F1={m['task_family']['micro_f1']:.3f}\tworkflow={m['workflow_accuracy']:.3f}\tphase={m['phase_accuracy']:.3f}\thard={sum(m['hard_constraint_violations'].values())}\tp95={m['latency_ms']['p95']:.2f}ms",file=sys.stderr)
  doc={"schema_version":2,"generated_at_epoch":time.time(),"host":{"platform":platform.platform(),"python":sys.version.split()[0],"machine":platform.machine()},"privacy":{"raw_text_included":a.include_text,"note":"Prompt SHA-256 only by default. Tier 0 hard constraints apply before external/cloud adapters."},"evaluation":{"note":"Task/profile inference, hard eligibility, workflow choice, runtime operations and optional outcome economics are reported separately. Not every candidate addresses every tier."},"results":results}
- if a.fail_on_hard_violations:
+ if a.fail_on-hard-violations:
   bad=sum(sum(r.get("metrics",{}).get("hard_constraint_violations",{}).values()) for r in results)
   if bad:raise SystemExit(f"hard routing constraint violations: {bad}")
  text=json.dumps(doc,indent=2 if a.pretty else None);Path(a.output).write_text(text+"\n",encoding="utf-8") if a.output else print(text)
