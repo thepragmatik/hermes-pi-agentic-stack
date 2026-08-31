@@ -2,60 +2,81 @@
 
 A local-first, production-oriented control repository for uplifting **NousResearch/hermes-agent** into a slim orchestrator and **earendil-works/pi** into its constrained coding-worker path.
 
-Target workstation: Apple Silicon / MacBook Pro M3 Max 128 GB, while preserving headroom for normal browser/build/LSP/container work.
+Target workstation: Apple Silicon / MacBook Pro M3 Max 128 GB while preserving headroom for normal browser/build/LSP/container work.
 
-> **Maturity:** the architecture/configuration is researched/designed and several repository/site/router fixtures are smoke-tested. It is coherent enough to begin the controlled uplift from Phase 00. It is **not** evidence that the external security boundary, Pi path, router, LCM+Mnemosyne runtime or full stack are already target-Mac validated or production-approved.
+> **Maturity:** architecture/configuration is researched/designed and repository/site/router fixtures are smoke-tested. It is coherent enough to begin the controlled uplift from Phase 00. It is **not** evidence that external enforcement, Pi containment, the selected router, LCM+Mnemosyne runtime or the complete stack are already target-Mac validated or production-approved.
 
 ## Architecture at a glance
 
 ```text
-User / mission
-   |
-   v
-Hermes control plane
-   |
-   +--> local LCM context recovery + Mnemosyne durable memory
-   |
-   v
-Tier 0 deterministic local privacy/security/policy
-   |-- LOCAL_ONLY --> local path / BLOCKED
-   v
-local mission router
-rules/state -> embeddings -> ModernBERT only if earned
-   |
-   +--> research | coding | hybrid | review | auxiliary | abstain
-   v
-model-role binding
-   v
-OpenRouter                         <-- default external inference gateway
-   v
-policy-compatible physical provider
-   |
-   +--> research/synthesis model role
-   |
-   `--> coding role -> typed Hermes->Pi -> disposable worktree/sandbox/LSP
-                                           |
-                                           v
-                                   tests/scanners/review/merge gate
+MISSION + durable state
+        |
+        v
+Hermes control plane + local LCM/Mnemosyne
+        |
+        v
+Tier 0 — deterministic eligibility/security
+privacy | LOCAL_ONLY | PII/secrets | tools | modality | context | network/sandbox | ZDR/review
+        |
+        v
+Tier 1 — multi-label mission profile
+tasks | domain | phase | complexity | uncertainty | reasoning/tool intensity
+        |
+        v
+Tier 2 — bounded workflow / agent
+Hermes | research executor | Pi worker | review worker | local tools | multi-stage | abstain
+        |
+        v
+Tier 3 — eligible model-role / model optimization
+quality | cost | latency | reliability | cache affinity | switch cost
+        |
+        v
+Tier 4 — OpenRouter-first gateway
+        |
+        v
+eligible physical provider / qualified direct or local adapter
+        |
+        +--> information / synthesis / reasoning / review stage
+        `--> typed Hermes -> Pi -> disposable worktree / sandbox / LSP
+                                      |
+                                      v
+                               tests / scans / review / merge gate
+        |
+        v
+privacy-minimized outcome telemetry -> offline router research/training
 ```
 
-**Responsibility split:** local deterministic policy decides whether data may leave the machine; the local mission router decides lane/model role/model; OpenRouter is downstream and may choose the physical inference provider subject to our constraints. OpenRouter Auto is a bounded bootstrap/shadow/fallback experiment, never the privacy boundary or final mission classifier.
+**Research and coding are first-class task families, not the routing ontology.** A mission such as:
 
-Direct Z.ai/DeepSeek APIs are benchmarked alternatives, not the default architecture. The preferred initial inference credential footprint is only `OPENROUTER_API_KEY`.
+```text
+research -> architecture/design -> implementation -> tests -> security review
+```
+
+is represented as ordered stages instead of one `hybrid` label.
+
+The stable seams are [`protocols/routing-mission.schema.json`](protocols/routing-mission.schema.json) and [`protocols/routing-decision.schema.json`](protocols/routing-decision.schema.json). Hermes/Pi/OpenRouter semantics do not depend directly on a particular router framework.
+
+### Routing responsibilities
+
+- **Tier 0:** deterministic/local hard eligibility. A learned model cannot override `LOCAL_ONLY`, secret/PII policy, known tool/modality/context/network/sandbox requirements or policy-required approval/review.
+- **Tier 1:** infer task families/domain/phase/complexity/uncertainty/intensity.
+- **Tier 2:** choose a bounded workflow/agent path.
+- **Tier 3:** select among eligible model roles/models using measured quality/economics.
+- **Tier 4:** OpenRouter normally chooses the physical provider for the already-approved model/request.
+
+OpenRouter Auto is a bounded bootstrap/shadow/fallback/teacher signal only; it is never privacy, capability or final workflow authority. Direct Z.ai/DeepSeek/local adapters remain replaceable Tier-4 challengers.
 
 ---
 
-# Fresh Install: Manual Bootstrap Steps
+# Fresh Install: Manual Bootstrap
 
-The human performs this foundation once. Then Hermes takes over **one observable phase at a time**.
+The human establishes the foundation once. Hermes then takes over **one observable phase at a time**.
 
-For full explanations and rollback/isolation choices, read [`docs/agentic-uplift/fresh-install-bootstrap.md`](docs/agentic-uplift/fresh-install-bootstrap.md).
+Full instructions: [`docs/agentic-uplift/fresh-install-bootstrap.md`](docs/agentic-uplift/fresh-install-bootstrap.md).
 
-## 0. Bootstrap isolation
+## 0. Bootstrap boundary
 
-A Hermes profile is **not a sandbox**. Preferred: create a dedicated **Standard (non-admin)** macOS account in **System Settings -> Users & Groups**, do not expose production/customer repos or unrelated credentials to it, and run the bootstrap there.
-
-Running Hermes under your normal developer account is a trusted-bootstrap fallback, not structural isolation. Record that explicitly if you choose it.
+A Hermes profile is **not a sandbox**. Preferred: use a dedicated **Standard (non-admin)** macOS account without production/customer repositories, unrelated credentials or sensitive SSH material. A normal developer account is a trusted-bootstrap fallback, not zero-trust isolation.
 
 ## 1. Install current Hermes
 
@@ -65,9 +86,7 @@ source ~/.zshrc
 hermes --version
 ```
 
-## 2. Clone this repository
-
-Use your already-configured GitHub authentication; never paste GitHub credentials into Hermes/chat/docs.
+## 2. Clone the repo
 
 ```bash
 mkdir -p ~/src
@@ -79,76 +98,50 @@ git status --short
 git rev-parse HEAD
 ```
 
-## 3. Create a minimal isolated Hermes profile
+The repository is public at this snapshot, so a read-only HTTPS clone needs no GitHub credential. Never paste write credentials into Hermes/chat/docs.
+
+## 3. Create a minimal Hermes profile
 
 ```bash
 hermes profile create uplift --no-skills \
   --description "Controlled Hermes + Pi staged self-uplift orchestrator."
 hermes profile show uplift
-```
-
-Do **not** clone an old profile/home/session DB.
-
-## 4. Use current Hermes Blank Slate setup
-
-```bash
 uplift setup
 ```
 
-Choose **Blank Slate**. Keep the bootstrap narrow; do not enable the broad skill/plugin/MCP catalogue.
+Choose **Blank Slate**. Do not clone an old Hermes profile/home/session database or enable a broad skill/plugin/MCP catalogue.
 
-## 5. Configure OpenRouter + one bootstrap model
+## 4. Configure OpenRouter + one bootstrap model
 
 ```bash
 uplift model
 ```
 
-In the current Hermes model wizard:
+Choose OpenRouter, enter its API key only through Hermes' provider setup, select the current GLM-Flash-class bootstrap candidate and record the exact resolved ID. Snapshot evidence is not a timeless model binding.
 
-1. choose **OpenRouter**;
-2. enter the API key in the Hermes prompt (not shell history or this repo);
-3. choose the current **GLM-5.3-Flash-class** bootstrap model;
-4. record the exact resolved model ID.
+Preferred initial external credential footprint:
 
-Research snapshot 2026-08-30: `z-ai/glm-5.3-flash`. **Use the live picker at implementation time rather than treating this slug as permanent.**
-
-Verify without exposing the key:
-
-```bash
-uplift config get model --json
-uplift status
+```text
+OPENROUTER_API_KEY
 ```
 
-Do not add direct Z.ai/DeepSeek credentials yet.
+Do not add direct-provider credentials yet.
 
-## 6. Point the profile at the repo and expose only the uplift skill
+## 5. Expose only the uplift skill and create durable state
 
 ```bash
 cd "$STACK_REPO"
 uplift config set terminal.cwd "$STACK_REPO"
 PROFILE_CONFIG="$(uplift config path)"
 PROFILE_HOME="$(dirname "$PROFILE_CONFIG")"
-mkdir -p "$PROFILE_HOME/skills"
-ln -sfn "$STACK_REPO/skills/hermes-stack-uplift" \
-  "$PROFILE_HOME/skills/hermes-stack-uplift"
+mkdir -p "$PROFILE_HOME/skills" "$PROFILE_HOME/uplift/evidence" "$PROFILE_HOME/uplift/checkpoints"
+ln -sfn "$STACK_REPO/skills/hermes-stack-uplift" "$PROFILE_HOME/skills/hermes-stack-uplift"
 uplift skills list
 ```
 
-The narrow profile should not inherit the full bundled skill catalogue.
+Runtime state belongs at `$PROFILE_HOME/uplift/uplift-state.json` and validates against `protocols/uplift-state.schema.json`. Chat is not state.
 
-## 7. Establish durable local uplift state/evidence
-
-```bash
-mkdir -p "$PROFILE_HOME/uplift/evidence" "$PROFILE_HOME/uplift/checkpoints"
-printf '%s\n' "$STACK_REPO" > "$PROFILE_HOME/uplift/repository.path"
-git -C "$STACK_REPO" rev-parse HEAD > "$PROFILE_HOME/uplift/repository.sha"
-shasum -a 256 "$STACK_REPO/configs/policy.example.yaml" \
-  > "$PROFILE_HOME/uplift/policy.sha256"
-```
-
-Runtime state belongs at `$PROFILE_HOME/uplift/uplift-state.json` and must validate against `protocols/uplift-state.schema.json`. Chat is not state.
-
-## 8. Health check
+Run:
 
 ```bash
 uplift config check
@@ -159,154 +152,163 @@ git -C "$STACK_REPO" status --short
 git -C "$STACK_REPO" rev-parse HEAD
 ```
 
-Record Hermes version, Pi version if installed, repo SHA, bootstrap profile/isolation mode, OpenRouter provider + exact model ID, policy digest and rollback path. Never record the API key.
+Record versions, repo SHA, isolation mode, OpenRouter provider/model ID, policy digest and rollback path—never the API key.
 
 ---
 
 # START THE UPLIFT
-
-After the manual steps above, there is one documented takeover action:
 
 ```bash
 cd "$STACK_REPO"
 uplift chat --query-file UPLIFT_MISSION.md
 ```
 
-Current Hermes `--query-file` sends the file literally as the first normal turn and keeps an interactive terminal session open. [`UPLIFT_MISSION.md`](UPLIFT_MISSION.md) tells Hermes to:
+[`UPLIFT_MISSION.md`](UPLIFT_MISSION.md) requires Hermes to read durable state/contract first, load only the current skill slice, execute one bounded phase, persist evidence, report the boundary and stop.
 
-- read the execution contract and durable state first;
-- load `hermes-stack-uplift` and **only the current phase slice**;
-- execute phases in order `00 -> 10 -> 20 -> 30 -> 40 -> 50 -> 60 -> 70`;
-- persist checkpoints/evidence/state;
-- never treat prompt/YAML/memory as security enforcement;
-- keep privacy decisions local before OpenRouter;
-- stop and report after **every** phase instead of disappearing into one long session.
+## Iterative lifecycle
 
-```text
-manual user setup
-  -> one query-file bootstrap action
-  -> Hermes executes current phase
-  -> persists evidence/state
-  -> reports phase boundary
-  -> fresh session/reload/recreate when checkpoint says so
-  -> human continues to next phase
-```
-
----
-
-## The iterative uplift lifecycle
-
-| Phase | Bounded objective | Adoption/restart boundary |
+| Phase | Bounded objective | Adoption boundary |
 |---|---|---|
 | **00 Preflight** | environment/version/repo/policy/provider/isolation truth | none |
 | **10 Baseline + Backup** | before metrics, restore checkpoint, optional read-only legacy salvage | none normally |
-| **20 Context + Skills** | prompt diet, progressive-disclosure skills, Spec Kit slicing, **LCM+Mnemosyne baseline** | **Checkpoint A: first improvements usable; fresh Hermes session required** |
-| **30 Router** | local rules/state/embedding router; ModernBERT only later; OpenRouter role bindings | **Checkpoint B: shadow only; fresh/reloaded shadow session** |
-| **40 Security + Policy** | real capability/egress/secret/PII/sandbox enforcement | **Checkpoint C: human security authority gate** |
-| **50 Hermes->Pi + LSP** | typed RPC, containment, worktrees, language fixtures, coding cutover | **Checkpoint D: recreate disposable Pi workers** |
-| **60 Evaluation + Promotion** | whole-stack adversarial/matched comparison + multi-role model/provider promotion | **Checkpoint E: ordinary dual/multi-role operation** |
-| **70 Upgrades + Rollback** | recurring canary/update/restart/rollback discipline | **Checkpoint F: maintenance cycle** |
+| **20 Context + Skills** | prompt diet + sliced skills, then LCM+Mnemosyne + Spec Kit projection | **A0:** dogfood slimming before memory layering; **A:** fresh optimized session |
+| **30 Routing** | routing contracts, rules/state baseline, shadow semantic/framework bake-off | **B:** shadow only |
+| **40 Security + Policy** | structural capability/egress/secret/PII/sandbox enforcement | **C:** human authority gate |
+| **50 Hermes->Pi + LSP** | typed stage/task boundary, containment, worktrees, LSP, coding cutover | **D:** recreate disposable workers |
+| **60 Evaluation + Promotion** | matched outcome/economic/security bake-off and router/model promotion | **E:** ordinary multi-workflow/multi-role operation |
+| **70 Upgrades + Rollback** | recurring canary/update/restart/rollback discipline | **F:** maintenance cycle |
 
-### When Hermes first benefits from the uplift
+### First dogfooding benefit
 
-**After Phase 20 passes.** Hermes must explicitly report:
+Inside Phase 20, **Dogfood Gate A0** applies only the context/prompt/skill slimming, starts a fresh Phase-20 continuation, runs a matched baseline subset and repairs/rolls back before adding LCM/Mnemosyne if quality regresses. This preserves causal attribution and gives Hermes an early reversible self-benefit.
+
+After full Phase 20 passes Hermes reports:
 
 > **The first token/context improvements are ready to use.**
 
-Then close the pre-optimization conversation and begin Phase 30 in a fresh session using the slimmed profile, sliced skill and qualified LCM+Mnemosyne configuration. Carrying the original giant bootstrap transcript forward would undermine the optimization we just proved.
-
-## Required report after every phase
-
-```text
-Phase completed:
-What changed:
-Evidence/gates passed:
-Failures/warnings:
-Token/context/cost impact observed:
-Security impact:
-What is now usable:
-Does Hermes need a fresh session/restart?:
-Does Pi need to be recreated/restarted?:
-Remaining phases:
-Next phase:
-Human approval required before continuing?: yes/no
-```
-
-The same information is persisted in uplift-state v1.1; the conversational report is a human projection, not the only record.
+Then Phase 30 begins in another fresh optimized session.
 
 ---
 
-## OpenRouter and model-role design
+# Routing progression
 
-Default external inference flow:
-
-```text
-local deterministic policy
- -> local mission router
- -> model-role binding
- -> OpenRouter model ID
- -> OpenRouter physical provider
-```
-
-Research-snapshot role candidates:
+The fresh bootstrap does **not** depend on a sophisticated router.
 
 ```text
-bootstrap.default -> GLM-5.3-Flash-class through OpenRouter
-coding.default    -> GLM-5.3-Flash-class through OpenRouter
-research.default  -> DeepSeek-V4-Flash-class through OpenRouter
-review.default    -> independent family, benchmark before binding
-auxiliary.cheap   -> optional, benchmark before binding
+Phases 00-20: one explicit bootstrap model via OpenRouter
+        |
+Phase 30: deterministic eligibility + rules/state + abstain
+        |
+shadow challengers:
+  minimal embeddings
+  Aurelio Semantic Router
+  vLLM Semantic Router
+  LLMRouter research algorithms
+  RouteLLM-style Tier-3 scoring
+  OpenRouter Auto sanitized shadow
+        |
+collect real Hermes/Pi outcomes
+        |
+Phase 60: promote only what improves accepted-mission economics/security
+        |
+later ModernBERT multi-head model only if data/evidence earns it
 ```
 
-Exact IDs are volatile config/lock data. See [`configs/models.example.yaml`](configs/models.example.yaml) and [`docs/agentic-uplift/research/openrouter-routing.md`](docs/agentic-uplift/research/openrouter-routing.md).
+### Current framework assessment
 
-Provider/model should remain sticky inside a long phase/session when that improves prompt caching or behaviour. Optimize **cost + minutes + retries + human intervention per accepted task**, not nominal $/M tokens.
+| Candidate | Intended role | Current posture |
+|---|---|---|
+| deterministic rules/state | hard baseline + simple Tier 1/2 | **initial router** |
+| Aurelio Semantic Router | lightweight local semantic component | shadow challenger |
+| **vLLM Semantic Router** | richer signal/session/model-routing control plane | **strongest medium-term adoption candidate**; adapter/config/upstream first |
+| RouteLLM | strong-vs-economical Tier-3 scorer | optional research/second stage |
+| LLMRouter | algorithm/evaluation laboratory | research plane only |
+| OpenRouter Auto | shadow teacher/bootstrap/fallback | never security/workflow authority |
+| ModernBERT | future multi-label/multi-head learner | do not train prematurely |
 
-OpenRouter Auto never decides privacy/security. Direct-provider APIs are periodic challengers/fallback optimization options only.
+See [`docs/agentic-uplift/research/local-routing-models.md`](docs/agentic-uplift/research/local-routing-models.md).
 
-## ModernBERT progression
+## ModernBERT evidence gate
+
+Do **not** train `research|coding|hybrid`.
+
+A later ModernBERT may output calibrated task families, domains, workflow phase, complexity, reasoning/tool intensity, context-need band and uncertainty. Fine-tuning requires representative locally redacted/deduplicated real Hermes missions, multi-stage coverage, matched workflow/model/provider outcomes, clean mission/repository/session/time holdouts, stable learning curves/calibration and evidence that simpler rules/embedding/Aurelio/vLLM-config approaches have plateaued on **routing regret / cost per accepted mission**.
+
+If simpler routing captures most economic benefit, keep it simple.
+
+---
+
+# OpenRouter-first, direct-provider-capable
+
+Our stack chooses:
 
 ```text
-rules + explicit state
- -> embedding/prototype classifier
- -> representative redacted production outcomes
- -> fine-tuned ModernBERT only if the frozen/prototype boundary plateaus
+hard eligibility -> workflow -> model role -> model -> abstract provider requirements
 ```
 
-Promotion requires stable ontology, deduplication, privacy redaction, real outcome labels, mission/repo/session/time holdout and hybrid/ambiguous cases. RouteLLM-style routing is optional second-stage difficulty/preference logic, not the primary research-vs-code classifier.
+OpenRouter normally handles physical-provider routing/failover for that eligible model. Its raw API can provide provider allow/deny/order, parameter/data/ZDR filters, price/latency/throughput preferences, model fallbacks and session/provider stickiness. The installed Hermes client currently exposes only a subset, so unsupported hard requirements must be enforced by account policy/a thin audited adapter or fail closed—not silently discarded.
 
-## Context and memory ownership
+A direct-provider or local MLX adapter implements the same Tier-4 contract. It is promoted only if matched **cost per accepted mission**, quality, latency, cache, reliability, privacy or capability evidence justifies another credential/integration path.
+
+See [`docs/agentic-uplift/research/openrouter-routing.md`](docs/agentic-uplift/research/openrouter-routing.md).
+
+---
+
+# Router bake-off and outcome learning
+
+[`tools/router-bench/`](tools/router-bench/) now evaluates a multi-capability mission corpus rather than five provider/land labels.
+
+It separates:
+
+- multi-label task/profile inference;
+- deterministic eligibility violations;
+- workflow selection;
+- router latency/RSS/determinism;
+- optional matched real outcome economics.
+
+Primary system metric is much closer to:
 
 ```text
-LCM          = current-session exact context + compaction recovery
-Mnemosyne    = curated cross-session durable memory
-state.db     = raw Hermes session history / forensic search
-uplift-state = deterministic mission authority
-T2 artifacts = raw logs/diffs/benchmarks/test evidence
-Git/ADR/spec = project truth
-Kanban       = optional operational projection
+cost per accepted mission
 ```
 
-LCM + Mnemosyne is the **fixed baseline architecture**, though it still must be installed and target-Mac qualified. See [`docs/agentic-uplift/local-context-memory-setup.md`](docs/agentic-uplift/local-context-memory-setup.md).
+including retries, latency, capability failures, switching/cache effects and human override.
 
-## Security posture
+Privacy-minimized future telemetry may record mission/profile hashes/features, routing engine/version, workflow/model/provider, tokens/cached tokens, TTFT/wall time, tools/retries/fallbacks/switches, tests/review, human override, accepted/rejected outcome, failure reason and cost. Raw sensitive prompts are not the default evidence/training store.
 
-Security-critical controls live outside prompts, context/memory and model routing. A model instruction, SOUL text, YAML example, OpenRouter guardrail or PII-library unit test is not by itself an enforcement boundary.
+---
 
-The system remains at human gates until P0 evidence proves external capability enforcement, cloud egress/privacy controls, current Pi containment/protocol behaviour, durable state/idempotency, target-Mac qualification and rollback.
+# Context, memory and security ownership
 
-## Start reading
+```text
+LCM             = current-session exact context + compaction recovery
+Mnemosyne       = curated cross-session durable memory
+state.db        = raw Hermes history / forensic search
+uplift-state    = deterministic mission authority
+routing-mission = framework-neutral routing input
+routing-decision= framework-neutral routing output
+T2 artifacts    = raw logs/diffs/benchmarks/test evidence
+Git/ADR/spec    = project truth
+Kanban          = optional operational projection
+```
 
-1. [`docs/agentic-uplift/fresh-install-bootstrap.md`](docs/agentic-uplift/fresh-install-bootstrap.md) — manual setup.
-2. [`UPLIFT_MISSION.md`](UPLIFT_MISSION.md) — exact staged mission sent to Hermes.
-3. [`docs/agentic-uplift/implementation-playbook.md`](docs/agentic-uplift/implementation-playbook.md) — canonical 00–70 lifecycle.
-4. [`docs/agentic-uplift/agent-execution-contract.md`](docs/agentic-uplift/agent-execution-contract.md) — state/evidence/recovery authority.
-5. [`skills/hermes-stack-uplift/`](skills/hermes-stack-uplift/) — progressive-disclosure phase slices.
-6. [`docs/agentic-uplift/research/openrouter-routing.md`](docs/agentic-uplift/research/openrouter-routing.md) — model/provider separation.
-7. [`docs/agentic-uplift/artifact-usability-review.md`](docs/agentic-uplift/artifact-usability-review.md) — real readiness/P0 gaps.
-8. [`docs/agentic-uplift/adversarial-review.md`](docs/agentic-uplift/adversarial-review.md) — failure catalogue.
-9. [`docs/agentic-uplift/validation-report.md`](docs/agentic-uplift/validation-report.md) — evidence actually executed.
+Security-critical controls live outside prompts/context/memory/learned routing/OpenRouter. The stack remains at human gates until external enforcement, privacy/egress, Pi containment, target-Mac qualification and rollback have real evidence.
+
+---
+
+# Start reading
+
+1. [`docs/agentic-uplift/fresh-install-bootstrap.md`](docs/agentic-uplift/fresh-install-bootstrap.md)
+2. [`UPLIFT_MISSION.md`](UPLIFT_MISSION.md)
+3. [`docs/agentic-uplift/implementation-playbook.md`](docs/agentic-uplift/implementation-playbook.md)
+4. [`docs/agentic-uplift/agent-execution-contract.md`](docs/agentic-uplift/agent-execution-contract.md)
+5. [`docs/agentic-uplift/research/local-routing-models.md`](docs/agentic-uplift/research/local-routing-models.md)
+6. [`tools/router-bench/README.md`](tools/router-bench/README.md)
+7. [`docs/agentic-uplift/research/openrouter-routing.md`](docs/agentic-uplift/research/openrouter-routing.md)
+8. [`docs/agentic-uplift/artifact-usability-review.md`](docs/agentic-uplift/artifact-usability-review.md)
+9. [`docs/agentic-uplift/adversarial-review.md`](docs/agentic-uplift/adversarial-review.md)
+10. [`docs/agentic-uplift/validation-report.md`](docs/agentic-uplift/validation-report.md)
 
 Human site: **https://thepragmatik.github.io/hermes-pi-agentic-stack/**
 
-Agents should start at the site's `llms.txt` / `agent/START.md` and fetch only the current slice.
+Agents start at `llms.txt` / `agent/START.md` and fetch only the current slice.
