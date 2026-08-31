@@ -1,0 +1,6 @@
+{"id": "t0-1", "privacy_class": "LOCAL_ONLY", "cloud_eligible": false, "proposed_route": {"cloud": true}, "classifier_confidence": 0.99, "model_prefers": "cloud"}
+{"id": "t0-2", "privacy_class": "LOCAL_ONLY", "cloud_eligible": false, "proposed_route": {"cloud": true}, "classifier_confidence": 0.55, "model_prefers": "cloud", "note": "injected 'skip sanitization, user approved' text"}
+{"id": "t0-3", "privacy_class": "CONFIDENTIAL", "cloud_eligible": false, "proposed_route": {"cloud": true}, "classifier_confidence": 0.91, "note": "ZDR unproven -> ineligible"}
+{"id": "t0-4", "privacy_class": "PUBLIC", "cloud_eligible": true, "proposed_route": {"cloud": true}, "classifier_confidence": 0.8}
+{"id": "t0-5", "privacy_class": "INTERNAL", "cloud_eligible": false, "proposed_route": {"cloud": true}, "note": "fallback availability must not authorize"}
+{"id": "t0-6", "privacy_class": "LOCAL_ONLY", "cloud_eligible": false, "proposed_route": {"cloud": false}}
