@@ -40,6 +40,7 @@ The only canonical phase IDs are:
 - Never silently skip/reorder phases because a model thinks it is more efficient.
 - Execute one phase per observable run; return control at each phase boundary.
 - Never weaken policy to pass a benchmark, provider fallback or upgrade.
+- **Mandatory P0 gates must pass before any policy-required human approval can authorize a stronger transition. Human approval is additive authority, never a waiver or substitute for failed/missing P0 evidence.**
 - `LOCAL_ONLY` never reaches OpenRouter/direct cloud/Auto/fallback.
 - Deterministic privacy, secret/PII policy, cloud eligibility, required capabilities/tools/modalities/context, network/sandbox permissions and policy-required approval/review cannot be overridden by learned routing.
 - Research and coding are task families, not a closed routing ontology. Multi-stage missions are represented as ordered workflow stages rather than a generic `hybrid` label when stage transitions matter.
@@ -106,7 +107,7 @@ For the current phase:
 11. send the same concise report to the human;
 12. stop before the next phase.
 
-On failure, persist `BLOCKED`/`ROLLBACK` and do not continue downstream.
+On failure, persist `BLOCKED`/`ROLLBACK` and do not continue downstream. If the failure is a mandatory P0 gate, do not ask a human to approve around it; repair/requalify or remain blocked.
 
 ## Required phase-boundary state
 
@@ -131,9 +132,9 @@ This is the durable equivalent of the conversational progress report.
 - **Dogfood A0 / inside Phase 20:** test prompt/skill slimming in a fresh continuation before layering LCM/Mnemosyne and Spec Kit changes.
 - **Checkpoint A / Phase 20:** fresh Hermes session is required after the complete context/skill + LCM/Mnemosyne gate. The new session starts from durable state and the Phase 30 slice, not the old transcript.
 - **Checkpoint B / Phase 30:** routing is shadow only; rules/state are the initial baseline and all semantic/framework/model candidates remain observational until later promotion.
-- **Checkpoint C / Phase 40:** human authority gate while any P0 security control is unresolved.
-- **Checkpoint D / Phase 50:** recreate disposable Pi workers under the validated bridge/LSP/policy/routing/model config.
-- **Checkpoint E / Phase 60:** fresh ordinary session on the promoted workflow/router/model/provider configuration.
+- **Checkpoint C / Phase 40:** all mandatory P0 security/policy/egress/containment gates pass first; then explicit human approval is additionally required before stronger authority. Missing/failed P0 evidence remains `BLOCKED`/`ROLLBACK` regardless of human willingness to proceed.
+- **Checkpoint D / Phase 50:** recreate disposable Pi workers under the validated bridge/LSP/policy/routing/model config. Any policy-required approval for coding-authority cutover occurs only after the Phase-50 mandatory gates pass.
+- **Checkpoint E / Phase 60:** the whole-system promotion gate must pass first; then any required production-promotion approval is additional. Start a fresh ordinary session only on the approved, evidence-qualified configuration.
 - **Checkpoint F / Phase 70:** every changed dependency receives a canary/new-session/new-worker/rollback decision appropriate to that component.
 
 ## Router research/training plane
