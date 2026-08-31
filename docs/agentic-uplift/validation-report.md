@@ -10,9 +10,25 @@ Use the repository's canonical maturity labels without collapsing them:
 
 A schema/config/research note is not a runtime implementation; a CI smoke is not representative target-Mac evidence; shadow recommendations have no production authority.
 
+## Final pre-launch remediation
+
+A release-readiness audit after the routing refactor found several concrete drift/implementation defects. They were corrected before launch rather than accepted as documentation debt:
+
+- removed legacy `routing.hybrid_enabled` policy intent and retained capability/workflow-first routing;
+- replaced stale T1 `research|coding|hybrid|local_only` lane projection with workflow/stage/task-family/model-role routing state;
+- corrected LCM + Mnemosyne qualification failures to block/rollback **Phase 20**, not Phase 30;
+- aligned routing-decision, Pi task and uplift-state maturity vocabulary with `target-Mac-validated`;
+- made uplift-state structurally enforce exactly one ordered `00 -> 70` phase sequence;
+- added first-class `dogfood-A0` checkpoint state and example evidence;
+- initialized the optional embedding router's `embedding_floor` correctly;
+- changed router-benchmark external adapters to fail closed **before prompt handoff** whenever deterministic Tier-0 state says `cloud_allowed=false`, not only when the privacy label is `LOCAL_ONLY`;
+- made human approval explicitly **additive after mandatory P0 evidence passes** across the mission, execution contract and Phase 40/50/60 transitions; approval cannot waive failed/missing P0 evidence;
+- added adversarial hypothesis 85 for attempted human waiver of a failed P0 gate;
+- converted those findings into persistent validator regression assertions, including a dynamic external-adapter canary.
+
 ## Executed repository / Pages gate
 
-On routing implementation head `776da61b3623cce5fcfb2b597ec11e4ee3c165be`, GitHub Pages workflow run **116** (`33380969300`) completed successfully on 2026-08-31.
+On pre-launch implementation head `59e480a294369c845e3906970f7bf6e83bde32dc`, GitHub Pages workflow run **33385391824** completed successfully on 2026-08-31. Both the build and Pages deployment jobs succeeded.
 
 The build gate executed:
 
@@ -25,18 +41,27 @@ The build gate executed:
 - five-tier architecture graph v3 assertions;
 - routing mission/decision schema v1.0 + examples;
 - Pi task envelope **v2.2** + routing-stage provenance checks;
-- uplift-state v1.1 + exact `00 -> 70` lifecycle checks;
+- uplift-state v1.1 + structurally exact ordered `00 -> 70` lifecycle checks;
+- `dogfood-A0` checkpoint schema/example checks;
+- canonical maturity-vocabulary equality across routing/Pi/uplift-state contracts;
 - required human/agent routing entry surfaces;
+- regression assertions against legacy `hybrid_enabled`, stale T1 lane projection and wrong Phase-30 memory blocking;
+- evidence-first human-approval/mandatory-P0 invariants across mission/playbook/phase slices;
+- embedding-router `embedding_floor` initialization assertion;
+- a dynamic canary proving an `INTERNAL` mission with deterministic `cloud_allowed=false` does **not** invoke a configured external router adapter and resolves to the local-only path;
 - the zero-dependency rules router against the checked-in 32-mission fixture with hard-violation failure enabled;
 - Pages artifact upload and deployment.
 
 The validator reported:
 
 ```text
-OK: validated 26 HTML pages, routing contracts, progressive-disclosure agent surface,
-hashed raw manifest, five-tier OpenRouter architecture, Pi routing traceability,
-00-70 lifecycle, rules smoke task-micro-F1=0.923, workflow=0.875, hard=0
+OK: validated 26 HTML pages, pre-launch regression invariants, routing contracts,
+progressive-disclosure agent surface, hashed raw manifest, five-tier OpenRouter architecture,
+Pi routing traceability, exact 00-70 lifecycle, dogfood-A0, evidence-first authority gates,
+cloud-ineligible adapter guard, rules smoke task-micro-F1=0.923, workflow=0.875, hard=0
 ```
+
+The uploaded Pages artifact digest was independently matched to GitHub's recorded SHA-256, and the deployed artifact contained 110 files / 26 HTML pages with the corrected raw policy, mission-context, memory research/setup, mission, schemas and agent entry surfaces.
 
 These routing numbers are intentionally **smoke evidence only**. The broader fixture makes the simple rules baseline imperfect rather than preserving the old artificially clean research/coding five-class result. No hard eligibility violation was observed in the fixture, but this is not DLP/security proof or production router evidence.
 
@@ -67,6 +92,7 @@ Tier-1 learned/semantic signals may estimate task families, domain, phase, compl
 - `protocols/routing-mission.schema.json` v1.0 — framework-neutral mission facts/profile/requirements.
 - `protocols/routing-decision.schema.json` v1.0 — eligible workflow/stages, model selection and provider requirements.
 - `protocols/pi-task-envelope.schema.json` v2.2 — Phase-50+ worker request with `mission_id`, `stage_id`, workflow and routing-decision digest.
+- `protocols/uplift-state.schema.json` v1.1 — exact ordered phase/state/report/checkpoint contract including Dogfood A0.
 
 This keeps Hermes/Pi semantics replaceable across rules, Aurelio, vLLM Semantic Router, ModernBERT or future adapters.
 
@@ -75,7 +101,7 @@ This keeps Hermes/Pi semantics replaceable across rules, Aurelio, vLLM Semantic 
 | Candidate | Intended role | Current evidence |
 |---|---|---|
 | deterministic eligibility + rules/state + abstention | initial Phase-30 baseline | **prototype / smoke-tested on 32-mission fixture** |
-| minimal embedding prototype | small semantic challenger | designed; target-Mac bake-off pending |
+| minimal embedding prototype | small semantic challenger | designed/prototype path; target-Mac bake-off pending |
 | Aurelio Semantic Router | lightweight local Tier-1 semantic component | researched/designed adapter; bake-off pending |
 | vLLM Semantic Router | richer signal/session/model-routing candidate | **researched/designed; strongest medium-term adoption candidate; no authority yet** |
 | LLMRouter algorithms | research/training/evaluation laboratory | researched/designed research-plane integration |
@@ -138,7 +164,7 @@ The target is: **which eligible workflow/model maximizes probability of accepted
 
 ## Fresh-install / phase evidence
 
-The manual-to-autonomous handoff remains unchanged:
+The manual-to-autonomous handoff remains:
 
 ```text
 clean Hermes bootstrap + one verified OpenRouter model
@@ -146,7 +172,7 @@ clean Hermes bootstrap + one verified OpenRouter model
  -> one observable 00-70 phase at a time
 ```
 
-Phase 20 still contains Dogfood Gate A0 for prompt/skill slimming before LCM/Mnemosyne/Spec Kit layering. Checkpoint A starts Phase 30 in a fresh optimized session. Phase 30's advanced candidates remain shadow-only. Security authority remains gated at Phase 40; Pi workers begin behind typed containment in Phase 50; routing/model/provider promotion is Phase 60.
+Phase 20 contains Dogfood Gate A0 for prompt/skill slimming before LCM/Mnemosyne/Spec Kit layering. Checkpoint A starts Phase 30 in a fresh optimized session. Phase 30's advanced candidates remain shadow-only. At Checkpoint C all mandatory P0 security gates pass **before** required human approval may authorize stronger authority. Pi workers begin behind typed containment in Phase 50; routing/model/provider promotion is Phase 60 and follows the same evidence-first approval ordering.
 
 ## LCM + Mnemosyne evidence status
 
@@ -169,10 +195,10 @@ Unattended production authority still requires:
 - current Pi RPC `agent_settled` behavior, v2.2 routing provenance and containment evidence;
 - LSP compatibility/supply-chain fixtures;
 - failure injection for router/framework outage, stale capability catalogs, provider/model fallback, corrupted state/memory, malicious repository/tool output and rollback;
-- human approval at Checkpoint C and other policy-required gates.
+- all mandatory P0 evidence before any policy-required human approval at Checkpoint C or later authority/promotional gates.
 
 ## Maturity conclusion
 
-The routing refactor is **coherent, source-integrated, smoke-validated and compatible with the existing early-dogfood `00 -> 70` uplift**. It does not make the fresh bootstrap depend on vLLM Semantic Router, ModernBERT or any research framework.
+The operating manual is **coherent, source-integrated, smoke-validated and compatible with the early-dogfood `00 -> 70` uplift**. The final pre-launch remediation specifically converted the discovered drift classes into persistent regression checks rather than relying on this review remaining perfect forever.
 
-The repository remains suitable to start controlled Phase 00. The initial router used when Phase 30 arrives is deterministic eligibility + rules/explicit state + abstention in shadow. Routing becomes progressively smarter only when observed Hermes/Pi outcomes show a candidate improves accepted-mission quality/economics without weakening hard constraints or operational resilience.
+The repository is suitable to start **controlled Phase 00** once this evidence-only report commit itself passes the same build/validation/Pages deployment gate. This conclusion does **not** pre-approve unattended production authority. The initial router used when Phase 30 arrives remains deterministic eligibility + rules/explicit state + abstention in shadow; routing becomes progressively smarter only when observed Hermes/Pi outcomes justify promotion without weakening hard constraints or operational resilience.
