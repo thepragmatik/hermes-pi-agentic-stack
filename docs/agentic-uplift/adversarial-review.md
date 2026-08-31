@@ -268,6 +268,9 @@ Assume the proposed system is wrong until evidence proves otherwise. Each item i
 ### 84. Continuous update invalidates routing contracts
 **Control:** contract conformance tests + Phase-70 one-component canary/rollback.
 
+### 85. Human approval is treated as a waiver for failed P0 evidence
+**Failure:** an operator says “proceed anyway” and Hermes promotes cloud/delegation/coding/production authority despite a failed, missing or unproven mandatory security/privacy/containment gate. **Control:** mandatory P0 evidence gates are evaluated first; policy-required human approval is a separate additive transition gate only after those gates pass. `BLOCKED`/`ROLLBACK` remains authoritative while any mandatory gate is unresolved. **Kill:** any stronger authority is granted because a human approved around a failed/missing P0 gate.
+
 ## Promotion decision
 
 Production promotion requires evidence that the whole system improves **accepted-mission quality/economics and long-horizon recovery without weakening hard eligibility/security**. A router with better F1, a cheaper provider, a richer memory or a more sophisticated framework has failed if it increases capability bypass, escaped defects, stale influence, retries, hidden egress, switch/cache waste, human recovery work or rollback uncertainty.
