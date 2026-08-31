@@ -16,6 +16,7 @@ You are running the controlled Hermes + Pi uplift defined by this repository.
 10. Coding uses direct bootstrap authority only inside the explicitly allowed canary scope until the external enforcement + Pi path is proven; after cutover, production coding must cross the typed Pi boundary.
 11. Prefer the smallest reversible increment that can produce evidence. If the current phase slice defines a mid-phase dogfood gate, persist state/evidence and perform that gate before layering the next subsystem.
 12. Routing engines are replaceable implementations behind `protocols/routing-mission.schema.json` and `protocols/routing-decision.schema.json`. Do not couple Hermes or Pi semantics directly to Aurelio Semantic Router, vLLM Semantic Router, RouteLLM, LLMRouter, OpenRouter Auto or a future ModernBERT model.
+13. Human approval is an **additional authority gate after mandatory evidence passes**. A human approval may authorize a transition that policy requires reviewed, but it never waives, overrides or substitutes for a failed/unproven P0 security, privacy, containment or rollback gate.
 
 ## Phase-boundary rule
 
@@ -46,16 +47,16 @@ Next phase:
 Human approval required before continuing?: yes/no
 ```
 
-If a mandatory gate fails, persist `BLOCKED` or `ROLLBACK` and report it instead of improvising around the boundary.
+If a mandatory gate fails, persist `BLOCKED` or `ROLLBACK` and report it instead of improvising around the boundary. Do not request or accept a human approval as a waiver for that failed gate.
 
 ## Mandatory adoption checkpoints
 
 - **Dogfood Gate A0 — inside Phase 20:** after prompt/context + skill slimming is staged, checkpoint it and resume Phase 20 in a fresh session using only that slimmer configuration. Run a matched baseline subset before installing/activating LCM + Mnemosyne or adding Spec Kit changes. Continue only if accepted-task quality is non-inferior and context/token evidence improves; otherwise repair/rollback the slimming increment first.
 - **Checkpoint A — after Phase 20:** once the complete context/skill + LCM/Mnemosyne gates pass, report **“The first token/context improvements are ready to use.”** Start Phase 30 in a **fresh Hermes session using the uplifted profile/configuration** so Phase-20 qualification context does not contaminate router measurements.
 - **Checkpoint B — after Phase 30:** routing remains **shadow mode only**. The authoritative path is still the explicit bootstrap/fixed route. Reload/restart the routing integration if required; no learned/framework router receives routing authority yet.
-- **Checkpoint C — after Phase 40:** security/policy/egress/sandbox evidence is the authority gate. Human approval is required before granting stronger cloud/delegation authority while any P0 control remains unproven.
-- **Checkpoint D — after Phase 50:** recreate disposable Pi workers under the validated bridge/LSP/containment/routing-stage configuration. Do not trust stale long-running workers.
-- **Checkpoint E — after Phase 60:** only successful matched outcome/economic/security evaluation may enable ordinary multi-role/multi-workflow operation.
+- **Checkpoint C — after Phase 40:** all mandatory P0 security/policy/egress/sandbox gates must pass first. **Then** explicit human approval is additionally required before stronger cloud/delegation authority. If any mandatory P0 evidence is failed, missing or unproven, persist `BLOCKED`/`ROLLBACK`; human approval cannot waive it.
+- **Checkpoint D — after Phase 50:** recreate disposable Pi workers under the validated bridge/LSP/containment/routing-stage configuration. Do not trust stale long-running workers. Any policy-required human approval for coding-authority cutover occurs only after the Phase-50 mandatory gates pass.
+- **Checkpoint E — after Phase 60:** only successful matched outcome/economic/security evaluation may enable ordinary multi-role/multi-workflow operation; any required production-promotion approval is additional and cannot waive a failed promotion gate.
 - **Checkpoint F — Phase 70:** establish the recurring canary/update/restart/rollback cycle for Hermes, Pi, LCM, Mnemosyne, routing engines/contracts, model bindings and provider policy.
 
 ## Routing ownership
