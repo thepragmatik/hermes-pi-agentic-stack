@@ -12,7 +12,7 @@ Use this skill for installing, uplifting, validating or upgrading the stack defi
 - Security/privacy decisions are deterministic and local before cloud/model/provider routing.
 - `LOCAL_ONLY` never goes to OpenRouter or another cloud model.
 - Before Phase 30 authority, bootstrap uses the configured single OpenRouter bootstrap model; do not invent optimized routing early.
-- The local mission router chooses lane/model role/model. OpenRouter is the default gateway and may choose a physical provider subject to our constraints.
+- The local stack derives the mission profile, selects a bounded workflow/agent path, then selects an eligible model role/model. OpenRouter is the default downstream gateway and may choose a physical provider subject to hard requirements.
 - LCM + Mnemosyne is the selected local context/memory baseline; memory is advisory, never execution/security authority.
 - Steady-state orchestrator mode does not code directly; coding uses the typed Pi boundary after authority cutover.
 - Durable state conforms to `protocols/uplift-state.schema.json`; conversation memory is not execution state.
