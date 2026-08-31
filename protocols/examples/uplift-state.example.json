@@ -16,6 +16,7 @@
   },
   "checkpoints": [
     {"id":"baseline","kind":"baseline","git_ref":"refs/tags/uplift-baseline","created_at":"2026-08-30T00:00:00Z","evidence":["evidence/baseline.json"]},
+    {"id":"phase20-dogfood-A0","kind":"dogfood-A0","git_ref":"refs/tags/uplift-phase20-dogfood-A0","created_at":"2026-08-30T00:40:00Z","evidence":["evidence/phase20-dogfood-A0.json"]},
     {"id":"restart-A","kind":"restart-A","git_ref":"refs/tags/uplift-phase20","created_at":"2026-08-30T01:00:00Z","evidence":["evidence/phase20-context.json"]}
   ],
   "phases": [
@@ -40,9 +41,9 @@
       }
     },
     {
-      "id":"20-context-and-skills","status":"COMPLETE","attempts":1,"evidence":["evidence/phase20-context.json"],"blocker":null,
+      "id":"20-context-and-skills","status":"COMPLETE","attempts":1,"evidence":["evidence/phase20-dogfood-A0.json","evidence/phase20-context.json"],"blocker":null,
       "boundary_report":{
-        "what_changed":["sliced skills active","LCM+Mnemosyne baseline active"],"gates_passed":["context gate","local-only memory gate"],"failures_warnings":[],
+        "what_changed":["sliced skills active","LCM+Mnemosyne baseline active"],"gates_passed":["phase20-dogfood-A0","context gate","local-only memory gate"],"failures_warnings":[],
         "token_context_cost_impact":"first measured context reduction accepted","security_impact":"memory remains advisory",
         "usable_now":["first token/context improvements"],"hermes_action":"fresh-session","pi_action":"none",
         "remaining_phases":["30-router","40-security-and-policy","50-pi-and-lsp","60-evaluation-and-promotion","70-upgrades-and-rollback"],
