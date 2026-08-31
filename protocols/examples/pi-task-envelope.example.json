@@ -1,11 +1,19 @@
 {
-  "version":"2.1",
+  "version":"2.2",
   "task_id":"uplift-pi-fixture-001",
   "idempotency_key":"uplift-pi-fixture-001-attempt-1",
   "phase":"50-pi-and-lsp",
   "attempt":1,
   "role":"coder",
   "model_role":"coding.default",
+  "routing":{
+    "mission_id":"uplift-pi-fixture-mission-001",
+    "stage_id":"implement",
+    "workflow":"pi_worker",
+    "decision_sha256":"0000000000000000000000000000000000000000000000000000000000000000",
+    "router_engine":"rules-state-plus-semantic",
+    "router_maturity":"shadow"
+  },
   "objective":"Implement and test a non-sensitive Pi bridge fixture inside the isolated worktree without weakening network, privacy, policy, or merge controls.",
   "acceptance":["Typed task envelope is validated before worker launch","Pi completion waits for agent_settled","Fixture tests pass inside the constrained worktree","No LOCAL_ONLY or secret payload is sent to cloud adapters"],
   "workspace":{"repo":"hermes-pi-agentic-stack","worktree":"/tmp/uplift/pi-fixture-001","base_ref":"main","write_globs":["tools/pi-bridge/**","tests/pi-bridge/**"],"deny_globs":[".env","**/secrets/**"]},
