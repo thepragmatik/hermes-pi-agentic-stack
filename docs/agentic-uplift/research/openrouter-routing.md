@@ -1,84 +1,55 @@
 # OpenRouter Gateway, Model Roles and Provider Routing
 
-Snapshot: 2026-08-30.
+Snapshot: 2026-08-31. Re-verify raw OpenRouter and installed Hermes capabilities at execution time.
 
 ## Decision
 
-OpenRouter is the **default external inference gateway** for the uplift. It is downstream of our local security and mission-routing decisions:
+OpenRouter is the **default Tier-4 external inference gateway**, not the mission ontology and not the privacy/security boundary.
 
 ```text
 MISSION
-  |
-  v
-Tier 0: deterministic privacy / security / policy
-  |-- LOCAL_ONLY --> local path or BLOCKED
-  v
-Tier 1: local mission router
-  |  rules/state -> embedding prototype -> ModernBERT if earned
-  v
-research | coding | hybrid | review | auxiliary | abstain
-  |
-  v
-model-role binding
-  |
-  v
-OpenRouter model ID
-  |
-  v
-OpenRouter physical-provider routing
+  -> Tier 0 deterministic eligibility/security
+  -> Tier 1 mission-profile inference
+  -> Tier 2 workflow/agent selection
+  -> Tier 3 model-role/model optimization
+  -> Tier 4 OpenRouter physical-provider execution
 ```
 
-The boundaries are deliberate:
+Our routing contracts choose mission semantics, workflow and model intent. OpenRouter normally chooses the physical provider for the already-approved model/request.
 
-- **privacy/security routing** is deterministic and local; it runs before any cloud request;
-- **mission routing** is owned by our local router, ultimately a learned ModernBERT classifier only if evidence supports it;
-- **model selection** is owned by our role-binding configuration;
-- **physical provider selection** may be delegated to OpenRouter subject to our constraints;
-- **OpenRouter Auto** may be benchmarked for bootstrap/shadow/fallback/ambiguous generic work but is never the privacy boundary or final mission classifier.
+Direct DeepSeek, Z.ai, local MLX or another OpenAI-compatible/direct adapter is an alternate Tier-4 implementation. It must not change mission semantics.
 
-Direct Z.ai, DeepSeek or other provider APIs remain benchmarked alternatives. They are not the default architecture and do not receive credentials until direct access proves materially better on cost per accepted task, latency, cache behaviour, reliability, privacy, rate limits or parameter support.
+---
 
-## Bootstrap model
+# Why OpenRouter reduces infrastructure
 
-Do not require the optimized router before Hermes can build it.
+For an explicitly selected model, OpenRouter's current provider-routing API can handle much of the infrastructure we would otherwise have to maintain ourselves:
 
-The fresh bootstrap profile uses **one OpenRouter model** for early phases. Current research snapshot: `z-ai/glm-5.3-flash`. This ID is evidence, not a permanent constant: at installation time use current Hermes `hermes model` / profile alias model picker and record the exact resolved OpenRouter ID.
+- provider allow/deny/order;
+- provider fallback;
+- required-parameter support;
+- data-collection filtering;
+- per-request Zero Data Retention filtering;
+- provider sorting by price, throughput or latency;
+- maximum price constraints;
+- preferred latency/throughput thresholds;
+- model fallback chains;
+- physical-provider health/failover;
+- session/provider stickiness and prompt-cache reuse when a stable `session_id` is supplied.
 
-GLM-5.3-Flash is a pragmatic bootstrap candidate because the current OpenRouter listing describes it as an efficient coding/long-horizon agent model and it is inexpensive relative to larger reasoning models. The uplift must still measure tool correctness, accepted-task quality and provider behaviour rather than assuming capability from a model card.
+Therefore our router should not implement its own provider load balancer unless measured requirements cannot be expressed through OpenRouter or a direct-provider adapter.
 
-Bootstrap flow:
+## Abstract provider requirements vs current Hermes keys
 
-```text
-fresh narrow Hermes
-  -> OpenRouter
-  -> one GLM-Flash-class bootstrap model
-  -> Phases 00-20
-  -> build/validate local router in Phase 30
-  -> shadow routing
-  -> only later introduce multiple model roles
-```
+`protocols/routing-decision.schema.json` carries **abstract requirements** such as ZDR, data-collection policy, parameter support, performance/cost preferences, fallbacks and session affinity.
 
-## Steady-state role intent
+The adapter translates those requirements to the gateway actually used.
 
-The role names are architecture; model IDs are replaceable bindings.
-
-| Role | Research-snapshot candidate | Purpose |
-|---|---|---|
-| `bootstrap.default` | `z-ai/glm-5.3-flash` | initial single-model uplift |
-| `coding.default` | `z-ai/glm-5.3-flash` | Pi coding/tool loop candidate |
-| `research.default` | `deepseek/deepseek-v4-flash-0731` | research/synthesis candidate |
-| `review.default` | unbound until benchmark | independent-family review for higher risk |
-| `auxiliary.cheap` | unbound/optional | cheap bounded auxiliary work only if useful |
-
-Never spread these snapshot IDs through multiple policy documents. Keep runtime IDs in config/locks/evidence and re-verify current stable availability before promotion.
-
-## Hermes provider-routing controls
-
-Current Hermes documents these OpenRouter `provider_routing` controls:
+Current Hermes documentation exposes this OpenRouter subset under `provider_routing`:
 
 ```yaml
 provider_routing:
-  sort: price             # price | throughput | latency
+  sort: price
   only: []
   ignore: []
   order: []
@@ -86,69 +57,220 @@ provider_routing:
   data_collection: deny
 ```
 
-Treat that as the request-level routing policy Hermes actually supports today. Do not invent unsupported Hermes YAML keys merely because OpenRouter's raw API supports a larger provider object.
+Do not put raw OpenRouter-only keys into Hermes config unless the installed Hermes release documents/supports them.
 
-Use OpenRouter account/workspace privacy guardrails as a second layer where available. In particular, privacy restrictions must fail closed rather than relax merely to reach a cheaper endpoint.
+For requirements such as per-request `zdr`, max price/performance thresholds or stable OpenRouter `session_id`, the implementation must prove one of:
 
-### Preset warning
+1. current Hermes forwards the required field;
+2. an account/workspace guardrail enforces it;
+3. a small audited gateway adapter injects it;
+4. the request is blocked because the requirement cannot be guaranteed.
 
-Do not make an OpenRouter preset the sole provider-policy authority while Hermes also emits request-level `provider_routing`. A current Hermes issue reports that request-level provider fields can override preset provider policy. Until that interaction is explicitly qualified, keep one canonical request-level policy plus account-level guardrails and test the effective provider response.
+Never silently downgrade a requirement because the current client lacks a config field.
 
-## Provider stickiness and caching
+---
 
-Do not reroute the physical provider on every request merely to shave marginal price.
+# Model roles are not task-family labels
 
-For a long phase/session, prefer provider/model affinity when it improves:
+Task families describe **what the mission needs**. Model roles describe **replaceable capability/economic pools**.
 
-- prompt-cache hits;
-- behavioural/tool consistency;
-- TTFT stability;
-- retry rate;
-- accepted-task quality.
+A small initial role set is preferable to one role per task family:
 
-OpenRouter supports session-aware sticky routing/caching mechanisms, but the stack still measures actual cache-read tokens and effective provider continuity. A routing mode that constantly changes providers can be cheaper per nominal input token yet more expensive per accepted task.
+| Role | Intended characteristics | Likely task families |
+|---|---|---|
+| `bootstrap.default` | reliable tool-capable general agent for early uplift | most bootstrap work |
+| `general.default` | balanced general-purpose execution | synthesis, documents, orchestration, retrieval |
+| `reasoning.default` | stronger architecture/planning/analysis reasoning | design, planning, diagnosis, difficult analysis |
+| `research.default` | strong information gathering/synthesis/verification | research, synthesis, fact checking |
+| `coding.default` | strong tool/code behavior | implementation, debugging, refactoring, testing, DevOps |
+| `review.default` | independent-family checking/judging | code/security/architecture review, verification |
+| `multimodal.default` | required image/audio/video/file capability | multimodal missions |
+| `local.default` | local model/tool path | LOCAL_ONLY or offline-eligible work |
+| `auxiliary.cheap` | bounded low-risk cheap tasks | optional background/utility work |
 
-## OpenRouter Auto
+One mission can use several roles over ordered stages. The router is not required to create a new role whenever the task taxonomy grows.
 
-OpenRouter Auto is a **model router**, not our privacy boundary and not the final research-vs-code classifier.
+Snapshot model IDs belong in config/runtime locks, not in the task ontology.
 
-Allowed experiments:
+---
 
-- first-day bootstrap when an exact bootstrap model is unavailable;
-- shadow comparison against our local router;
-- low-risk generic auxiliary work;
-- bounded fallback when policy explicitly permits it.
+# Bootstrap
 
-Disallowed uses:
+Do not require an optimized router before Hermes can build it.
 
-- deciding whether sensitive content may leave the machine;
-- overriding `LOCAL_ONLY`;
-- silently replacing stable role bindings;
-- choosing the production research/coding lane after our router has authority;
-- hiding the actual model/provider from evidence.
-
-## Credential footprint
-
-Preferred steady state:
+The fresh bootstrap profile still uses **one explicit OpenRouter model** through Phase 20. Research snapshot candidate: GLM-5.3-Flash-class (`z-ai/glm-5.3-flash` at the current snapshot), re-verified with the live Hermes/OpenRouter catalog during setup.
 
 ```text
-OPENROUTER_API_KEY
+fresh narrow Hermes
+  -> OpenRouter
+  -> one verified bootstrap model
+  -> Phases 00 / 10 / 20
+  -> Phase 30 rules/state router + shadow challengers
+  -> later multi-role promotion only after gates
 ```
 
-Additional direct-provider credentials are a measured exception, not a default. Store the key through Hermes' provider setup/.env mechanism; never commit it or put it in bootstrap prompts/evidence.
+OpenRouter Auto may be an emergency bootstrap fallback only when explicit policy permits it; record the actual selected model.
 
-## Benchmark contract
+---
 
-Evaluate the gateway/provider layer on **cost and minutes per accepted task**, including:
+# OpenRouter Auto
 
-- fresh/cached input and output cost;
-- TTFT and wall time;
-- throughput and queue delay;
-- provider/model continuity;
+Auto is a **model router with a different objective and trust boundary**.
+
+Current Auto behavior is useful because it can choose among a changing model pool and exposes the resolved model. It also has best-effort multi-turn model/provider stickiness when session affinity is available.
+
+Use it for policy-approved sanitized missions as:
+
+- shadow comparator;
+- weak teacher/labeling signal;
+- bounded fallback;
+- bootstrap fallback if an explicit model disappears.
+
+Do not use it for:
+
+- `LOCAL_ONLY` or cloud-eligibility decisions;
+- secret/PII policy;
+- tool/network/sandbox authorization;
+- deciding whether Pi may receive production authority;
+- replacing our workflow planner;
+- hiding selected model/provider identity from telemetry.
+
+A useful Phase-30/60 record is:
+
+```text
+mission profile + deterministic requirements
+our workflow/model-role/model decision
+Auto resolved model
+actual physical provider when observable
+accepted/rejected outcome
+tokens + cached tokens
+TTFT / total latency
+retries/fallbacks
+human override
+cost
+```
+
+Auto disagreement is a feature for analysis, not an automatic correction.
+
+---
+
+# Session/provider stickiness and caching
+
+For long-running Hermes/Pi work, model/provider switching has a real economic cost.
+
+OpenRouter currently documents explicit sticky routing using a stable `session_id`. This can pin the resolved model/provider for a conversation or agent run on a best-effort basis and improve prompt-cache reuse.
+
+Use a stable session/workflow key where supported and measure:
+
+- actual provider continuity;
+- actual model continuity;
+- `cached_tokens` / cache-write tokens;
+- cache discount/cost when exposed;
+- TTFT changes;
+- retry/failover events;
+- behavior/tool correctness across a switch.
+
+At the 2026-08-31 snapshot, an open Hermes issue reports that normal Hermes OpenRouter chat requests do not forward OpenRouter's `session_id`. Treat provider stickiness as an **integration gap to qualify**, not a capability we already receive automatically. Prefer an upstream fix; if necessary, a thin gateway adapter may inject the stable session key behind our routing contract.
+
+Hysteresis and session switch budgets remain local Tier-1/3 responsibilities even when OpenRouter supplies physical-provider stickiness.
+
+---
+
+# Provider policy
+
+Translate hard requirements before tertiary optimization.
+
+Example abstract policy:
+
+```yaml
+zdr_required: true
+data_collection: deny
+require_parameters: true
+allow_fallbacks: true
+only: []
+ignore: []
+order: []
+sort: price
+max_price: null
+preferred_min_throughput: null
+preferred_max_latency: null
+session_affinity:
+  required: true
+  key: <stable workflow/session id>
+```
+
+Ordering principle:
+
+```text
+hard privacy/capability filters
+  -> eligible providers
+  -> reliability/availability
+  -> cache/session continuity
+  -> quality/latency/throughput/cost preference
+```
+
+A cheap endpoint that violates ZDR, parameter or modality requirements is not eligible.
+
+## Presets/account policy
+
+Use OpenRouter account/workspace guardrails as defense in depth. Do not make an external preset the sole policy authority while Hermes also sends request-level provider preferences. Qualify the effective merged behavior and record the actual provider policy used.
+
+---
+
+# Model fallback
+
+Separate two cases:
+
+1. **physical-provider fallback for the same model** — normally OpenRouter's job;
+2. **fallback to a different model** — a Tier-3 routing decision or explicit bounded model fallback.
+
+Do not let a generic fallback silently cross a quality, context, tool, modality, privacy or review boundary. If the fallback model is not eligible under the routing mission contract, fail instead of falling back.
+
+---
+
+# Direct-provider-capable abstraction
+
+OpenRouter-first does not mean OpenRouter-locked.
+
+Every gateway adapter should implement the same conceptual interface:
+
+```text
+execute(
+  selected_model,
+  provider_requirements,
+  stable_session_key,
+  request
+) -> response + actual model/provider/cost/usage metadata
+```
+
+Potential future adapters:
+
+- OpenRouter;
+- direct DeepSeek;
+- direct Z.ai;
+- local MLX/OpenAI-compatible endpoint;
+- another aggregator.
+
+A direct adapter is promoted only if matched outcomes show enough improvement in accepted-mission economics, latency, cache behavior, reliability, privacy or capabilities to justify an extra credential/integration/maintenance surface.
+
+---
+
+# Gateway benchmark
+
+Measure the gateway separately from mission-profile classification so provider behavior is not blamed on the semantic router.
+
+For each eligible model/gateway policy capture:
+
+- accepted-task/mission success;
+- actual model/provider;
+- fresh/cached input and output;
+- TTFT/wall time/throughput;
 - cache-hit/read share;
-- tool-call correctness and parameter support;
-- retries/fallbacks/rate-limit failures;
-- privacy/provider-policy compliance;
-- accepted-task quality.
+- parameter/tool correctness;
+- provider/model fallback count;
+- rate limits/outages;
+- ZDR/data-policy compliance;
+- physical-provider switch rate;
+- cost per accepted task/mission.
 
-Periodically compare OpenRouter against direct Z.ai/DeepSeek endpoints on the same frozen tasks. Direct access becomes a production exception only when the improvement is material enough to justify another credential and integration path.
+Periodically compare OpenRouter against direct-provider/local challengers on frozen matched tasks. Default remains OpenRouter until evidence earns an exception.
