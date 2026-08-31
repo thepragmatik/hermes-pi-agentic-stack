@@ -27,9 +27,14 @@ Enable Hermes `security-guidance` WARN mode where available as defense in depth 
 
 Seed secrets, PII and technical false-positive fixtures. A policy YAML, prompt or sanitizer unit test is not containment evidence.
 
-## Adoption Checkpoint C — human authority gate
+## Adoption Checkpoint C — evidence first, approval second
 
-This is the security-critical boundary. Any unresolved P0 enforcement/egress/containment issue means `BLOCKED`/`ROLLBACK`. Human approval is required before stronger cloud routing/delegation authority while P0 evidence remains incomplete.
+This is the security-critical boundary.
+
+1. **First**, every mandatory P0 enforcement/egress/containment/privacy gate for the requested authority increase must pass with durable evidence.
+2. Any failed, missing or unproven mandatory P0 gate means `BLOCKED`/`ROLLBACK`; remain at the existing authority level and repair/requalify.
+3. **Only after those gates pass**, explicit human approval is additionally required before granting stronger cloud routing/delegation authority.
+4. Human approval is not a waiver, exception or substitute for mandatory P0 evidence.
 
 Restart/reload enforcement/router processes when needed to prove the tested policy digest is actually active.
 
