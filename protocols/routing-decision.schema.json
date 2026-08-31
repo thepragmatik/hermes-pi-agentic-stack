@@ -117,7 +117,7 @@
         "model": {"type": "number", "minimum": 0, "maximum": 1}
       }
     },
-    "maturity": {"enum": ["researched", "designed", "prototype", "smoke-tested", "shadow", "canary", "production-approved"]},
+    "maturity": {"enum": ["researched", "designed", "prototype", "smoke-tested", "target-Mac-validated", "shadow", "canary", "production-approved"]},
     "reasons": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
   }
 }
