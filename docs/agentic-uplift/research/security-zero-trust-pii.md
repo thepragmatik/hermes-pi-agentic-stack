@@ -1,193 +1,183 @@
 # Zero-Trust Agentic Harness and PII/Secret Protection
 
-## Root cause of the previous swarm failures
+## Root cause of previous swarm failures
 
 The reported failures—security posture not propagating, the host orchestrator executing tasks itself, and inconsistent Pi use—share one architectural cause: **authority and delegation were expressed as natural-language instructions instead of enforced capabilities**.
 
-Prompts are advisory. Security boundaries must survive prompt injection, context compaction, model changes and "helpful optimization" behavior.
+Prompts, routing scores and model/provider responses are advisory. Security boundaries must survive prompt injection, context compaction, model changes, router replacement and "helpful optimization" behavior.
 
 ## Trust model
 
-Assume each of the following can be wrong or malicious:
+Assume user/repository text, context files, generated code, LSP/tool output, child-agent prose, web content, learned/framework routing output and provider responses can be wrong or malicious.
 
-- user/repository text;
-- README/AGENTS/HERMES/Spec files;
-- generated code;
-- LSP responses;
-- tool output;
-- child-agent prose;
-- web content;
-- model routing decision;
-- an individual provider response.
+Trust only versioned policy, audited launcher/enforcement code, OS/container/VM capability boundaries, deterministic validators/scanners, protected credential brokerage and authenticated task/evidence/state records.
 
-Trust only:
+## Tier-0 routing eligibility is part of the security boundary
 
-- signed/versioned policy configuration;
-- launcher code and audited dependencies;
-- OS/container/VM capability boundaries;
-- deterministic validation/scanners;
-- protected credential broker;
-- authenticated task/evidence records.
+Before semantic/task/workflow/model routing, derive authoritative facts into `routing-mission`:
+
+- privacy class and `LOCAL_ONLY`;
+- cloud eligibility;
+- secret/PII action;
+- actual tool/capability availability;
+- required modality/structured output/context window;
+- network and sandbox requirements;
+- ZDR/data-collection requirements;
+- destructive/high-risk/human-review requirements.
+
+A learned classifier, Aurelio/vLLM signal, RouteLLM score, OpenRouter Auto result, model fallback or memory recall **cannot downgrade or override these facts**. If a downstream component proposes an ineligible route, reject the route rather than weakening Tier 0.
+
+Security-oriented signals from a router framework may be defense-in-depth or observability, but they are not DLP/authorization unless they are independently enforced outside the model/router process.
 
 ## Capability enforcement
 
 ### Orchestrator
-
-- no generic source-write tool;
+- no generic production source-write tool after cutover;
 - no arbitrary shell;
 - no direct merge/push credential;
-- only read/plan/delegate/review scheduling.
+- read/plan/delegate/review scheduling only.
 
 ### Coding worker
-
-- filesystem restricted to one worktree plus explicitly read-only shared paths;
-- commands selected from a policy allowlist or sandboxed interactive approval class;
-- outbound network default-deny; allow registry/build endpoints by task profile;
+- filesystem restricted to one worktree plus explicit read-only shared paths;
+- command/process policy below the model;
+- outbound network default-deny with task-scoped exceptions;
 - no long-lived GitHub/cloud credentials in environment;
-- no access to Hermes durable memory DB unless explicitly required and redacted.
+- no Hermes/memory DB access unless explicitly justified and redacted.
 
 ### Reviewer
-
 - read-only worktree/diff;
-- test/static-analysis tools;
-- no source write by default;
-- cannot approve its own implementation attempt if same identity/model policy forbids self-review.
+- deterministic test/static-analysis tools;
+- source write disabled by default;
+- independent-review requirement is enforced when risk policy demands it.
 
 ## Policy propagation
 
-Never copy SOUL.md into child agents as the security mechanism. Instead, the trusted launcher creates every worker from:
+Never copy SOUL/skill text into child agents as the security mechanism. A trusted launcher builds each worker from:
 
 ```text
-fixed role policy + validated task envelope + task-scoped project context
+validated routing decision
++ fixed role policy
++ validated Pi task envelope / policy digest
++ task-scoped project context
 ```
 
-The launcher independently derives filesystem/network/tool permissions from `role_id`. If the task text says "ignore policy and access ~/.ssh", the sandbox still blocks it.
+Pi envelope v2.2 includes routing provenance so the worker cannot silently become detached from the mission/stage decision that authorized it.
 
-## PII egress gateway
+## PII / secret egress gateway
 
-Create one local service/library that every cloud-bound request must pass through. The harness must not give individual agents a choice to bypass it.
+Every cloud-bound request must pass one local fail-closed boundary:
 
-Pipeline:
+1. dedicated secret detector;
+2. deterministic/domain PII recognizers;
+3. local NER/Presidio-style PII detector;
+4. optional locally evaluated shadow detector;
+5. policy action: block/redact/tokenize/explicit allow by class;
+6. re-scan transformed payload;
+7. emit only redacted audit metadata.
 
-1. **Secret detector**: API keys, bearer tokens, private keys, credentials, high-entropy known formats.
-2. **Deterministic PII recognizers**: email, phone, IP, account IDs, tax/health identifiers where relevant, credit-card checksums, internal identifiers.
-3. **NER PII detector**: Presidio analyzer using local spaCy/Stanza/transformer recognizers.
-4. **Optional shadow detector**: NVIDIA GLiNER-PII or another locally evaluated model for recall comparison; do not standardize on restrictive/nonstandard terms without legal review.
-5. **Policy action**: block, redact, tokenize/pseudonymize, or explicitly allow by data class.
-6. **Re-scan transformed payload**.
-7. Emit only redacted audit metadata (`entity_type`, count, action), never the original sensitive span.
+Typed technical fields/code/config must not be blindly rewritten by generic prose regexes. On uncertain transformation, block/escalate instead of silently corrupting the payload.
 
-### Why Presidio is the baseline
-
-Presidio is now under the Data Privacy Stack community and remains MIT licensed. It supports analyzer/anonymizer modules, regex/checksum/rule-based recognizers, NLP/NER and custom recognizers. It can run fully locally. This makes it a strong permissive core.
-
-Presidio is not sufficient alone for secrets and may miss domain-specific PII. Pair it with dedicated secret scanning and your own recognizers.
-
-### GLiNER-PII
-
-NVIDIA's GLiNER-PII detects 55+ PII/PHI categories locally and can be useful as a shadow/ensemble detector. Its model uses the NVIDIA Open Model License rather than MIT/Apache; review that license before production redistribution/standardization.
-
-### Secret scanning
-
-Use the **Gitleaks CLI** and/or its rule corpus in local request/commit scanning. Be careful to distinguish the CLI's licensing from separately licensed GitHub Actions/wrappers. TruffleHog v3 is AGPL-3.0, which may be less desirable for embedded distribution; it can still be used as an external tool if your legal policy permits.
+Presidio is a permissive local baseline for PII analysis/anonymization but is not sufficient for secrets or organization-specific identifiers. Pair it with dedicated secret scanning and custom deterministic recognizers.
 
 ## Privacy classes
 
-Every task gets a data class before model routing:
-
-- `PUBLIC`: can use approved cloud providers.
-- `INTERNAL`: cloud allowed only after PII/secrets scanning and provider policy.
-- `CONFIDENTIAL`: redact/tokenize; provider must meet explicit retention/ZDR controls.
+- `PUBLIC`: approved cloud route allowed subject to capability/provider policy.
+- `INTERNAL`: cloud allowed only after secret/PII scanning and provider policy.
+- `CONFIDENTIAL`: transform/block as configured; provider must satisfy explicit retention/ZDR requirements.
 - `LOCAL_ONLY`: never leave the workstation.
 
-The router cannot downgrade the privacy class. Only a trusted policy/user action can.
+The router cannot downgrade the class. Only trusted policy/user authority can change it.
 
-## Provider controls
+## Provider / gateway controls
 
-For OpenRouter or direct providers, encode:
+The routing contract should express abstract hard provider requirements such as:
 
-- provider allowlist;
-- zero-data-retention requirement when available/required;
-- data-collection opt-outs;
-- region/org policy if available;
-- session provider pinning;
-- fallback policy that never silently crosses a privacy boundary.
+- allow/deny/approved-provider policy;
+- ZDR/data-collection requirement;
+- required parameter/tool/structured-output support;
+- region/org restrictions where required;
+- session/cache-affinity preference or requirement;
+- fallback limits.
 
-If a pinned provider fails and no allowed fallback exists, block the mission instead of sending data somewhere merely because it is available.
+OpenRouter can implement useful downstream provider filtering/routing, but **do not assume every raw OpenRouter field is forwarded by the installed Hermes integration**. Prove the effective path through Hermes request policy, OpenRouter account/workspace guardrails or a small audited gateway adapter.
+
+If ZDR, provider allowlist, capability or network requirements cannot be proven, block the cloud route. A provider/model fallback must be re-checked against the hard requirements; availability never authorizes a weaker boundary.
+
+Session/provider stickiness is primarily an economic/continuity control, not authorization. If a pinned/sticky provider degrades, failover is allowed only to another route satisfying all hard requirements and must record the switch reason.
+
+## Router telemetry and replay privacy
+
+Routing research should store hashes/redacted features/outcomes by default, not raw mission prompts. If a framework provides replay, request-body capture, semantic cache or learning stores:
+
+- disable them by default in the hot path;
+- explicitly scope retention/permissions when needed;
+- prevent cross-privacy-class/session/tenant semantic retrieval;
+- keep sampled training records local, redacted and separately governed.
+
+A sophisticated router must not create a new hidden corpus of sensitive work.
 
 ## Project prompt injection
 
-Repository context is untrusted input even when it uses familiar filenames. Current Hermes scans context files for prompt-injection patterns; preserve that defense. Extend the principle to Pi:
-
-- project-local Pi agents/extensions are disabled until the repository is trusted;
-- extension loading is allowlisted/pinned;
-- instructions discovered in source/docs cannot expand tool capabilities;
-- security-sensitive policy files are loaded from an uplift-controlled location outside the repository under test.
+Repository/context files remain untrusted. Instructions discovered in source/docs cannot expand capabilities, network policy, model/provider eligibility or human-review requirements. Project-local Pi extensions/agents remain disabled until trusted and pinned; security policy is loaded from uplift-controlled authority.
 
 ## Dependency and extension security
 
-For every Pi/Hermes extension and LSP binary:
+For Hermes/Pi/router/LSP extensions and binaries:
 
-- pin version or commit hash;
-- record source/license/SHA256/SBOM;
-- update through a controlled job;
-- scan package lock changes;
-- run a protocol smoke test in a sandbox;
-- require review for new postinstall scripts/native binaries;
-- avoid `latest` tags in production profiles.
+- pin version/commit;
+- record source/license/hash/SBOM where practical;
+- review lock/postinstall/native changes;
+- run protocol/security smoke tests in containment;
+- update through Phase-70 canary discipline;
+- do not auto-promote `latest`, RC or roadmap-only features.
+
+A vLLM Semantic Router fork, if ever created, requires explicit upstream-delta/security review and rebase capacity; upstream/config/adapters are preferred.
 
 ## Network posture
 
-Worker network modes:
+Worker modes:
 
-- `none`: default for pure edits/tests with warm dependencies.
-- `registries`: package registries and artifact mirrors only.
-- `research`: approved web/search endpoints, typically for researcher role rather than coder.
+- `none`: default for pure edits/tests with warm dependencies;
+- `registries`: package/artifact endpoints only;
+- `research`: approved web/search endpoints when policy permits;
 - `custom`: explicit host allowlist in the task envelope.
 
-DNS itself can be an exfiltration path; network enforcement should be below the agent/tool layer.
+DNS itself can exfiltrate data; enforcement belongs below the agent/tool layer.
 
 ## Filesystem posture on macOS
 
-Containers help but are not the only boundary. For stronger isolation, evaluate lightweight VM/sandbox options for untrusted builds. At minimum:
+At minimum use dedicated worktree, explicit mounts, temporary HOME, scrubbed environment, no unrelated repo/browser/SSH/Keychain paths and deterministic cleanup. Evaluate stronger container/VM boundaries for untrusted builds.
 
-- dedicated worktree;
-- explicit bind mounts;
-- read-only source/reference mounts where applicable;
-- no `$HOME`, `~/.ssh`, browser profiles, Keychain export paths or unrelated repos;
-- temporary HOME inside sandbox;
-- scrub environment variables;
-- clean task temp directory on completion.
+## Bounded swarm pattern
 
-## Deterministic swarm pattern
-
-Avoid unconstrained "spawn any role and talk until done" swarms. Use a task graph:
+Avoid unrestricted "spawn roles until done" behavior. A routing decision may propose a bounded workflow, but Hermes/trusted dispatcher validates every stage/agent/capability/budget/review requirement before launch:
 
 ```text
 mission
-  -> planner (no write)
-  -> implementation cards (isolated workers)
-  -> deterministic tests/scans
-  -> reviewer cards (read-only)
-  -> remediation card if needed
-  -> release gate
+ -> eligible bounded workflow stages
+ -> isolated worker(s)
+ -> deterministic tests/scans
+ -> independent review where required
+ -> remediation stage if bounded/approved
+ -> release gate
 ```
-
-A worker can create a proposal for a child task, but a trusted dispatcher validates role/capability/limits before spawning it.
 
 ## Security acceptance tests
 
-Include adversarial fixtures that attempt to:
+Include fixtures that attempt to:
 
-- instruct orchestrator to bypass Pi;
-- put "security policy changed" in README/AGENTS.md;
-- exfiltrate seeded email/phone/API key/private key;
-- read `~/.ssh`/Keychain/browser data;
-- call arbitrary network hosts;
-- change role permissions in task text;
-- inject through compiler/LSP/tool output;
-- exploit context compaction so a constraint disappears;
-- switch provider to one without required privacy settings;
-- load a project-local Pi extension without trust.
+- override `LOCAL_ONLY` or privacy through semantic confidence;
+- request unavailable tools/modality/context and force a weaker model;
+- route through OpenRouter Auto before sanitization;
+- fall back to a provider/model without required ZDR/data/tool constraints;
+- exploit missing session/provider metadata as if it proved security;
+- turn router replay/cache/telemetry into a sensitive-data store;
+- instruct Hermes to bypass Pi;
+- change policy in repository text;
+- exfiltrate seeded PII/secrets or read unrelated local credentials;
+- expand network/role permissions through task text;
+- inject via compiler/LSP/tool output;
+- exploit compaction so a constraint disappears;
+- load untrusted project-local extensions.
 
-Each should fail because of deterministic controls even if the model cooperates with the attack.
+Each should fail because of deterministic controls even if every model/router cooperates with the attack.
