@@ -306,7 +306,7 @@ def main():
   if "metrics" in result:
    m=result["metrics"];print(f"{name}\ttask-micro-F1={m['task_family']['micro_f1']:.3f}\tworkflow={m['workflow_accuracy']:.3f}\tphase={m['phase_accuracy']:.3f}\thard={sum(m['hard_constraint_violations'].values())}\tp95={m['latency_ms']['p95']:.2f}ms",file=sys.stderr)
  doc={"schema_version":2,"generated_at_epoch":time.time(),"host":{"platform":platform.platform(),"python":sys.version.split()[0],"machine":platform.machine()},"privacy":{"raw_text_included":a.include_text,"note":"Prompt SHA-256 only by default. Tier 0 hard constraints apply before external/cloud adapters."},"evaluation":{"note":"Task/profile inference, hard eligibility, workflow choice, runtime operations and optional outcome economics are reported separately. Not every candidate addresses every tier."},"results":results}
- if a.fail_on-hard-violations:
+ if a.fail_on_hard_violations:
   bad=sum(sum(r.get("metrics",{}).get("hard_constraint_violations",{}).values()) for r in results)
   if bad:raise SystemExit(f"hard routing constraint violations: {bad}")
  text=json.dumps(doc,indent=2 if a.pretty else None);Path(a.output).write_text(text+"\n",encoding="utf-8") if a.output else print(text)
