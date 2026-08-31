@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thepragmatik.github.io/hermes-pi-agentic-stack/agent/protocols/routing-mission.schema.json",
+  "title": "Hermes Routing Mission Profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "mission_id", "mission_profile", "requirements", "privacy", "risk", "session", "optimization", "provenance"],
+  "$defs": {
+    "taskFamily": {
+      "enum": [
+        "research", "synthesis", "architecture_design", "planning_decomposition",
+        "coding_implementation", "debugging_diagnosis", "refactoring", "testing",
+        "code_review", "security_review", "devops_configuration", "data_analysis",
+        "document_generation_transformation", "retrieval_memory",
+        "agent_supervision_orchestration", "long_running_tool_execution",
+        "multimodal_analysis", "verification_fact_check", "other"
+      ]
+    },
+    "workflowPhase": {
+      "enum": [
+        "discovery", "synthesis", "design", "planning", "implementation",
+        "diagnosis", "testing", "review", "operation", "maintenance",
+        "retrieval", "supervision", "unknown"
+      ]
+    },
+    "intensity": {"enum": ["none", "low", "medium", "high"]},
+    "privacyClass": {"enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "LOCAL_ONLY"]}
+  },
+  "properties": {
+    "version": {"const": "1.0"},
+    "mission_id": {"type": "string", "minLength": 1},
+    "mission_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tasks", "domains", "phase", "complexity", "uncertainty", "reasoning_intensity", "tool_intensity"],
+      "properties": {
+        "tasks": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/taskFamily"}},
+        "domains": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "phase": {"$ref": "#/$defs/workflowPhase"},
+        "complexity": {"enum": ["low", "medium", "high", "very_high"]},
+        "uncertainty": {"type": "number", "minimum": 0, "maximum": 1},
+        "reasoning_intensity": {"$ref": "#/$defs/intensity"},
+        "tool_intensity": {"$ref": "#/$defs/intensity"}
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capabilities", "tools", "modalities", "min_context_tokens", "structured_output", "coding_agent", "long_running", "network_access", "sandbox_required"],
+      "properties": {
+        "capabilities": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "tools": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "modalities": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["text", "image", "audio", "video", "file"]}},
+        "min_context_tokens": {"type": "integer", "minimum": 0},
+        "structured_output": {"type": "boolean"},
+        "coding_agent": {"enum": ["required", "preferred", "forbidden", "not_applicable"]},
+        "long_running": {"type": "boolean"},
+        "network_access": {"enum": ["none", "allowlisted", "internet"]},
+        "sandbox_required": {"type": "boolean"}
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["class", "cloud_allowed", "secret_action", "pii_action", "zdr_required"],
+      "properties": {
+        "class": {"$ref": "#/$defs/privacyClass"},
+        "cloud_allowed": {"type": "boolean"},
+        "secret_action": {"const": "block"},
+        "pii_action": {"enum": ["allow", "redact", "tokenize", "block"]},
+        "zdr_required": {"type": "boolean"}
+      }
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "destructive", "independent_review_required", "human_approval_required"],
+      "properties": {
+        "level": {"enum": ["low", "medium", "high", "critical"]},
+        "destructive": {"type": "boolean"},
+        "independent_review_required": {"type": "boolean"},
+        "human_approval_required": {"type": "boolean"}
+      }
+    },
+    "session": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["phase_sticky", "cache_affinity", "switch_budget"],
+      "properties": {
+        "session_id": {"type": ["string", "null"]},
+        "current_workflow": {"type": ["string", "null"]},
+        "current_model_role": {"type": ["string", "null"]},
+        "phase_sticky": {"type": "boolean"},
+        "cache_affinity": {"enum": ["none", "prefer", "strong"]},
+        "switch_budget": {"type": "integer", "minimum": 0}
+      }
+    },
+    "optimization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["quality_floor", "latency_class", "cost_preference", "provider_reliability_floor"],
+      "properties": {
+        "quality_floor": {"type": "number", "minimum": 0, "maximum": 1},
+        "latency_class": {"enum": ["interactive", "standard", "batch"]},
+        "cost_preference": {"enum": ["minimize", "balanced", "quality_first"]},
+        "max_cost_usd": {"type": ["number", "null"], "minimum": 0},
+        "provider_reliability_floor": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Field-path to derivation source. Deterministic safety/eligibility facts must not be relabeled as learned inference.",
+      "additionalProperties": {"enum": ["deterministic", "human", "inferred", "measured", "default"]}
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"privacy": {"properties": {"class": {"const": "LOCAL_ONLY"}}, "required": ["class"]}}, "required": ["privacy"]},
+      "then": {"properties": {"privacy": {"properties": {"cloud_allowed": {"const": false}}, "required": ["cloud_allowed"]}, "requirements": {"properties": {"network_access": {"const": "none"}}, "required": ["network_access"]}}}
+    }
+  ]
+}
