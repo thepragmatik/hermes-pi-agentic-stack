@@ -31,6 +31,6 @@ After a privacy-controlled Pi canary passes, remove ordinary production Hermes s
 
 Recreate disposable Pi workers under the validated bridge/LSP/sandbox/model/policy configuration. Never rely on a long-running worker created before the cutover.
 
-Production authority cutover requires human approval while P0 readiness gates remain in force.
+The Phase-50 protocol, containment, privacy and bypass gates must pass before any production coding-authority cutover. If policy requires human approval, that approval is **additional after the mandatory gates pass**; it cannot waive or substitute for a failed/unproven gate.
 
 Persist state/evidence, send the required phase-boundary report, and stop before Phase 60.
