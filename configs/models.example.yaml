@@ -1,10 +1,12 @@
-# ARCHITECTURAL MODEL-ROLE CONFIG EXAMPLE — runtime IDs must be re-verified.
-version: 2
+# ARCHITECTURAL MODEL/ROUTER CONFIG EXAMPLE — runtime IDs/capabilities must be re-verified.
+version: 3
 
 gateway:
   default: openrouter
   credential_env: OPENROUTER_API_KEY
   direct_provider_credentials: benchmark_only
+  mission_contract: protocols/routing-mission.schema.json
+  decision_contract: protocols/routing-decision.schema.json
 
 bootstrap:
   role: bootstrap.default
@@ -14,41 +16,82 @@ bootstrap:
   model_snapshot_example: z-ai/glm-5.3-flash
   single_model_until_router_shadow_passes: true
 
+# Roles are replaceable capability/economic pools, not a 1:1 copy of task families.
 roles:
+  general.default:
+    gateway: openrouter
+    model_env: GENERAL_MODEL_ID
+    bind_only_after_benchmark: true
+    task_family_examples: [synthesis, document_generation_transformation, retrieval_memory, agent_supervision_orchestration]
+  reasoning.default:
+    gateway: openrouter
+    model_env: REASONING_MODEL_ID
+    bind_only_after_benchmark: true
+    task_family_examples: [architecture_design, planning_decomposition, debugging_diagnosis, data_analysis]
   research.default:
     gateway: openrouter
     model_env: RESEARCH_MODEL_ID
     snapshot_example: deepseek/deepseek-v4-flash-0731
     session_sticky: true
     require_tools: true
+    task_family_examples: [research, synthesis, verification_fact_check]
   coding.default:
     gateway: openrouter
     model_env: CODING_MODEL_ID
     snapshot_example: z-ai/glm-5.3-flash
     session_sticky: true
     require_tools: true
+    task_family_examples: [coding_implementation, debugging_diagnosis, refactoring, testing, devops_configuration]
   review.default:
     gateway: openrouter
     model_env: REVIEW_MODEL_ID
     independent_family_required_for_high_risk: true
+    bind_only_after_benchmark: true
+    task_family_examples: [code_review, security_review, verification_fact_check]
+  multimodal.default:
+    gateway: openrouter
+    model_env: MULTIMODAL_MODEL_ID
+    bind_only_after_benchmark: true
+    required_capability: multimodal
+  local.default:
+    gateway: local
+    model_env: LOCAL_MODEL_ID
     bind_only_after_benchmark: true
   auxiliary.cheap:
     gateway: openrouter
     model_env: AUX_MODEL_ID
     optional: true
     bind_only_after_benchmark: true
-  local_router:
-    family: embedding_or_encoder
-    progression:
-      - deterministic_rules
-      - frozen_embedding_head
-      - fine_tuned_modernbert_if_justified
-    preferred_examples: [nomic-ai/modernbert-embed-base, ModernBERT-base]
-    resident_memory_target_gb: 5
+
+router:
+  hot_path:
+    contract_first: true
+    local_before_cloud: true
+    initial_engine: deterministic_rules_state
+    phase_30_mode: shadow
+    candidates:
+      - name: deterministic_rules_state
+        maturity: prototype
+      - name: minimal_embedding
+        maturity: designed
+      - name: aurelio_semantic_router
+        maturity: researched
+      - name: vllm_semantic_router
+        maturity: researched
+        preferred_medium_term_candidate: true
+      - name: modernbert_multihead
+        maturity: researched
+        train_only_if_outcome_gate_passes: true
+    session_hysteresis: true
+    switch_budget_required: true
+  research_plane:
+    candidates: [llmrouter, routellm, openrouter_auto_shadow, modernbert_training]
+    may_be_heavy: true
+    never_required_on_every_request: true
 
 # This mirrors only the provider-routing controls Hermes currently documents.
-# Account/workspace privacy guardrails on OpenRouter remain an additional boundary.
-openrouter_provider_routing:
+# Raw OpenRouter capabilities are broader and are translated by the gateway adapter.
+hermes_openrouter_provider_routing:
   sort: price
   only: []
   ignore: []
@@ -56,10 +99,20 @@ openrouter_provider_routing:
   require_parameters: true
   data_collection: deny
 
+# Abstract requirements that the adapter MUST enforce or fail closed.
+provider_requirements_defaults:
+  zdr_required: false
+  data_collection: deny
+  require_parameters: true
+  allow_fallbacks: true
+  sort: price
+  session_affinity: prefer
+
 # Invariants:
-# - deterministic privacy/security policy runs BEFORE this gateway;
-# - the local mission router chooses lane/model role/model, not OpenRouter Auto;
-# - OpenRouter chooses a physical provider subject to our constraints;
-# - provider/model affinity should stay sticky when caching/behaviour benefits;
-# - direct Z.ai/DeepSeek credentials are added only if measured evidence justifies them;
-# - volatile IDs/prices belong in runtime locks/evidence, not architecture prose.
+# - deterministic privacy/security/capability eligibility runs BEFORE learned routing/gateway;
+# - task families may be multi-label/multi-stage; do not collapse them into research/coding/hybrid;
+# - the local stack chooses workflow + model role/model; OpenRouter normally chooses physical provider;
+# - OpenRouter Auto is shadow/bootstrap/fallback only, never privacy or final workflow authority;
+# - a gateway lacking required ZDR/session/capability semantics must fail closed or use an audited adapter;
+# - direct provider credentials are added only if measured accepted-mission economics justify them;
+# - volatile IDs/prices/capabilities belong in runtime locks/evidence, not architecture prose.
