@@ -1,35 +1,102 @@
-# Phase 30 — Local Mission Router + OpenRouter Roles
+# Phase 30 — Routing Contracts + Small Router + Shadow Bake-off
 
-Start this phase in the **fresh optimized Hermes session required by Checkpoint A**.
+Start in the **fresh optimized Hermes session required by Checkpoint A**.
 
-Implement routing in this order:
+The objective is not to build a sophisticated router immediately. Establish one replaceable routing seam, a tiny safe baseline, then shadow challengers.
 
-1. Tier 0 deterministic local privacy/security policy;
-2. deterministic agent-state gates;
-3. compact semantic routing;
-4. confidence calibration, hysteresis and abstention;
-5. optional second-stage difficulty/preference escalation.
+## Stable seam
 
-Separate responsibilities:
+Use:
+
+- `protocols/routing-mission.schema.json` for mission profile + deterministic requirements/session/optimization;
+- `protocols/routing-decision.schema.json` for eligible paths + bounded workflow stages + model/gateway/provider requirements.
+
+Router frameworks consume/emit these contracts. Hermes/Pi semantics must not depend on a framework-specific label/API.
+
+## Routing order
 
 ```text
-local policy -> local mission lane -> model role/model -> OpenRouter -> physical provider
+Tier 0 deterministic eligibility/security
+ -> Tier 1 multi-label mission-profile inference
+ -> Tier 2 bounded workflow/agent selection
+ -> Tier 3 model-role/model economic optimization
+ -> Tier 4 OpenRouter-first gateway/provider execution
 ```
 
-`LOCAL_ONLY` never reaches OpenRouter. The local router decides research/coding/hybrid/review/auxiliary/abstain and role/model; OpenRouter provider routing is downstream. OpenRouter Auto is a shadow/fallback experiment only, never privacy or final mission classification.
+Tier 0 owns `LOCAL_ONLY`, secret/PII/cloud policy, available/required tools, modality, context, Pi requirement, network/sandbox, ZDR/retention and required approval/review. A learned classifier cannot override these facts.
 
-Follow `research/router-training-control.md` and `research/openrouter-routing.md`. Compare deterministic state rules, embedding prototypes and frozen `nomic-ai/modernbert-embed-base` 256d/768d with the same calibrated lightweight head. Fine-tune ModernBERT only after representative redacted real missions/outcomes, deduplication, stable ontology, mission/repository/session/time holdout, ambiguous/hybrid examples and frozen-head plateau show it is justified.
+Tier 1 may infer task families such as research, synthesis, design, planning, implementation, diagnosis, refactor, test, review, security review, DevOps, data analysis, documents, retrieval, orchestration, long-running tools, multimodal and fact verification. Missions are multi-label and may transition stages; do not force `research -> design -> implementation -> test -> review` into `hybrid`.
 
-Route **phases rather than micro-turns**. Use hysteresis; measure route-switch rate and OpenRouter model/physical-provider cache continuity.
+## First router
 
-Keep volatile model IDs in `configs/models.example.yaml`/runtime locks. Research snapshot intent is GLM-5.3-Flash-class for bootstrap/coding and DeepSeek-V4-Flash-class for research, both through OpenRouter; re-verify exact current IDs via Hermes/OpenRouter before binding.
+Implement first:
 
-Use only provider-routing fields actually supported by the installed Hermes release. Do not assume an OpenRouter preset overrides Hermes request-level provider policy without an explicit effective-policy test.
+```text
+deterministic eligibility
+ + deterministic agent/workflow state
+ + simple multi-label capability rules
+ + abstain
+```
 
-Run a representative redacted shadow corpus. Promotion evidence includes accepted-task utility/regret, high-severity lane errors, zero observed `LOCAL_ONLY -> cloud`, calibration/abstention, route-switch rate, cache continuity, local latency/RSS, tool correctness and retries.
+It should run locally with no heavy ML/runtime dependency.
+
+## Shadow candidates
+
+Use `research/local-routing-models.md`, `router-training-control.md` and `openrouter-routing.md`.
+
+Compare where technically feasible:
+
+A. rules/state;
+B. minimal local embedding prototype;
+C. Aurelio Semantic Router;
+D. vLLM Semantic Router;
+E. ModernBERT only after its data gate;
+F. relevant LLMRouter algorithms in the research plane;
+G. RouteLLM-style Tier-3 quality/difficulty scoring;
+H. OpenRouter Auto on policy-approved sanitized missions only.
+
+Current research hypothesis: vLLM Semantic Router is the strongest medium-term adoption candidate because its signal/projection/decision architecture and session-aware switching align with Tier 1/3. It remains shadow until evidence earns its heavier runtime. Prefer config/adapters/upstream contributions; do not fork merely for convenience.
+
+Aurelio is the lighter semantic challenger. LLMRouter stays in the research/training plane. RouteLLM scores strong-vs-economical choices after eligibility/workflow. Auto is a weak teacher/comparator, never privacy or workflow authority.
+
+## Roles and OpenRouter
+
+Roles are reusable capability/economic pools such as general, reasoning, research, coding, review, multimodal, local and optional cheap auxiliary—not one role per task-family label.
+
+Keep volatile model IDs in config/runtime evidence and re-verify current capability/availability before binding.
+
+OpenRouter is Tier 4 and normally chooses the physical provider. Current Hermes exposes only a subset of raw OpenRouter provider policy; required ZDR/session-affinity/performance semantics must be enforced by the actual client/account/adapter or fail closed.
+
+Measure provider/model stickiness and cached tokens. Do not assume current Hermes forwards OpenRouter `session_id` until tested.
+
+## Shadow evidence
+
+The existing explicit bootstrap/fixed path remains authoritative.
+
+Default telemetry contains redacted feature summaries/hashes, not raw sensitive prompts. Record contract/engine version, profile/workflow/model/provider decision, actual model/provider when observable, fresh/cached tokens, TTFT/wall time, router latency/RSS, tool calls, retries/fallbacks/switches, tests/review, human override, accepted/rejected outcome, failure reason and cost.
+
+Measure:
+
+- zero hard-eligibility violations;
+- multi-label task-family/profile metrics;
+- uncertainty/abstention behavior;
+- workflow/stage correctness where labels are meaningful;
+- accepted-task/mission regret;
+- cost per accepted mission;
+- tool/capability failures;
+- retries/human overrides;
+- route/model/provider switch rate;
+- cache continuity;
+- TTFT/wall time;
+- local p50/p95/p99 latency + RSS;
+- operational/dependency complexity.
+
+## ModernBERT
+
+Do not train a `research|coding|hybrid` classifier. A future ModernBERT may use calibrated multi-label/multi-head outputs for task families/domain/phase/complexity/reasoning/tool/context-need/uncertainty only after representative redacted/deduplicated real Hermes missions, multi-stage outcomes, clean mission/repo/session/time holdouts and learning curves show simpler candidates have plateaued on routing regret/accepted-mission economics.
 
 ## Restart/Canary Checkpoint B
 
-A passing Phase 30 enters **shadow mode only**. Reload/restart the router integration if required and prefer a fresh shadow session so the tested router/config is demonstrably active. Do not grant routing authority yet.
+A passing Phase 30 remains **shadow only**. Reload/restart the routing integration if required and prefer a fresh shadow session so the tested contracts/engine/config are demonstrably active. Do not grant routing authority yet.
 
 Persist state/evidence, send the required phase-boundary report, and stop before Phase 40.
