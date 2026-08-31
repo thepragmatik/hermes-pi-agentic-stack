@@ -31,7 +31,7 @@ Do not put changing task lists, benchmark results, current file lists, live work
 
 ### Cache rule
 
-Provider prompt caches require stable prefixes. Avoid changes to T0 inside a phase/session unless correctness requires a rebuild. Model/provider/account switching also destroys cache affinity, so role routing should remain sticky inside a phase.
+Provider prompt caches require stable prefixes. Avoid changes to T0 inside a phase/session unless correctness requires a rebuild. Model/provider/account switching also destroys cache affinity, so role/model/provider selection should remain sticky inside a bounded workflow stage when policy and reliability permit.
 
 ## T1 — active mission capsule
 
@@ -56,10 +56,14 @@ active_files:
   - ...
 worker_state:
   active_task_ids: []
-  current_lane: research|coding|hybrid|local_only
 routing_state:
-  last_route: ...
-  confidence: ...
+  workflow: multi_stage
+  stage_id: design
+  task_families: [research, architecture_design]
+  model_role: reasoning.default
+  router_engine: rules-state
+  router_maturity: shadow
+  decision_ref: evidence/routing/decision-....json
 privacy_class: INTERNAL
 policy_digest: sha256:...
 evidence_index:
@@ -68,7 +72,9 @@ evidence_index:
 blockers: []
 ```
 
-This capsule is **not** the authoritative state store. `protocols/uplift-state.schema.json` remains authoritative for execution state. The capsule is a context projection generated from durable state + current mission metadata.
+This capsule is **not** the authoritative state store. `protocols/uplift-state.schema.json` remains authoritative for execution state; `protocols/routing-mission.schema.json` and `protocols/routing-decision.schema.json` define the routing seam. The capsule is a compact context projection generated from those durable/current sources.
+
+Do not reduce a multi-stage mission to a `research|coding|hybrid` lane. Project only the current bounded workflow/stage and enough routing provenance to recover why that stage/model role is active.
 
 ### Update frequency
 
@@ -80,13 +86,14 @@ Regenerate T1 only when one of these changes materially:
 - active repository/workspace;
 - worker task graph;
 - acceptance criteria/blocker state;
-- routing lane at a deliberate phase boundary.
+- deliberate workflow-stage/model-role transition;
+- routing decision change that materially affects execution or cache/session affinity.
 
 Do not rewrite it after every command/tool call. Excess churn defeats prompt-cache continuity and encourages agents to treat incidental events as mission state.
 
 ### Injection posture
 
-Prefer an API-call-time/tail or phase-start mechanism that does not mutate the stable system prefix on every turn. If the chosen Hermes integration rebuilds cached system context when T1 changes, change it only at the phase boundaries above and measure the cache cost.
+Prefer an API-call-time/tail or phase-start mechanism that does not mutate the stable system prefix on every turn. If the chosen Hermes integration rebuilds cached system context when T1 changes, change it only at the phase/stage boundaries above and measure the cache cost.
 
 Do not blindly mirror T1 into `MEMORY.md`, `USER.md`, project context files and the chat transcript simultaneously.
 
@@ -148,11 +155,16 @@ Skill slicing and temperature control solve different layers of the same problem
 
 A pruned skill/slice is treated as unloaded. Reload only when the mission state explicitly requires it.
 
-## Relationship to Hermes compression/session search
+## Relationship to LCM, Mnemosyne and session search
 
-Do not replace Hermes' built-in compressor merely to implement this architecture. Lean compaction and `session_search` recovery already provide a useful fallback for long sessions.
+The selected Phase-20 baseline is **LCM + Mnemosyne**:
 
-The mission capsule should make recovery cheaper: after compression/restart, load authoritative uplift state, regenerate T1, load the current skill slice and fetch only unresolved T2 evidence. Do not replay the historical transcript.
+- LCM owns bounded current-session context and exact compaction recovery;
+- Mnemosyne owns curated cross-session durable memory;
+- `session_search` / host history remains forensic/raw session recall;
+- the T1 capsule remains a projection, not another durable-memory authority.
+
+After compaction/restart, load authoritative uplift state, regenerate T1, load the current skill slice and fetch only unresolved T2 evidence. Do not replay the historical transcript or rely on a remembered routing lane.
 
 ## Measurement
 
@@ -164,7 +176,7 @@ Track per accepted task/phase:
 - skill/slice tokens loaded;
 - tool-schema tokens;
 - fresh vs cached provider input;
-- cache invalidations caused by model/provider/context changes;
+- cache invalidations caused by model/provider/workflow/context changes;
 - compactions;
 - task success/retries/human intervention.
 
