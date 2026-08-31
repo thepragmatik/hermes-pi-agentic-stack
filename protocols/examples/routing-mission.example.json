@@ -1,0 +1,66 @@
+{
+  "version": "1.0",
+  "mission_id": "auth-uplift-001",
+  "mission_profile": {
+    "tasks": ["research", "architecture_design", "coding_implementation", "testing", "security_review"],
+    "domains": ["agentic-systems", "security", "software-engineering"],
+    "phase": "design",
+    "complexity": "high",
+    "uncertainty": 0.31,
+    "reasoning_intensity": "high",
+    "tool_intensity": "high"
+  },
+  "requirements": {
+    "capabilities": ["web_research", "structured_output", "filesystem_write", "code_execution", "lsp"],
+    "tools": ["web", "git", "tests", "lsp"],
+    "modalities": ["text", "file"],
+    "min_context_tokens": 32768,
+    "structured_output": true,
+    "coding_agent": "required",
+    "long_running": true,
+    "network_access": "allowlisted",
+    "sandbox_required": true
+  },
+  "privacy": {
+    "class": "INTERNAL",
+    "cloud_allowed": true,
+    "secret_action": "block",
+    "pii_action": "redact",
+    "zdr_required": true
+  },
+  "risk": {
+    "level": "high",
+    "destructive": false,
+    "independent_review_required": true,
+    "human_approval_required": true
+  },
+  "session": {
+    "session_id": "uplift-auth-001",
+    "current_workflow": null,
+    "current_model_role": "bootstrap.default",
+    "phase_sticky": true,
+    "cache_affinity": "strong",
+    "switch_budget": 3
+  },
+  "optimization": {
+    "quality_floor": 0.9,
+    "latency_class": "standard",
+    "cost_preference": "balanced",
+    "max_cost_usd": 4.0,
+    "provider_reliability_floor": 0.99
+  },
+  "provenance": {
+    "privacy.class": "deterministic",
+    "privacy.cloud_allowed": "deterministic",
+    "privacy.zdr_required": "deterministic",
+    "requirements.tools": "deterministic",
+    "requirements.modalities": "deterministic",
+    "requirements.min_context_tokens": "measured",
+    "risk.level": "deterministic",
+    "risk.independent_review_required": "deterministic",
+    "mission_profile.tasks": "inferred",
+    "mission_profile.phase": "inferred",
+    "mission_profile.complexity": "inferred",
+    "mission_profile.uncertainty": "inferred"
+  }
+}
