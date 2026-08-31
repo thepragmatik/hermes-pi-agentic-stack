@@ -22,7 +22,7 @@ Any mandatory privacy/capability failure or material accepted-task quality regre
 
 ## Promotion Checkpoint E
 
-Only after the system-level gate passes may ordinary operation become:
+Only after the complete system-level promotion gate passes may ordinary operation become:
 
 ```text
 local deterministic policy
@@ -34,8 +34,8 @@ local deterministic policy
 
 OpenRouter Auto remains bounded to explicitly approved fallback/auxiliary cases.
 
-Start a fresh ordinary Hermes session on the final promoted router/model/provider/context configuration. Record exact Hermes/Pi/LCM/Mnemosyne/router/model/provider-policy pins and rollback checkpoint.
+If policy requires human approval for production promotion, request it **only after every mandatory P0/security/quality/economic gate for that promotion has passed**. Approval is additional authority and cannot waive, replace or override failed/missing mandatory evidence.
 
-Human approval is required for production promotion while the P0 readiness policy says so.
+After evidence-qualified approval, start a fresh ordinary Hermes session on the final promoted router/model/provider/context configuration. Record exact Hermes/Pi/LCM/Mnemosyne/router/model/provider-policy pins and rollback checkpoint.
 
 Persist state/evidence, send the required phase-boundary report, and stop before Phase 70.
