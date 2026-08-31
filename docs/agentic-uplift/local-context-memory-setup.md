@@ -1,6 +1,6 @@
 # LCM + Mnemosyne Baseline Setup and Qualification
 
-Snapshot: 2026-08-30.
+Snapshot: 2026-08-31.
 
 ## Baseline decision
 
@@ -15,11 +15,11 @@ T2 artifacts = logs, diffs, Pi RPC, benchmark/test evidence
 Git/ADR/spec = authoritative project truth
 ```
 
-This is no longer an architecture-selection bake-off. The built-in Hermes compressor/no-external-memory configuration is retained only as a **diagnostic control and rollback profile**. If LCM or Mnemosyne cannot pass a mandatory compatibility, correctness, privacy, offline, backup or recovery gate, mark Phase 30 `BLOCKED`/`ROLLBACK`; do not silently substitute a different production memory architecture.
+This is no longer an architecture-selection bake-off. The built-in Hermes compressor/no-external-memory configuration is retained only as a **diagnostic control and rollback profile**. If LCM or Mnemosyne cannot pass a mandatory compatibility, correctness, privacy, offline, backup or recovery gate, mark Phase 20 `BLOCKED`/`ROLLBACK`; do not silently substitute a different production memory architecture.
 
 ## Initial stable pins
 
-Initial qualification pins from the 2026-08-30 research snapshot:
+Initial qualification pins from the 2026-08-31 research snapshot:
 
 - `hermes-lcm`: `v0.20.0` stable;
 - `mnemosyne-memory`: `3.15.1` stable;
@@ -284,7 +284,7 @@ built-in MEMORY/USER remain disabled unless explicitly restoring the old control
 
 Do not delete the failed LCM/Mnemosyne databases during rollback. Freeze/checksum them as diagnostic evidence, restore the prior known-good config/package pins, restart the profile, and prove session/mission recovery from authoritative uplift-state + evidence.
 
-A failed baseline qualification means Phase 30 is `BLOCKED` or `ROLLBACK`. It does **not** authorize Hermes to choose Holographic, OpenViking or another memory architecture autonomously.
+A failed baseline qualification means Phase 20 is `BLOCKED` or `ROLLBACK`. It does **not** authorize Hermes to choose Holographic, OpenViking or another memory architecture autonomously.
 
 ## 12. Upgrade discipline
 
