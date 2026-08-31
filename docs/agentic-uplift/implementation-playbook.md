@@ -58,6 +58,7 @@ Hermes returns control at every phase boundary. A phase may contain a smaller mi
 12. Routing frameworks are replaceable behind the routing mission/decision contracts.
 13. Research and coding are important task families, not a closed-world routing ontology.
 14. Optimize accepted-mission quality/cost/latency/retries/human effort, not token price or classifier F1 alone.
+15. **Mandatory P0 gates pass before any policy-required human approval can authorize a stronger transition. Approval is additive authority, never a waiver or substitute for failed/missing evidence.**
 
 ## Routing ownership
 
@@ -115,7 +116,7 @@ Collect without mutation:
 
 **Gate:** clean profile independently runs; repo/policy/model are known; no legacy store is attached; no sensitive boundary is ambiguous.
 
-**Approval:** required for weaker-than-documented bootstrap isolation or unresolved sensitive-data uncertainty.
+**Approval:** if the operator deliberately uses a weaker-than-preferred but still bounded/documented bootstrap isolation mode, record it and require human approval. **Unresolved sensitive-data, credential or containment uncertainty is a blocker and cannot be approved around.**
 
 ---
 
@@ -320,7 +321,7 @@ Use adversarial PII/secret/technical-text fixtures. `security-guidance` WARN is 
 
 ### Checkpoint C
 
-Human approval is required before stronger routing/delegation/cloud authority while any P0 enforcement boundary is unproven.
+All mandatory P0 enforcement/egress/containment/privacy gates for the requested authority increase must pass first. Failed, missing or unproven mandatory evidence means `BLOCKED`/`ROLLBACK` and no authority increase. **Only after those gates pass**, explicit human approval is additionally required before stronger routing/delegation/cloud authority. Human approval cannot waive a mandatory gate.
 
 ---
 
@@ -351,6 +352,8 @@ Only after Phase 40 canaries pass may a cloud-eligible `pi_worker` stage use `co
 ### Checkpoint D
 
 Recreate disposable Pi workers under the tested bridge/LSP/sandbox/routing/model config. After authority cutover, direct production editing by Hermes must fail structurally.
+
+The Phase-50 protocol, containment, privacy and bypass gates must pass before coding-authority cutover. Any policy-required human approval is additional **after** those mandatory gates pass and cannot waive them.
 
 ---
 
@@ -425,7 +428,7 @@ Tier 0 deterministic eligibility
  -> eligible physical provider
 ```
 
-Record exact Hermes/Pi/LCM/Mnemosyne/router/contracts/models/gateway policy pins. Human approval is required while readiness policy says so.
+Record exact Hermes/Pi/LCM/Mnemosyne/router/contracts/models/gateway policy pins. If readiness policy requires human production approval, request it **only after all mandatory promotion gates pass**; approval cannot waive failed or missing evidence. Then start the fresh ordinary session on the exact evidence-qualified, approved configuration.
 
 ---
 
@@ -467,9 +470,9 @@ Persist the recurring canary/restart/rollback policy and prove one end-to-end ro
 | **A0 inside 20** | context/skill slimming staged | fresh Phase-20 continuation + matched dogfood; repair/rollback on regression |
 | **A after 20** | context/skills + LCM/Mnemosyne active | fresh Hermes session before Phase 30 |
 | **B after 30** | routing candidates shadowed | reload/restart as needed; no routing authority |
-| **C after 40** | enforcement staged/proven | human authority gate |
-| **D after 50** | Pi/LSP path validated | recreate disposable workers; approved coding cutover only |
-| **E after 60** | selected router/workflow/model system promoted | fresh ordinary session on exact promoted config |
+| **C after 40** | mandatory enforcement gates proven | then human authority approval; otherwise remain blocked |
+| **D after 50** | Pi/LSP path validated | recreate disposable workers; evidence-qualified approved coding cutover only |
+| **E after 60** | selected router/workflow/model system qualified | then required production approval + fresh ordinary session on exact promoted config |
 | **F at 70** | recurring upgrade policy | canary sessions/workers per changed component |
 
 ---
@@ -485,7 +488,7 @@ Use consistently:
 - `target-Mac validated` — representative target-workstation evidence exists;
 - `shadow` — observes/recommends without authority;
 - `canary` — bounded real authority/workload;
-- `production-approved` — mandatory outcome/security/rollback/human gates passed.
+- `production-approved` — mandatory outcome/security/rollback gates passed and any required human approval was granted afterward.
 
 Do not describe a documented router framework or config as implemented production routing.
 
@@ -512,6 +515,7 @@ Persist `BLOCKED`/`ROLLBACK`, report and stop when:
 - direct Hermes coding bypass remains possible after intended cutover;
 - stale worker/session/router state means the tested configuration is not demonstrably active;
 - accepted-task quality materially regresses;
-- production promotion requires disabling a mandatory control.
+- production promotion requires disabling a mandatory control;
+- a human is willing to proceed but a mandatory P0 gate is failed, missing or unproven.
 
 Stopping correctly is success of the control system, not mission failure.
