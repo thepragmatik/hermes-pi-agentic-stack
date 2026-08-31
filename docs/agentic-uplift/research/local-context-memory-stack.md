@@ -16,7 +16,7 @@ operator task view                                    -> optional Kanban project
 project truth                                         -> Git/ADR/specs
 ```
 
-The built-in Hermes compressor with no external memory provider remains a diagnostic/control and emergency rollback profile. It is not an automatic production substitute. If the LCM + Mnemosyne baseline cannot pass a mandatory compatibility, correctness, local-only, privacy, backup or recovery gate, Phase 30 becomes `BLOCKED` or `ROLLBACK` until the baseline is repaired or the architecture is deliberately reconsidered.
+The built-in Hermes compressor with no external memory provider remains a diagnostic/control and emergency rollback profile. It is not an automatic production substitute. If the LCM + Mnemosyne baseline cannot pass a mandatory compatibility, correctness, local-only, privacy, backup or recovery gate, Phase 20 becomes `BLOCKED` or `ROLLBACK` until the baseline is repaired or the architecture is deliberately reconsidered.
 
 Detailed installation and operation are canonical in `docs/agentic-uplift/local-context-memory-setup.md`.
 
@@ -42,7 +42,7 @@ Initial stable qualification pins from this research snapshot:
 | `mnemosyne-hermes` | `0.5.0` | wrapper integration; exact package pin |
 | embedding model | `BAAI/bge-small-en-v1.5` | local FastEmbed/ONNX |
 
-Re-verify current stable releases and security notes during Phase 00/30. New stable releases are canary-upgraded; upstream `main`, LCM release candidates and Mnemosyne betas are not silently selected.
+Re-verify current stable releases and security notes during Phase 00/20. New stable releases are canary-upgraded; upstream `main`, LCM release candidates and Mnemosyne betas are not silently selected.
 
 A stable pin is not proof of fitness. The target-Mac qualification still decides whether the baseline may be production-promoted.
 
@@ -217,7 +217,7 @@ Keep these profiles reproducible for diagnosis/regression:
 
 Their purpose is component isolation: if token cost, recall or recovery regresses, determine which layer caused it. They do **not** form a winner-take-all production bake-off anymore.
 
-If the required baseline fails a mandatory gate, retain the last known-good production profile and mark Phase 30 `BLOCKED`/`ROLLBACK`. Do not let Hermes autonomously switch to Holographic, OpenViking, ByteRover or another memory provider as an architectural workaround.
+If the required baseline fails a mandatory gate, retain the last known-good production profile and mark Phase 20 `BLOCKED`/`ROLLBACK`. Do not let Hermes autonomously switch to Holographic, OpenViking, ByteRover or another memory provider as an architectural workaround.
 
 ## Local-only proof
 
