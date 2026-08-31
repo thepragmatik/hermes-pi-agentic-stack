@@ -41,8 +41,9 @@ privacy:
 routing:
   abstain_below: 0.72
   minimum_margin: 0.12
-  hybrid_enabled: true
-  privacy_gate_precedes_model_router: true
+  multi_stage_workflows: true
+  hard_eligibility_precedes_inference: true
+  cloud_ineligible_never_external: true
   explicit_local_only_overrides_model_router: true
 
 worker:
