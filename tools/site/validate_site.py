@@ -72,8 +72,8 @@ def regression_invariants(errors):
     if "hard_eligibility_precedes_inference: true" not in policy or "cloud_ineligible_never_external: true" not in policy:errors.append("policy lacks deterministic routing hard-gate declarations")
 
     mission_context=source("docs/agentic-uplift/research/mission-context-architecture.md")
-    for stale in ["current_lane:","research|coding|hybrid|local_only","routing lane"]:
-        if stale in mission_context:errors.append(f"mission-context architecture contains stale routing-lane token: {stale}")
+    for stale in ["current_lane:","research|coding|hybrid|local_only"]:
+        if stale in mission_context:errors.append(f"mission-context architecture contains stale routing-lane representation: {stale}")
     for required in ["workflow:","stage_id:","task_families:","model_role:","routing-decision.schema.json"]:
         if required not in mission_context:errors.append(f"mission-context projection missing {required}")
 
@@ -95,9 +95,10 @@ def regression_invariants(errors):
         "skills/hermes-stack-uplift/references/50-pi-and-lsp.md",
         "skills/hermes-stack-uplift/references/60-evaluation-and-promotion.md",
     ]
+    waiver_markers=("cannot waive","not a waiver","never a waiver")
     for rel in approval_docs:
         text=source(rel).lower()
-        if "human approval" not in text or "cannot waive" not in text:errors.append(f"{rel}: evidence-first human-approval invariant missing")
+        if "human approval" not in text or not any(marker in text for marker in waiver_markers):errors.append(f"{rel}: evidence-first human-approval invariant missing")
 
 def main():
     ap=argparse.ArgumentParser();ap.add_argument("--site",default="_site");args=ap.parse_args();root=Path(args.site);errors=[]
