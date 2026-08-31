@@ -1,187 +1,178 @@
 # Refinement Validation Report
 
-Snapshot: 2026-08-30.
+Snapshot: 2026-08-31.
 
-## Evidence levels
+## Maturity vocabulary
 
-This repository distinguishes four levels deliberately:
+Use the repository's canonical maturity labels without collapsing them:
 
-1. **researched** — supported by current primary/upstream sources;
-2. **config/design validated** — repository artifacts are coherent and CI/site checks pass;
-3. **canary runtime qualified** — exact pinned software has been installed and tested on a disposable target-machine profile;
-4. **production promoted** — representative workload, adversarial, rollback and security gates passed and the change was deliberately promoted.
+`researched -> designed -> prototype -> smoke-tested -> target-Mac-validated -> shadow -> canary -> production-approved`
 
-Do not report a lower level as a higher one.
+A schema/config/research note is not a runtime implementation; a CI smoke is not representative target-Mac evidence; shadow recommendations have no production authority.
 
-## Executed repository / CI checks
+## Executed repository / Pages gate
 
-The current repository gate executes Python compilation for router/site tooling, site generation, internal-link validation, Markdown/`llms.txt` alternate checks, accessible SVG checks, progressive-disclosure agent-surface checks, SHA-256 verification of every raw file listed by the agent manifest, JSON parsing and lifecycle assertions for task/state contracts, OpenRouter architecture assertions, agent/raw copy equality for execution-critical contracts/configs, and Pages build/deploy.
+On routing implementation head `776da61b3623cce5fcfb2b597ec11e4ee3c165be`, GitHub Pages workflow run **116** (`33380969300`) completed successfully on 2026-08-31.
 
-During refinement these checks/reviews found real defects rather than merely confirming the design, including: invalid YAML/frontmatter and SVG metadata in earlier revisions; policy examples that could be mistaken for enforcement; overbroad privacy/secret patterns; bootstrap/security/Pi ordering drift; duplicate memory authority; canary memory semantics incompatible with autonomy; two competing phase models (`00-70` vs an accumulated longer sequence); a Pi example incorrectly assigned to Phase 30 before Pi authority exists; an outdated standalone architecture diagram; stale direct-provider assumptions; a validator that did not require the new fresh-install/OpenRouter/start-mission surfaces; stale install wording that called the now-public control repository private; and a Phase-20 sequence that could have layered LCM/Mnemosyne and Spec Kit before independently dogfooding the first prompt/skill slimming increment.
+The build gate executed:
 
-Those defects are corrected in canonical source.
-
-## Latest GitHub Pages / operating-manual gate
-
-On implementation head `065be61364a02723d090cd60d99f968acb319909`, GitHub Actions completed successfully:
-
-- Python 3.12 compilation of `tools/router-bench/router_bench.py`, `tools/site/build_site.py` and `tools/site/validate_site.py`;
+- Python 3.12 compilation of router/site tooling;
 - generation of **26 human pages plus the progressive-disclosure agent surface**;
-- validation of all **26 HTML pages**, internal links and Markdown/`llms.txt` alternates;
-- accessible architecture SVG title/description checks plus explicit OpenRouter/model-role/policy representation;
-- required human routes for Architecture, Fresh Install, Start Uplift, phase playbook, Context + Skills, OpenRouter + Routing, Pi + LSP, Security, Adversarial Review, Readiness, Validation, Upgrades and Sources;
-- required agent routes for `agent/START.md`, `agent/UPLIFT_MISSION.md`, manifest, architecture graph, schemas/examples, configs and sliced skill;
-- SHA-256 and byte-size verification of every canonical raw source in the agent manifest;
-- confirmation that the agent manifest declares OpenRouter as default gateway, LCM + Mnemosyne as the context/memory baseline and the `00,10,...,70` lifecycle;
-- confirmation that the architecture graph contains deterministic policy, local router, model-role binding, OpenRouter, physical-provider, Pi-boundary and durable-state nodes;
-- confirmation that Pi task schema **v2.1** binds exact lifecycle phase IDs plus `model_role`, LOCAL_ONLY fail-closed conditions and required approval evidence when policy requires approval;
-- confirmation that the Pi worked example is Phase 50 (`50-pi-and-lsp`) using `coding.default`, not a pre-Pi router task;
-- confirmation that uplift-state schema/example **v1.1** use exactly the eight `00-70` phases, persist restart/adoption/report decisions and declare OpenRouter runtime gateway;
-- exact byte equality between raw and agent copies of mission, task/state contracts/examples and baseline model/context-memory configs;
-- successful Pages artifact upload and deployment.
+- internal-link and Markdown/`llms.txt` alternate validation;
+- accessible architecture SVG checks;
+- SHA-256 + byte-size validation of every raw source in agent manifest v5;
+- exact agent/raw equality for execution-critical mission/contracts/examples/configs;
+- five-tier architecture graph v3 assertions;
+- routing mission/decision schema v1.0 + examples;
+- Pi task envelope **v2.2** + routing-stage provenance checks;
+- uplift-state v1.1 + exact `00 -> 70` lifecycle checks;
+- required human/agent routing entry surfaces;
+- the zero-dependency rules router against the checked-in 32-mission fixture with hard-violation failure enabled;
+- Pages artifact upload and deployment.
 
-The stricter validator previously caught an identifier mismatch between its expected `model_role` graph node and the canonical graph's `role_binding` / `model_role_binding`; the validator was corrected to the canonical identifier rather than weakening the architecture.
-
-The final readiness pass also verified current upstream Hermes documentation for the bootstrap-critical commands used by this manual: named profiles with `--no-skills`, `terminal.cwd`, interactive model/provider selection, OpenRouter provider-routing controls and `chat --query-file` remain current at the snapshot date.
-
-## Fresh-install and execution-path evidence
-
-The documentation has one explicit manual-to-autonomous handoff:
+The validator reported:
 
 ```text
-human installs/configures clean Hermes bootstrap profile
--> one verified OpenRouter bootstrap model
--> repository available locally
--> uplift chat --query-file UPLIFT_MISSION.md
--> Hermes reads durable state + parent skill + one current phase slice
--> executes one bounded phase
--> persists evidence/state + reports boundary
--> stops before next phase
+OK: validated 26 HTML pages, routing contracts, progressive-disclosure agent surface,
+hashed raw manifest, five-tier OpenRouter architecture, Pi routing traceability,
+00-70 lifecycle, rules smoke task-micro-F1=0.923, workflow=0.875, hard=0
 ```
 
-OpenRouter is the default external inference gateway. Deterministic privacy/security policy runs locally before every cloud request; the local mission router chooses lane/model role/model; OpenRouter selects only the downstream policy-compatible physical provider. OpenRouter Auto is not privacy authority or final mission-routing authority.
+These routing numbers are intentionally **smoke evidence only**. The broader fixture makes the simple rules baseline imperfect rather than preserving the old artificially clean research/coding five-class result. No hard eligibility violation was observed in the fixture, but this is not DLP/security proof or production router evidence.
 
-The lifecycle is singular and consistent across README, mission, playbooks, skill slices, schemas/examples, architecture and agent discovery:
+## Routing architecture now validated as repository design
+
+Canonical responsibility chain:
 
 ```text
-00 preflight
-10 baseline + backup
-20 context + skills + LCM/Mnemosyne
-   -> Dogfood Gate A0: fresh Phase-20 continuation using prompt/skill slimming only
-   -> Restart Checkpoint A: fresh optimized Hermes session before Phase 30
-30 router
-   -> Checkpoint B: shadow only
-40 security + policy enforcement
-   -> Checkpoint C: authority/human gate
-50 Hermes->Pi + LSP
-   -> Checkpoint D: recreate disposable workers
-60 evaluation + promotion
-   -> Checkpoint E: normal multi-role operation
-70 upgrades + rollback
-   -> Checkpoint F: recurring canary discipline
+MISSION + durable state
+ -> Tier 0 deterministic eligibility/security
+ -> Tier 1 multi-label mission/capability profile
+ -> Tier 2 bounded workflow/agent selection
+ -> Tier 3 model-role/model economic optimization
+ -> Tier 4 OpenRouter-first gateway/provider execution
+ -> outcomes -> offline research/training plane
 ```
 
-### Early dogfooding rule
+Research and coding remain first-class task families; they are not the complete ontology. Multi-stage missions remain ordered stages rather than a `hybrid` label.
 
-Phase 20 now avoids batching its first useful optimization with later context/memory/spec layers. After prompt/context + skill slimming is staged, Hermes must:
+### Hard vs learned fields
 
-1. keep Phase 20 `EXECUTING` and checkpoint the pre-dogfood configuration;
-2. resume the same phase in a fresh session using the slimmer context/skill layout;
-3. keep the bootstrap model/OpenRouter policy stable;
-4. run a matched subset of the Phase-10 workload;
-5. prove non-inferior accepted-task quality plus measurable context/token improvement;
-6. persist `phase20-dogfood-A0` evidence;
-7. repair/rollback before LCM/Mnemosyne if the first increment regresses.
+Tier-0/runtime facts include privacy class, `LOCAL_ONLY`, cloud eligibility, secret/PII policy, actual tools/capabilities, required modality/structured output/context, network/sandbox constraints and ZDR requirements. Learned/framework output cannot override them.
 
-Only then are LCM + Mnemosyne and Spec Kit layered onto the qualified slimmer baseline. After the complete Phase-20 gate, Hermes reports that the first token/context improvements are ready and starts Phase 30 in another fresh session so Phase-20 qualification context does not contaminate router measurements.
+Tier-1 learned/semantic signals may estimate task families, domain, phase, complexity, uncertainty, tool/reasoning intensity and expected context needs. Tier 2 selects a bounded workflow; Tier 3 selects among eligible model roles/models. OpenRouter normally performs only downstream provider execution within requirements.
 
-## Router regression evidence
+### Thin routing contracts
 
-The last executed deterministic router smoke corpus produced **1.000 accuracy, 1.000 macro-F1 and 1.000 repeat determinism**, with zero observed high-severity lane errors over the small regression fixture. Warm routing latency was sub-millisecond in the available Linux/x86-64 validation runtime.
+- `protocols/routing-mission.schema.json` v1.0 — framework-neutral mission facts/profile/requirements.
+- `protocols/routing-decision.schema.json` v1.0 — eligible workflow/stages, model selection and provider requirements.
+- `protocols/pi-task-envelope.schema.json` v2.2 — Phase-50+ worker request with `mission_id`, `stage_id`, workflow and routing-decision digest.
 
-These numbers are regression evidence only. They are **not** claims about ModernBERT/embedding-router accuracy, OpenRouter provider quality, M3 Max latency or production workload performance.
+This keeps Hermes/Pi semantics replaceable across rules, Aurelio, vLLM Semantic Router, ModernBERT or future adapters.
+
+## Router candidate evidence status
+
+| Candidate | Intended role | Current evidence |
+|---|---|---|
+| deterministic eligibility + rules/state + abstention | initial Phase-30 baseline | **prototype / smoke-tested on 32-mission fixture** |
+| minimal embedding prototype | small semantic challenger | designed; target-Mac bake-off pending |
+| Aurelio Semantic Router | lightweight local Tier-1 semantic component | researched/designed adapter; bake-off pending |
+| vLLM Semantic Router | richer signal/session/model-routing candidate | **researched/designed; strongest medium-term adoption candidate; no authority yet** |
+| LLMRouter algorithms | research/training/evaluation laboratory | researched/designed research-plane integration |
+| RouteLLM-style scorer | Tier-3 strong-vs-economical/difficulty score | researched/designed; requires our outcome recalibration |
+| OpenRouter Auto | bootstrap/shadow/teacher/fallback comparator | researched/designed shadow use only after Tier-0 approval |
+| custom ModernBERT | future multi-label/multi-head mission profiler | researched/deferred; not trained |
+
+No advanced router is required to start the uplift. Phase 30 first uses the simple rules/state contract in **shadow** while candidates are compared. Only Phase 60 may promote routing authority.
+
+## ModernBERT training gate
+
+Do not train merely to improve the checked-in smoke F1. Training becomes justified only when:
+
+- task/workflow vocabulary is stable because it has material routing consequences;
+- representative Hermes/Pi missions are locally redacted and deduplicated;
+- train/test split prevents mission/repo/session/time leakage and includes a later temporal canary;
+- outcomes include accepted/rejected, tests/review, retries, human overrides and real model/provider economics;
+- ambiguous/OOD/multi-stage work is represented;
+- frozen embedding/Aurelio/vLLM-configured/simple baselines plateau for reasons attributable to representation rather than bad labels/workflow design;
+- a multi-label/multi-head model improves held-out accepted-mission regret/calibration, not only classification F1.
+
+Known Tier-0 facts are never ModernBERT targets for authority.
+
+## Fork gate
+
+No router fork is currently justified. Maintain an upstream fork only if all are true:
+
+1. a materially valuable requirement remains unmet;
+2. upstream/config/adapter contribution is unavailable or fails the requirement;
+3. the patch set stays small/isolated behind our routing contract;
+4. conformance/security tests cover the divergence;
+5. ongoing upstream rebase/security-review capacity exists;
+6. measured quality/cost/latency/security/resilience benefit exceeds fork maintenance cost.
+
+Current posture for vLLM Semantic Router is **adopt/configure/extend upstream first**, not fork.
+
+## OpenRouter evidence boundary
+
+OpenRouter remains the default external gateway because it can remove provider-health/routing/failover infrastructure from our hot path. The routing contract can express provider allow/deny, parameter/data/ZDR requirements, price/latency/throughput preference, fallback and session/cache affinity.
+
+However, the raw OpenRouter API supports more controls than the currently documented Hermes `provider_routing` surface. A hard requirement is credited only when the installed Hermes request path, OpenRouter account/workspace policy or a small audited gateway adapter proves it is enforced. Do not assume ZDR/session-affinity behavior merely because OpenRouter exposes the capability.
+
+OpenRouter Auto cannot decide privacy/cloud eligibility and is not final workflow authority.
+
+## Outcome-learning contract
+
+Future router learning should use privacy-minimized joins such as:
+
+```text
+mission/profile digest
+ -> workflow/stage/router recommendation
+ -> model role/model/provider where observable
+ -> fresh/cached/output tokens + TTFT/wall time
+ -> tool calls/failures + retries + workflow/model/provider switches
+ -> tests/review/human override
+ -> accepted/rejected + failure reason + actual/estimated cost
+```
+
+The target is: **which eligible workflow/model maximizes probability of accepted completion under this mission's constraints and budget?** Raw sensitive prompts are not routine telemetry.
+
+## Fresh-install / phase evidence
+
+The manual-to-autonomous handoff remains unchanged:
+
+```text
+clean Hermes bootstrap + one verified OpenRouter model
+ -> uplift chat --query-file UPLIFT_MISSION.md
+ -> one observable 00-70 phase at a time
+```
+
+Phase 20 still contains Dogfood Gate A0 for prompt/skill slimming before LCM/Mnemosyne/Spec Kit layering. Checkpoint A starts Phase 30 in a fresh optimized session. Phase 30's advanced candidates remain shadow-only. Security authority remains gated at Phase 40; Pi workers begin behind typed containment in Phase 50; routing/model/provider promotion is Phase 60.
 
 ## LCM + Mnemosyne evidence status
 
 Architecture status: **selected baseline**.
 
-Evidence status: **researched + repository/config/site validated; not yet canary runtime qualified on the target Mac.**
-
-The repository contains one coherent baseline path:
-
-- `docs/agentic-uplift/local-context-memory-setup.md` — install, pin, effective config, admission, health, compaction, offline, backup, rollback and upgrade procedure;
-- `docs/agentic-uplift/research/local-context-memory-stack.md` — ownership/rationale/risks and evidence requirements;
-- `configs/hermes-local-context-memory.example.yaml` — complete Hermes composition;
-- `configs/lcm-baseline.env.example` — LCM scalar baseline;
-- `configs/mnemosyne-local.example.yaml` — Mnemosyne local-only subconfiguration;
-- Phase 20 execution gates in `implementation-playbook.md` and the matching sliced skill reference;
-- adversarial tests for duplicate authority, poisoning, relevance, unexpected network fallback, SQLite recovery, tool-schema overhead and release/default drift.
-
-Initial stable research pins are LCM `v0.20.0`, Mnemosyne core `3.15.1` and Hermes wrapper `0.5.0`. **Phase 00/20 must re-verify current stable releases, effective config and security notes before installation.** Unreleased `main`, release candidates and betas are not automatic upgrades.
-
-### Baseline effective-config intent
-
-```text
-context.engine = lcm
-compression.enabled = true
-memory.provider = mnemosyne
-memory.memory_enabled = false
-memory.user_profile_enabled = false
-memory.write_approval = false
-Tool Search = on
-LCM semantic/proactive/temporal cross-session memory = off
-Mnemosyne transcript autosave + LLM/auto-sleep/persona/richer recall = off
-Mnemosyne embeddings = local FastEmbed/ONNX
-```
-
-This removes duplicate built-in durable-memory authority while keeping Mnemosyne autonomous under a strict admission policy and narrow tool allowlist.
-
-### Runtime evidence still required
-
-On the target Mac, execute the required LCM + Mnemosyne baseline on representative long-horizon missions and collect at minimum:
-
-- successful profile-local LCM install + resolved stable tag/commit;
-- successful Mnemosyne side-venv/wrapper install + exact package pins;
-- effective Hermes/provider config evidence matching the checked-in baseline;
-- LCM exact-detail recovery after multiple compactions;
-- restart/session recovery;
-- Mnemosyne global/canonical memory lifecycle;
-- durable-recall precision and stale/irrelevant-memory injection;
-- autonomous curated memory writes under the strict classifier/admission policy;
-- absence of transcript/raw-evidence duplication into Mnemosyne;
-- injected-memory and plugin/tool-schema tokens;
-- total/fresh/cached input and TTFT/wall time;
-- SQLite/store growth, RSS, macOS memory pressure and swap;
-- memory poisoning/contradiction behavior;
-- independent backup/restore integrity for LCM and Mnemosyne;
-- successful context/memory operation with outbound network denied after dependency/model provisioning;
-- independent rollback to the previous known-good profile without deleting diagnostic stores.
-
-Built-in-only, LCM-only and Mnemosyne-only profiles may be used to isolate a regression, but they do not compete for production selection. If the required pair fails a mandatory gate, Phase 20 is `BLOCKED`/`ROLLBACK`; Hermes does not autonomously choose another memory architecture.
-
-The stable Mnemosyne 3.15.x research pin predates later relevance/prefetch work, so **irrelevant-memory injection is explicitly blocking**. Do not pin unreleased `main` merely to bypass that test; qualify the next stable release normally.
+Evidence status: **researched + config/repository/site validated; not yet target-Mac validated.** Phase 20 must still prove exact LCM recovery, Mnemosyne relevance/admission, offline operation after provisioning, independent backup/restore, resource use and poisoning/contradiction behavior on the target Mac.
 
 ## Remaining target-machine / production P0 evidence
 
-The available repository CI runtime is Linux/x86-64, not the target M3 Max. Unattended production authority still requires:
+Unattended production authority still requires:
 
-- actual fresh-install/manual bootstrap rehearsal on the target Mac and captured effective Hermes/OpenRouter configuration;
-- Dogfood Gate A0 evidence on the target Mac before later Phase-20 layering;
-- target-Mac LCM + Mnemosyne runtime/offline/recovery/resource evidence above;
-- representative redacted mission corpus and temporal router holdout;
-- ModernBERT/embedding challenger measurements and router shadow evidence before routing authority;
-- real OpenRouter model/provider outcomes including physical-provider/cache continuity, TTFT/throughput, tool correctness, retries, rate limits and accepted-task cost;
-- implemented external capability/sandbox enforcement, not just policy YAML;
-- deterministic egress PII/secret canaries proving LOCAL_ONLY cannot reach OpenRouter/cloud;
-- current Pi RPC compatibility, `agent_settled` completion semantics and containment evidence;
-- LSP compatibility suite;
-- failure injection for provider outage/fallback, retry, corrupted state, malicious context/memory/repository/tool output, stale worker/session reuse and rollback;
-- human approval at security-critical Checkpoint C and any other phase whose policy requires it.
+- actual fresh-install/manual-bootstrap rehearsal on the target Mac;
+- Phase-20 Dogfood Gate A0 + full LCM/Mnemosyne target-Mac qualification;
+- representative redacted/deduplicated routing corpus with temporal holdout and real outcome joins;
+- target-Mac bake-off of rules, minimal embeddings, Aurelio, vLLM Semantic Router and technically feasible research candidates;
+- Phase-30 shadow evidence including abstention/OOD, capability/workflow failures, router RSS/latency, switching/cache behavior and accepted-mission regret;
+- real OpenRouter model/provider results including effective ZDR/data/provider/fallback/session semantics through the actual integration path;
+- external capability/sandbox/network/credential enforcement;
+- deterministic egress PII/secret canaries proving prohibited content cannot reach OpenRouter/Auto/direct cloud;
+- current Pi RPC `agent_settled` behavior, v2.2 routing provenance and containment evidence;
+- LSP compatibility/supply-chain fixtures;
+- failure injection for router/framework outage, stale capability catalogs, provider/model fallback, corrupted state/memory, malicious repository/tool output and rollback;
+- human approval at Checkpoint C and other policy-required gates.
 
 ## Maturity conclusion
 
-The repository and Pages site are **coherent, internally cross-checked and sufficiently detailed to start the controlled staged uplift from Phase 00 in a clean bootstrap profile**. The documentation functions as one operating manual for humans and progressively disclosed agents rather than competing accumulated research paths.
+The routing refactor is **coherent, source-integrated, smoke-validated and compatible with the existing early-dogfood `00 -> 70` uplift**. It does not make the fresh bootstrap depend on vLLM Semantic Router, ModernBERT or any research framework.
 
-The sequence intentionally targets early dogfooding: Phase 00 and 10 only establish safety/baseline; Phase 20A/B is the first reversible optimization; Dogfood Gate A0 exercises that increment immediately in a fresh same-phase session before LCM/Mnemosyne and Spec Kit are layered; the full Phase-20 adoption is then isolated again before router work begins.
-
-This is still not evidence that production enforcement or target-Mac runtime qualification has succeeded. Hermes may execute the bounded phase workflow according to the execution contract, but it must stop at every phase boundary, persist/report state, and mark `BLOCKED`/`ROLLBACK` rather than bypassing an unresolved security, local-only, runtime, restart or human-approval gate.
+The repository remains suitable to start controlled Phase 00. The initial router used when Phase 30 arrives is deterministic eligibility + rules/explicit state + abstention in shadow. Routing becomes progressively smarter only when observed Hermes/Pi outcomes show a candidate improves accepted-mission quality/economics without weakening hard constraints or operational resilience.
