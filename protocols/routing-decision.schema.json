@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thepragmatik.github.io/hermes-pi-agentic-stack/agent/protocols/routing-decision.schema.json",
+  "title": "Hermes Routing Decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "mission_id", "engine", "eligible", "execution", "model", "gateway", "provider_policy", "confidence", "maturity", "reasons"],
+  "$defs": {
+    "taskFamily": {
+      "enum": [
+        "research", "synthesis", "architecture_design", "planning_decomposition",
+        "coding_implementation", "debugging_diagnosis", "refactoring", "testing",
+        "code_review", "security_review", "devops_configuration", "data_analysis",
+        "document_generation_transformation", "retrieval_memory",
+        "agent_supervision_orchestration", "long_running_tool_execution",
+        "multimodal_analysis", "verification_fact_check", "other"
+      ]
+    },
+    "workflow": {
+      "enum": ["hermes_only", "research_executor", "pi_worker", "review_worker", "local_tool_runner", "multi_stage", "local_only", "abstain"]
+    },
+    "agent": {
+      "enum": ["hermes", "research_executor", "pi_worker", "review_worker", "local_tool_runner"]
+    }
+  },
+  "properties": {
+    "version": {"const": "1.0"},
+    "mission_id": {"type": "string", "minLength": 1},
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "mode"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "mode": {"enum": ["rules", "embedding", "semantic", "learned", "external", "composite"]}
+      }
+    },
+    "eligible": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workflows", "model_roles"],
+      "properties": {
+        "workflows": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/workflow"}},
+        "model_roles": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "model_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workflow", "stages", "abstained"],
+      "properties": {
+        "workflow": {"$ref": "#/$defs/workflow"},
+        "abstained": {"type": "boolean"},
+        "stages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "tasks", "agent"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "tasks": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/taskFamily"}},
+              "agent": {"$ref": "#/$defs/agent"},
+              "model_role": {"type": ["string", "null"]}
+            }
+          }
+        }
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "model_id"],
+      "properties": {
+        "role": {"type": ["string", "null"]},
+        "model_id": {"type": ["string", "null"]},
+        "fallback_model_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "gateway": {"enum": ["openrouter", "direct_provider", "local", "none"]},
+    "provider_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["zdr_required", "data_collection", "require_parameters", "allow_fallbacks", "sort", "session_affinity"],
+      "properties": {
+        "zdr_required": {"type": "boolean"},
+        "data_collection": {"enum": ["allow", "deny"]},
+        "require_parameters": {"type": "boolean"},
+        "allow_fallbacks": {"type": "boolean"},
+        "only": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "ignore": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "order": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "sort": {"enum": ["price", "throughput", "latency", "none"]},
+        "max_price": {"type": ["object", "null"]},
+        "preferred_min_throughput": {"type": ["number", "null"], "minimum": 0},
+        "preferred_max_latency": {"type": ["number", "null"], "minimum": 0},
+        "session_affinity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["required", "key"],
+          "properties": {
+            "required": {"type": "boolean"},
+            "key": {"type": ["string", "null"], "maxLength": 256}
+          }
+        }
+      }
+    },
+    "confidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mission_profile", "workflow", "model"],
+      "properties": {
+        "mission_profile": {"type": "number", "minimum": 0, "maximum": 1},
+        "workflow": {"type": "number", "minimum": 0, "maximum": 1},
+        "model": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "maturity": {"enum": ["researched", "designed", "prototype", "smoke-tested", "shadow", "canary", "production-approved"]},
+    "reasons": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+  }
+}
