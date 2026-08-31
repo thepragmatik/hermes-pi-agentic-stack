@@ -1,0 +1,55 @@
+{
+  "version": "1.0",
+  "mission_id": "auth-uplift-001",
+  "engine": {
+    "name": "rules-state-plus-semantic",
+    "version": "0.1",
+    "mode": "composite"
+  },
+  "eligible": {
+    "workflows": ["research_executor", "pi_worker", "review_worker", "multi_stage"],
+    "model_roles": ["research.default", "reasoning.default", "coding.default", "review.default"],
+    "model_ids": []
+  },
+  "execution": {
+    "workflow": "multi_stage",
+    "abstained": false,
+    "stages": [
+      {"id": "discover", "tasks": ["research"], "agent": "research_executor", "model_role": "research.default"},
+      {"id": "design", "tasks": ["architecture_design"], "agent": "hermes", "model_role": "reasoning.default"},
+      {"id": "implement", "tasks": ["coding_implementation", "testing"], "agent": "pi_worker", "model_role": "coding.default"},
+      {"id": "review", "tasks": ["security_review"], "agent": "review_worker", "model_role": "review.default"}
+    ]
+  },
+  "model": {
+    "role": "research.default",
+    "model_id": null,
+    "fallback_model_ids": []
+  },
+  "gateway": "openrouter",
+  "provider_policy": {
+    "zdr_required": true,
+    "data_collection": "deny",
+    "require_parameters": true,
+    "allow_fallbacks": true,
+    "only": [],
+    "ignore": [],
+    "order": [],
+    "sort": "price",
+    "max_price": null,
+    "preferred_min_throughput": null,
+    "preferred_max_latency": null,
+    "session_affinity": {"required": true, "key": "uplift-auth-001"}
+  },
+  "confidence": {
+    "mission_profile": 0.93,
+    "workflow": 0.88,
+    "model": 0.72
+  },
+  "maturity": "shadow",
+  "reasons": [
+    "The mission contains distinct research, design, implementation/test and independent security-review stages.",
+    "Pi is required only for implementation/testing; the route does not collapse the full mission into a coding or hybrid label.",
+    "ZDR and data-collection constraints are deterministic eligibility requirements, not learned predictions."
+  ]
+}
