@@ -1,133 +1,163 @@
-# Router benchmark rig
+# Router Bake-off Harness
 
-This rig compares local routing strategies in **fresh processes by default** so model startup cost, resident memory, and warmed classification latency are visible separately. It deliberately records a SHA-256 of each prompt rather than raw prompt text unless `--include-text` is explicitly enabled.
+This harness compares routing candidates behind the repository's framework-neutral contracts. It deliberately separates:
 
-## 1. Start with the zero-dependency baseline
+1. multi-label mission/task-profile inference;
+2. deterministic hard eligibility;
+3. workflow/stage selection;
+4. runtime footprint;
+5. optional real outcome economics.
+
+It does **not** assume `research|coding|hybrid` is the routing ontology.
+
+## Default smoke
+
+The checked-in deterministic baseline uses only the Python standard library:
 
 ```bash
-cd tools/router-bench
-python3 router_bench.py \
-  --dataset sample_missions.jsonl \
+python tools/router-bench/router_bench.py \
+  --dataset tools/router-bench/sample_missions.jsonl \
   --routers rules \
-  --repeat 20 \
-  --pretty \
-  --output rules.json
+  --repeat 3 \
+  --fail-on-hard-violations \
+  --pretty
 ```
 
-## 2. Embedding prototype router
+This is a regression fixture, not production evidence.
 
-For the target M3 Max, start with Qwen3-Embedding-0.6B and compare it against a very small embedding model to quantify the latency/accuracy tradeoff.
+## Minimal embedding challenger
+
+Install the model/runtime separately, then:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install 'sentence-transformers>=3'
-
-python router_bench.py \
-  --dataset sample_missions.jsonl \
+python tools/router-bench/router_bench.py \
+  --dataset tools/router-bench/sample_missions.jsonl \
   --routers rules,prototype \
-  --embedding-model Qwen/Qwen3-Embedding-0.6B \
-  --repeat 20 \
-  --output embedding.json
+  --embedding-model nomic-ai/modernbert-embed-base
 ```
 
-The supplied prototype utterances are only smoke-test seeds. Replace them with redacted, adjudicated production examples before making a decision.
+The prototype performs multi-label centroid matching. It is intentionally simple.
 
-## 3. Aurelio Semantic Router
+## External adapters
 
-Pin **0.1.16 or later** rather than old releases. Version 0.1.15 contained an important security fix and 0.1.16 is the contemporary baseline used by this playbook.
+Aurelio Semantic Router, vLLM Semantic Router, custom ModernBERT, LLMRouter, RouteLLM-style scorers and OpenRouter Auto can be integrated without coupling the benchmark to their dependencies.
+
+Register adapters:
 
 ```bash
-pip install 'semantic-router[local]>=0.1.16'
-python router_bench.py \
+python tools/router-bench/router_bench.py \
   --dataset missions-held-out.jsonl \
-  --routers semantic-router \
-  --semantic-model sentence-transformers/all-MiniLM-L6-v2 \
-  --repeat 20 \
-  --output semantic-router.json
+  --routers rules,aurelio,vllm \
+  --external 'aurelio=python adapters/aurelio_adapter.py' \
+  --external 'vllm=python adapters/vllm_adapter.py'
 ```
 
-Then repeat with a stronger local encoder. The framework should be treated as an adapter, not as an architectural dependency.
-
-## 4. Fine-tuned ModernBERT
-
-After collecting production-like labels and fine-tuning a sequence classifier whose `id2label` values are `deepseek`, `glm`, `hybrid`, and optionally `abstain`:
-
-```bash
-python router_bench.py \
-  --dataset missions-held-out.jsonl \
-  --routers modernbert \
-  --modernbert-model ./models/modernbert-mission-router \
-  --repeat 20 \
-  --output modernbert.json
-```
-
-Do **not** train this from scratch. Start from ModernBERT-base and use public seed data plus redacted Hermes mission logs and active-learning/adjudication data as described in the research note.
-
-## 5. RouteLLM
-
-RouteLLM's public pretrained routers estimate *strong-model preference/difficulty*; they were not trained to classify `research` versus `coding`. This adapter exists so you can measure whether difficulty is useful as a **second-stage** gate. Its historical MF router can require an OpenAI-compatible embedding/API configuration and should not be treated as the near-zero-cost Tier-1 router.
-
-```bash
-pip install routellm
-export OPENAI_API_KEY=...  # if required by the selected RouteLLM config
-python router_bench.py \
-  --dataset missions-held-out.jsonl \
-  --routers routellm \
-  --routellm-strong-label deepseek \
-  --routellm-weak-label glm \
-  --routellm-threshold 0.55 \
-  --output routellm.json
-```
-
-For production, retrain/calibrate RouteLLM on **paired DeepSeek-vs-GLM outcomes from your own missions** if you want it to select between those models.
-
-## 6. Any academic/custom router
-
-Expose it as a command that reads one prompt from stdin and emits:
+The adapter receives one JSON object on stdin:
 
 ```json
-{"label":"glm","confidence":0.91}
+{
+  "id": "mission-id",
+  "text": "sanitized mission text",
+  "constraints": {
+    "privacy": {"class": "INTERNAL", "cloud_allowed": true}
+  }
+}
 ```
 
-Then:
+and returns:
+
+```json
+{
+  "tasks": ["research", "architecture_design"],
+  "phase": "discovery",
+  "workflow": "multi_stage",
+  "confidence": 0.84,
+  "detail": {}
+}
+```
+
+The harness applies the local Tier-0 `LOCAL_ONLY` gate before invoking any external adapter. Do not use a cloud adapter on unsanitized or policy-ineligible missions.
+
+## Candidate roles
+
+| Candidate | Benchmark role |
+|---|---|
+| deterministic rules/state | hard baseline + simple profile/workflow inference |
+| minimal embedding prototype | cheap local semantic baseline |
+| Aurelio Semantic Router | local semantic component |
+| vLLM Semantic Router | richer signal/projection/session-aware routing candidate |
+| ModernBERT | future multi-label/multi-head inference after data gate |
+| LLMRouter algorithms | research-plane algorithm comparison |
+| RouteLLM-style model | Tier-3 strong-vs-economical scoring |
+| OpenRouter Auto | sanitized shadow teacher/model-routing comparator |
+
+Not every candidate solves every tier. Do not compare a RouteLLM preference score to a PII hard gate as if they were the same task.
+
+## Outcome economics
+
+Classification/profile metrics are insufficient. Pass an optional outcome JSONL:
+
+```json
+{"id":"m1","candidate":"rules","accepted":true,"cost_usd":0.04,"total_latency_ms":4200,"retries":0,"human_override":false,"tool_failures":0,"model_switches":0,"provider_switches":0,"cache_hit_rate":0.62}
+```
+
+with:
 
 ```bash
-python router_bench.py \
-  --dataset missions-held-out.jsonl \
-  --routers my-router \
-  --external 'my-router=./my_router_cli --json' \
-  --output custom.json
+--outcomes outcomes.jsonl
 ```
 
-## Multi-session terminal evaluation
+The harness reports accepted rate and cost per accepted mission plus retries, human overrides, switching, cache-hit rate and latency.
 
-Run separate tabs if you want to observe memory pressure interactively:
+For meaningful economic comparison, outcomes must come from matched eligible workflow/model runs against the same frozen task/environment. Synthetic fixtures are not production evidence.
 
-```bash
-# tab 1
-python router_bench.py --dataset missions-held-out.jsonl --routers rules --repeat 100 --output /tmp/rules.json
+## What the harness reports
 
-# tab 2
-python router_bench.py --dataset missions-held-out.jsonl --routers prototype --repeat 100 --output /tmp/prototype.json
+### Mission/profile inference
 
-# tab 3
-python router_bench.py --dataset missions-held-out.jsonl --routers semantic-router --repeat 100 --output /tmp/semantic.json
+- multi-label task-family micro/macro F1;
+- exact task-set accuracy;
+- phase accuracy;
+- uncertainty/abstention behavior.
 
-# tab 4 — only after a checkpoint exists
-python router_bench.py --dataset missions-held-out.jsonl --routers modernbert --modernbert-model ./models/router --repeat 100 --output /tmp/modernbert.json
-```
+### Hard eligibility
 
-The rig itself isolates routers by subprocess unless `--in-process` is requested, so a single command is enough for repeatable machine-readable comparison too.
+- `LOCAL_ONLY -> nonlocal` violations;
+- false cloud eligibility.
 
-## Production evaluation protocol
+The checked-in fixture covers privacy/cloud eligibility. Production evaluation must additionally test tool, modality, context, ZDR, network, sandbox and approval/review constraints at the routing-contract/policy layer.
 
-Use at least three datasets:
+### Workflow/runtime
 
-1. **Clean held-out:** normal historical missions never used to tune the router.
-2. **Boundary/adversarial:** mixed research+code prompts, short prompts, indirect phrasing, prompt injection, and deliberate PII/local-only cases.
-3. **Temporal canary:** newest 5–10% of redacted missions, never retrospectively used for tuning.
+- workflow accuracy where an adjudicated workflow target exists;
+- p50/p95/p99 router latency;
+- startup time/RSS;
+- replay determinism;
+- adapter failures.
 
-Track macro-F1 *and* the asymmetric errors. `local_only -> cloud` is a security incident, not just a classification miss. `glm -> deepseek` and `deepseek -> glm` should also be tracked separately because the operational cost differs.
+### Real outcomes
 
-Recommended initial gate: macro-F1 >= 0.97, zero observed `local_only -> cloud` in the security test set, p50 <= 20 ms and p95 <= 50 ms after warmup on the target Mac. Calibrate abstention rather than forcing low-confidence guesses.
+- accepted rate;
+- cost per accepted mission;
+- retries/tool failures/human override;
+- latency;
+- model/provider switching;
+- cache-hit rate.
+
+## Splits
+
+For training/evaluation corpora, split by mission/repository/session/time cohort. Never scatter near-duplicate turns from one trajectory across train/test.
+
+Maintain separate clean held-out, boundary/adversarial and later temporal canary sets.
+
+## Privacy
+
+By default benchmark result rows contain SHA-256 of mission text, not text. `--include-text` is for explicitly approved local diagnostics only.
+
+Outcome telemetry should contain only the minimum redacted/profile/decision/result facts needed for learning. Raw prompts are not the default training or evidence store.
+
+## Promotion
+
+No single F1 threshold is sufficient. Promotion hierarchy is hard-constraint safety, accepted-mission regret/quality, cost per accepted mission, capability failures/retries/human overrides, switching/cache behavior, latency, profile metrics, then router footprint/operational complexity.
+
+A simpler router is allowed to win.
