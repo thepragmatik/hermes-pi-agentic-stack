@@ -2,6 +2,8 @@
 
 This directory is the canonical research/design source behind the human Pages manual and sliced agent execution surface.
 
+**Mission outcome 2026-08-31 → 2026-09-01: 9/9 phases COMPLETE with persisted evidence.** The design below is no longer only designed — the bridge, containment, capability modes, LCM+Mnemosyne and rollback drill are proven (see `bootstrap-authority.md` and the readiness table in `artifact-usability-review.md`). Diagrams live in [`diagrams/`](diagrams/) — presentation views only; `architecture.md` remains canonical text.
+
 ## Read this in operating order
 
 1. `../../README.md` — human start page, maturity and manual bootstrap summary.
@@ -82,6 +84,6 @@ Kanban       = optional operational projection
 
 ## Maturity
 
-The package is **designed/execution-ready for controlled Phase-00 startup**, not yet an unattended production self-uplift system. Routing contracts and benchmark are designed/prototype; deterministic rules fixture is smoke-tested; all advanced router candidates remain researched/designed or future shadow candidates until target-Mac/representative mission evidence exists.
+**Post-mission (2026-09-01):** the controlled uplift executed end-to-end (9/9 phases). PROVEN: Pi bridge + Seatbelt containment, fail-closed egress scanning, bridge-level capability modes, parent-proxy cloud canary, disposable-copy rollback drill, LCM+Mnemosyne live. Still NOT production-approved: orchestrator-level tool removal (external, operator-owned), representative routing evidence for advanced routers, and whole-system target-Mac production qualification. Routing contracts and benchmark are smoke-tested; all advanced router candidates remain researched/designed or future shadow candidates.
 
 Use only the maturity labels defined in the canonical playbook: `researched`, `designed`, `prototype`, `smoke-tested`, `target-Mac-validated`, `shadow`, `canary`, `production-approved`.

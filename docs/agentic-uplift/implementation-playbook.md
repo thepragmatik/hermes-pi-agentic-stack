@@ -1,12 +1,16 @@
 # Self-Uplift Implementation Playbook for Hermes
 
-Snapshot: 2026-08-31.
+Snapshot: 2026-08-31. Mission outcome 2026-08-31 → 2026-09-01: 9/9 phases COMPLETE with persisted evidence.
 
 This is the **single canonical execution lifecycle** for Hermes to uplift its stack. The only phase sequence is:
 
 ```text
 00 -> 10 -> 20 -> 30 -> 40 -> 50 -> 60 -> 70
 ```
+
+![Mission lifecycle: phases 00–70 with adoption checkpoints A0/A–F](diagrams/mission-lifecycle.svg)
+
+Presentation diagrams for the topology, Pi bridge flow and trust boundaries live in [`diagrams/`](diagrams/); the lifecycle text above remains canonical.
 
 Detailed research is supporting evidence, not another phase system. The conversation is not execution state.
 

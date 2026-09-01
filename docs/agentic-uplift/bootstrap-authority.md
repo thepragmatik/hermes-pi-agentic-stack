@@ -178,6 +178,8 @@ The autonomous mission may progress without human intervention when gates pass; 
 
 ## Proven status after the uplift mission (2026-09-01)
 
+![Pi bridge request flow with fail-closed gates](diagrams/pi-bridge-flow.svg)
+
 - **B0–B4: PROVEN.** Policy parser/digest binding, env scrubbing, egress scanner
   (fail-closed, secrets block-only), typed envelope schema, idempotency ledger and the
   Seatbelt containment profile all exist in `tools/` and are covered by the fixture suite.

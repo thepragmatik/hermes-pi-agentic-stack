@@ -1,6 +1,14 @@
 # Architecture — Canonical Text Representation
 
-This Markdown plus `architecture.graph.json` is canonical for deterministic agent/reviewer interpretation. SVG/HTML diagrams are presentation views.
+This Markdown plus `architecture.graph.json` is canonical for deterministic agent/reviewer interpretation. SVG/HTML diagrams are presentation views only; where this text and a diagram disagree, the text and graph win.
+
+Presentation views:
+
+![System topology](diagrams/system-topology.svg)
+
+![Trust and enforcement boundary map](diagrams/trust-boundaries.svg)
+
+(The mission-lifecycle diagram is embedded in `implementation-playbook.md`; the Pi bridge request flow in `bootstrap-authority.md`.)
 
 ## Components and trust boundaries
 

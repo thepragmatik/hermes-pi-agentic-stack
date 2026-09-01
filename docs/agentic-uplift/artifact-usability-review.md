@@ -2,30 +2,31 @@
 
 ## Verdict
 
-**Fresh-install operating manual / controlled autonomous uplift: fit to begin Phase 00. Unattended production authority: not yet fit.**
+**Post-mission (2026-09-01): controlled uplift EXECUTED — 9/9 phases complete with persisted evidence. Bridge-level and containment layers are PROVEN; unattended production authority is still gated on external, operator-owned enforcement and representative routing evidence.**
 
-The routing redesign improves the operating manual without changing that maturity conclusion: the stack now has a thin replaceable routing contract and a broader capability/workflow ontology, but advanced routers remain research/shadow candidates until representative outcome evidence exists.
+The routing redesign improves the operating manual without changing that boundary: the stack now has a thin replaceable routing contract and a broader capability/workflow ontology, but advanced routers remain research/shadow candidates until representative outcome evidence exists.
 
 ## Readiness taxonomy
 
-| Artifact | What it is | What it is not | Status |
+| Artifact | What it is | What it is not | Status (post-mission, 2026-09-01) |
 |---|---|---|---|
-| `README.md` + `fresh-install-bootstrap.md` | human bootstrap/runbook | OS sandbox implementation | designed/execution-ready |
-| `UPLIFT_MISSION.md` | one-command staged mission seed | durable state/security policy | designed |
-| `policy.example.yaml` | declarative policy intent | sandbox/egress enforcement | designed; enforcement P0 |
-| routing mission/decision schemas v1.0 | stable framework-neutral mission/profile + decision interface | production inference engine | designed/schema-ready |
-| Pi task schema v2.2 | typed delegation + routing-stage provenance | transport/auth/containment | schema-ready; integration P0 |
-| uplift-state v1.1 | phase/report/restart/adoption contract | persistence daemon | schema-ready; persistence P0 |
-| router benchmark | common multi-label/workflow/economic harness | representative production corpus | prototype + rules smoke-tested; representative evidence P0 |
-| deterministic rules/state router | bootstrap/Phase-30 baseline and safety smoke | final learned router | smoke-tested fixture only |
+| `README.md` + `fresh-install-bootstrap.md` | human bootstrap/runbook | OS sandbox implementation | proven path; re-runnable |
+| `UPLIFT_MISSION.md` | one-command staged mission seed | durable state/security policy | executed 9/9 phases |
+| `policy.example.yaml` | declarative policy intent | sandbox/egress enforcement | designed; external enforcement operator-owned |
+| routing mission/decision schemas v1.0 | stable framework-neutral mission/profile + decision interface | production inference engine | designed/schema-ready; exercised in bridge path |
+| Pi task schema v2.2 | typed delegation + routing-stage provenance | transport/auth/containment | **PROVEN** via `tools/pi-bridge` (fixtures + canary) |
+| uplift-state v1.1 | phase/report/restart/adoption contract | persistence daemon | **PROVEN** across all 9 phases |
+| router benchmark | common multi-label/workflow/economic harness | representative production corpus | smoke-tested; rules micro-F1 0.923, hard 0; representative evidence pending |
+| deterministic rules/state router | bootstrap/Phase-30 baseline and safety smoke | final learned router | smoke-tested fixture |
 | Aurelio adapter path | lightweight semantic challenger | complete policy/workflow/economic router | researched/designed |
-| vLLM Semantic Router adoption path | leading medium-term richer routing candidate behind our contract | mandatory runtime or security boundary | researched/designed; bake-off P0 |
+| vLLM Semantic Router adoption path | leading medium-term richer routing candidate behind our contract | mandatory runtime or security boundary | researched/designed; bake-off pending |
 | LLMRouter / RouteLLM paths | research-plane algorithms / Tier-3 scorer | required hot-path runtime | researched/designed |
 | custom ModernBERT | later multi-label/multi-head candidate | justified training project today | researched/deferred |
 | OpenRouter Auto | bounded shadow/teacher/bootstrap/fallback comparator | privacy/security authority | researched/designed shadow use |
-| sliced uplift skill | progressive-disclosure 00–70 procedure | security boundary | prototype-ready |
-| OpenRouter routing design/config | gateway/model/provider ownership | proven provider/privacy behaviour | designed; canary P0 |
-| LCM + Mnemosyne baseline | selected local context/memory path | installed target-Mac subsystem | config-ready; runtime P0 |
+| sliced uplift skill | progressive-disclosure 00–70 procedure | security boundary | **executed end-to-end** |
+| OpenRouter routing design/config | gateway/model/provider ownership | proven provider/privacy behaviour | parent-proxy canary PROVEN; gateway policy surface designed |
+| LCM + Mnemosyne baseline | selected local context/memory path | installed target-Mac subsystem | **live with offline proof**; first natural compaction observed |
+| disposable-copy rollback drill | reversible checkpoint/restore discipline | continuous DR | **PROVEN** (Phase 70) |
 | Pages site | public human/agent operating manual | secret-bearing runtime store | deployed/validated surface |
 
 ## P0 gates before unattended production authority
