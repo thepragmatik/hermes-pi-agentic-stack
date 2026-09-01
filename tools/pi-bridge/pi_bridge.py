@@ -25,7 +25,9 @@ import json
 import os
 import subprocess
 import sys
+import threading
 import time
+import urllib.request
 from pathlib import Path
 from typing import Optional
 
@@ -36,8 +38,55 @@ SECURITY_GATE = REPO_ROOT / "tools" / "security-gate" / "security_gate.py"
 ENV_ALLOWLIST = ("PATH", "LANG", "LC_ALL", "TMPDIR", "SHELL", "TERM")
 
 
+OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
+
+
 class BridgeError(Exception):
     pass
+
+
+def proxy_model_requests(req_fd: int, resp_fd: int, model: str, api_key: str,
+                         log: list) -> None:
+    """Parent-side model proxy (B5 proxied architecture): the sandboxed worker
+    keeps `deny network*`; its ONLY route to the cloud model is an inherited
+    fd-pipe to the bridge parent, which performs the actual HTTPS egress.
+    Response bodies are forwarded to the worker but never mirrored into
+    evidence (status codes only)."""
+    try:
+        with os.fdopen(req_fd) as r, os.fdopen(resp_fd, "w") as w:
+            for line in r:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    req = json.loads(line)
+                except json.JSONDecodeError:
+                    log.append("malformed_request")
+                    w.write(json.dumps({"_proxy_error": "malformed_request"}) + "\n")
+                    w.flush()
+                    continue
+                body = json.dumps({
+                    "model": model,
+                    "messages": req.get("messages", []),
+                    "max_tokens": int(req.get("max_tokens", 1024)),
+                }).encode()
+                http = urllib.request.Request(
+                    OPENROUTER_ENDPOINT, data=body,
+                    headers={"Authorization": f"Bearer {api_key}",
+                             "Content-Type": "application/json"})
+                try:
+                    with urllib.request.urlopen(http, timeout=180) as resp:
+                        out: dict = json.loads(resp.read().decode())
+                        status = resp.status
+                except Exception as e:  # typed error name only — no body in evidence
+                    out = {"_proxy_error": type(e).__name__}
+                    status = 0
+                out["_proxy_status"] = status
+                log.append(status)
+                w.write(json.dumps(out) + "\n")
+                w.flush()
+    except OSError:
+        pass
 
 
 def _sha256_file(p: Path) -> str:
@@ -108,7 +157,8 @@ def make_worktree(repo: Path, base_ref: str, wt_path: Path) -> None:
 
 
 def run_worker(env: dict, envelope: dict, wt: Path, worker_cmd: str,
-               sandbox_profile: Optional[str], timeout: float) -> dict:
+               sandbox_profile: Optional[str], timeout: float,
+               pass_fds: tuple = ()) -> dict:
     """Launch worker with pipe stdin/stdout only; complete on agent_settled."""
     prompt = json.dumps({
         "type": "prompt",
@@ -128,7 +178,8 @@ def run_worker(env: dict, envelope: dict, wt: Path, worker_cmd: str,
     timed_out = False
     try:
         proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE, env=env, cwd=str(wt), text=True)
+                                stderr=subprocess.PIPE, env=env, cwd=str(wt), text=True,
+                                pass_fds=pass_fds)
     except OSError as e:
         raise BridgeError(f"worker launch failed: {e}")
     try:
@@ -156,7 +207,10 @@ def run_worker(env: dict, envelope: dict, wt: Path, worker_cmd: str,
                 break
     finally:
         if proc.poll() is None:
-            proc.kill()
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
         proc.wait(timeout=10)
     return {"events": events, "agent_settled": settled, "timed_out": timed_out,
             "worker_rc": proc.returncode,
@@ -228,9 +282,49 @@ def cmd_run(args) -> int:
         "env_secret_candidates_blocked": env_secret_candidates,
         "passthrough_env_keys": sorted(i.partition("=")[0] for i in args.passthrough_env),
     }
+    # B5 proxied-model architecture: worker keeps deny network*; model egress
+    # goes through the bridge parent over an inherited fd-pipe.
+    proxy_fds: tuple = ()
+    proxy_thread = None
+    proxy_log: list = []
+    req_w = resp_r = -1
+    if args.model_proxy:
+        key = os.environ.get(args.openrouter_key_env, "")
+        if not key:
+            raise BridgeError(f"--model-proxy set but ${args.openrouter_key_env} is empty")
+        req_r, req_w = os.pipe()
+        resp_r, resp_w = os.pipe()
+        os.set_inheritable(req_w, True)
+        os.set_inheritable(resp_r, True)
+        proxy_thread = threading.Thread(
+            target=proxy_model_requests,
+            args=(req_r, resp_w, args.model_pin, key, proxy_log), daemon=True)
+        proxy_thread.start()
+        worker_env["MODEL_REQ_FD"] = str(req_w)
+        worker_env["MODEL_RESP_FD"] = str(resp_r)
+        proxy_fds = (req_w, resp_r)
+        result["model_proxy"] = {
+            "architecture": "parent-proxied (worker sandbox denies network*; only model egress via inherited fd-pipe to bridge parent)",
+            "provider": "openrouter", "model_pin": args.model_pin,
+            "endpoint": OPENROUTER_ENDPOINT,
+            "api_key_source_env": args.openrouter_key_env,
+            "api_key_sha256_16": hashlib.sha256(key.encode()).hexdigest()[:16],
+            "api_key_forwarded_to_worker": False,
+        }
     try:
         result["rpc"] = run_worker(worker_env, envelope, wt, args.worker_cmd,
-                                   args.sandbox_profile, args.timeout)
+                                   args.sandbox_profile, args.timeout,
+                                   pass_fds=proxy_fds)
+        if args.model_proxy and proxy_thread is not None:
+            for fd in (req_w, resp_r):
+                if fd >= 0:
+                    try:
+                        os.close(fd)
+                    except OSError:
+                        pass
+            proxy_thread.join(timeout=5)
+            result["model_proxy"]["proxy_calls"] = [
+                s if isinstance(s, str) else int(s) for s in proxy_log]
         diff = diff_worktree(wt)
         result["diff_sha256"] = hashlib.sha256(diff.encode()).hexdigest() if diff else None
         result["egress_scan"] = egress_scan(diff, evidence_dir)
@@ -275,6 +369,11 @@ def main() -> int:
     r.add_argument("--sandbox-profile")
     r.add_argument("--timeout", type=float, default=120.0)
     r.add_argument("--offline", action="store_true")
+    r.add_argument("--model-proxy", action="store_true",
+                   help="B5: perform cloud-model egress in the bridge parent on the worker's behalf (worker stays deny-network)")
+    r.add_argument("--model-pin", default="z-ai/glm-5.3-flash",
+                   help="pinned provider/model id used through the proxy")
+    r.add_argument("--openrouter-key-env", default="OPENROUTER_API_KEY")
     r.add_argument("--passthrough-env", action="append", default=[],
                    metavar="NAME=VALUE", help="explicit operator-controlled worker env addition")
     r.set_defaults(fn=cmd_run)
