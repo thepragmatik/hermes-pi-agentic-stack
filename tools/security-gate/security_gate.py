@@ -40,9 +40,10 @@ SECRET_PATTERNS = [
     ("slack_token", re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b"), False),
     ("private_key_block", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"), False),
     # key=value assignments, unless the value is an obvious non-secret placeholder
+    ("aws_secret_key", re.compile(r"(?i)\b(?:aws)?_?SECRET_ACCESS_KEY\s*=\s*\S{12,}"), False),
     ("credential_assignment", re.compile(
-        r"(?i)\b(api[_-]?key|secret|token|passwd|password)\b\s*[:=]\s*"
-        r"[\"']([^\"']{8,})[\"']"), True),
+        r"(?i)(?<![A-Za-z0-9])(api[_-]?key|secret|token|passwd|password|access[_-]?key)"
+        r"(?![A-Za-z0-9])\s*[:=]\s*[\"']?([^\"'\s]{8,})[\"']?"), True),
 ]
 PLACEHOLDER_VALUES = re.compile(
     r"^\s*(<[^>]+>|\$\{[^}]+\}|changeme|CHANGE_ME|REDACTED|xxx+|\*+|"
