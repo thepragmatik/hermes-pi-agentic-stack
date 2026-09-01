@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 700" role="img" aria-labelledby="t d" width="100%" style="color-scheme:light dark">
+  <title id="t">Pi bridge request flow — envelope validation through evidence, with fail-closed gates</title>
+  <desc id="d">A coding delegation enters the Pi bridge as a typed envelope. The bridge validates schema and policy digest, enforces the session capability mode and structurally rejects direct-edit or bypass attempts before any worker launch. It creates a disposable worktree and launches a Pi worker under Seatbelt containment with network denied. Cloud model calls are proxied by the bridge parent over an inherited fd-pipe; the API key never reaches the worker. On agent_settled the bridge runs egress scans, collects compact evidence and validates durable state. Secrets, PII, LOCAL_ONLY and direct-edit requests fail closed at the rose gates.</desc>
+  <style>
+    .box{fill:#ffffff;stroke:#57606a;stroke-width:1.5;rx:10}
+    .bar{rx:2.5}
+    .h{font:600 13px system-ui,sans-serif}
+    .t{font:11px system-ui,sans-serif;opacity:.72}
+    .lab{font:italic 11px system-ui,sans-serif;opacity:.65}
+    .e{stroke:#57606a;stroke-width:1.5;fill:none;marker-end:url(#arw3)}
+    .x{stroke:#e11d48;stroke-width:1.4;fill:none;stroke-dasharray:5 3;marker-end:url(#x3)}
+    .xk{fill:#e11d48}
+    .mk{fill:#57606a}
+    .gate{fill:#e11d48;fill-opacity:.05;stroke:#e11d48;stroke-opacity:.55;stroke-dasharray:5 3;rx:10;stroke-width:1.3}
+    .bar-pi{fill:#d97706}.bar-sec{fill:#e11d48}.bar-ev{fill:#059669}.bar-control{fill:#2563eb}
+    .lg{font:11px system-ui,sans-serif}
+    text{fill:#1f2328}
+    @media (prefers-color-scheme: dark){
+      text{fill:#e6edf3}
+      .box{fill:#161b22;stroke:#8b949e}
+      .e{stroke:#8b949e}.mk{fill:#8b949e}
+      .gate{fill:#be123c;fill-opacity:.16;stroke:#f08495;stroke-opacity:.75}
+      .x{stroke:#f08495}.xk{fill:#f08495}
+    }
+  </style>
+  <defs>
+    <marker id="arw3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path class="mk" d="M0,0 L8,4 L0,8 z"/></marker>
+    <marker id="x3" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path class="xk" d="M0,0 L8,4 L0,8" fill="none" stroke-width="1.6"/></marker>
+  </defs>
+
+  <!-- happy path column -->
+  <rect class="box" x="20" y="20" width="280" height="56"/>
+  <rect class="bar bar-pi" x="20" y="20" width="5" height="56" rx="2.5"/>
+  <text class="h" x="38" y="42">Hermes delegation</text>
+  <text class="t" x="38" y="60">typed envelope v2.2 + routing provenance</text>
+
+  <rect class="box" x="20" y="120" width="280" height="70"/>
+  <rect class="bar bar-pi" x="20" y="120" width="5" height="70" rx="2.5"/>
+  <text class="h" x="38" y="142">1. Envelope validation</text>
+  <text class="t" x="38" y="160">schema + policy digest + idempotency ledger</text>
+  <text class="t" x="38" y="174">(task_id + idempotency_key · replay-safe)</text>
+
+  <rect class="box" x="20" y="234" width="280" height="70"/>
+  <rect class="bar bar-sec" x="20" y="234" width="5" height="70" rx="2.5"/>
+  <text class="h" x="38" y="256">2. Capability-mode gate</text>
+  <text class="t" x="38" y="274">session capability mode (Phase 70)</text>
+  <text class="t" x="38" y="288">default-deny cloud egress</text>
+
+  <rect class="box" x="20" y="348" width="280" height="60"/>
+  <rect class="bar bar-pi" x="20" y="348" width="5" height="60" rx="2.5"/>
+  <text class="h" x="38" y="370">3. Worktree + worker launch</text>
+  <text class="t" x="38" y="388">disposable copy · Seatbelt · env scrubbed</text>
+
+  <rect class="box" x="20" y="452" width="280" height="70"/>
+  <rect class="bar bar-pi" x="20" y="452" width="5" height="70" rx="2.5"/>
+  <text class="h" x="38" y="474">4. Pi worker loop</text>
+  <text class="t" x="38" y="492">implement/test/LSP inside worktree only;</text>
+  <text class="t" x="38" y="506">belt (worker check) + suspenders (sbpl)</text>
+
+  <rect class="box" x="20" y="566" width="280" height="60"/>
+  <rect class="bar bar-ev" x="20" y="566" width="5" height="60" rx="2.5"/>
+  <text class="h" x="38" y="588">5. agent_settled → 6. egress scan</text>
+  <text class="t" x="38" y="606">settle (not agent_end), then scans</text>
+
+  <rect class="box" x="400" y="566" width="300" height="60"/>
+  <rect class="bar bar-ev" x="400" y="566" width="5" height="60" rx="2.5"/>
+  <text class="h" x="418" y="588">7. Compact evidence</text>
+  <text class="t" x="418" y="606">key masked sha256_16 · durable state validated</text>
+  <text class="t" x="418" y="620">no raw RPC mirror into context</text>
+
+  <rect class="box" x="790" y="566" width="240" height="60"/>
+  <rect class="bar bar-ev" x="790" y="566" width="5" height="60" rx="2.5"/>
+  <text class="h" x="808" y="588">8. Report + boundary</text>
+  <text class="t" x="808" y="606">phase report; worker cannot merge</text>
+  <text class="t" x="808" y="620">or self-approve</text>
+
+  <rect class="box" x="400" y="452" width="300" height="60"/>
+  <rect class="bar bar-control" x="400" y="452" width="5" height="60" rx="2.5"/>
+  <text class="h" x="418" y="474">Bridge parent-proxy (only cloud path)</text>
+  <text class="t" x="418" y="492">parent performs pinned OpenRouter call over</text>
+  <text class="t" x="418" y="506">inherited fd-pipe; API key stays in parent env</text>
+
+  <!-- fail-closed gates -->
+  <rect class="gate" x="790" y="234" width="420" height="66"/>
+  <text class="h" x="810" y="256">FAIL CLOSED — LOCAL_ONLY · secrets · PII</text>
+  <text class="t" x="810" y="274">egress scanner blocks secret-bearing and cloud-ineligible</text>
+  <text class="t" x="810" y="288">content; unsupported hard requirements are never dropped</text>
+
+  <rect class="gate" x="790" y="340" width="420" height="62"/>
+  <text class="h" x="810" y="362">FAIL CLOSED — direct-edit / bypass envelope</text>
+  <text class="t" x="810" y="380">typed rejection before any worker launch (B6, bridge level)</text>
+  <text class="t" x="810" y="394">Session Capability Modes default-safe (Phase 70)</text>
+
+  <!-- edges -->
+  <path class="e" d="M 160 76 L 160 120"/>
+  <path class="e" d="M 160 190 L 160 234"/>
+  <path class="e" d="M 160 304 L 160 348"/>
+  <path class="e" d="M 160 408 L 160 452"/>
+  <path class="e" d="M 160 522 L 160 566"/>
+  <path class="e" d="M 300 596 L 400 596"/>
+  <path class="e" d="M 700 596 L 790 596"/>
+  <path class="e" d="M 300 482 C 350 482 360 482 400 482"/>
+  <path class="x" d="M 300 269 C 520 269 600 267 790 267"/>
+  <text class="t" x="330" y="255">secrets/PII/LOCAL_ONLY content</text>
+  <path class="x" d="M 300 280 C 520 290 610 360 790 368"/>
+  <text class="t" x="330" y="320">“skip Pi, edit directly”</text>
+
+  <rect class="box" x="20" y="660" width="1210" height="34"/>
+  <circle cx="45" cy="677" r="6" fill="#e11d48"/><text class="lg" x="58" y="681">rose = fail-closed security gate</text>
+  <circle cx="270" cy="677" r="6" fill="#d97706"/><text class="lg" x="283" y="681">amber = Pi delegation path</text>
+  <circle cx="490" cy="677" r="6" fill="#2563eb"/><text class="lg" x="503" y="681">blue = sanctioned cloud proxy</text>
+  <circle cx="700" cy="677" r="6" fill="#059669"/><text class="lg" x="713" y="681">emerald = evidence</text>
+  <text class="lg" x="850" y="681">dashed rose = structural rejection</text>
+</svg>

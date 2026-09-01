@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 660" role="img" aria-labelledby="t d" width="100%" style="color-scheme:light dark">
+  <title id="t">Trust and enforcement boundary map — in-process, bridge-level, external operator-owned</title>
+  <desc id="d">Three honest enforcement layers from the 2026-08-31 to 2026-09-01 uplift mission. Layer 1, enforced in-process by tools under test: policy parser and digest binding, typed envelope validation, idempotency ledger, worker out-of-worktree rejection, egress scanner and environment scrubbing. Layer 2, enforced at bridge level: Seatbelt containment profiles with canonical-path dual spelling, deny-network worker sandbox, capability-mode flag rejecting direct-edit and cloud egress, parent-proxy key isolation, and bounded retry. Layer 3, external and operator-owned (dashed): removal of Hermes' own generic source-write and shell toolset, OS account isolation for bootstrap, and credential custody — provable only by an operator outside the running system.</desc>
+  <style>
+    .zone{rx:14;stroke-width:1.2}
+    .box{fill:#ffffff;stroke:#57606a;stroke-width:1.5;rx:10}
+    .h{font:600 13px system-ui,sans-serif}
+    .z{font:700 13px system-ui,sans-serif}
+    .t{font:11px system-ui,sans-serif;opacity:.75}
+    .lab{font:italic 11px system-ui,sans-serif;opacity:.65}
+    .lg{font:11px system-ui,sans-serif}
+    text{fill:#1f2328}
+    .z1{fill:#2563eb;fill-opacity:.045;stroke:#2563eb;stroke-opacity:.55}
+    .z2{fill:#d97706;fill-opacity:.05;stroke:#d97706;stroke-opacity:.55}
+    .z3{fill:#e11d48;fill-opacity:.045;stroke:#e11d48;stroke-opacity:.6;stroke-dasharray:7 4}
+    @media (prefers-color-scheme: dark){
+      text{fill:#e6edf3}
+      .box{fill:#161b22;stroke:#8b949e}
+      .z1{fill:#316dca;fill-opacity:.13;stroke:#6ea0f0}
+      .z2{fill:#bd7907;fill-opacity:.13;stroke:#d9a04a}
+      .z3{fill:#be123c;fill-opacity:.14;stroke:#f08495}
+    }
+  </style>
+
+  <rect class="zone z1" x="15" y="20" width="1210" height="180"/>
+  <text class="z" x="35" y="46" fill="#2563eb">LAYER 1 — IN-PROCESS (proven, fixture-tested)</text>
+  <text class="lab" x="35" y="64">enforcement lives in repo tools; deterministic, replayable, covered by tests/</text>
+  <rect class="box" x="35"  y="85" width="275" height="92"/>
+  <text class="h" x="53" y="107">Policy parser + digest binding</text>
+  <text class="t" x="53" y="125">role/capability policy validated before use;</text>
+  <text class="t" x="53" y="139">policy digest bound into every envelope</text>
+  <rect class="box" x="335" y="85" width="275" height="92"/>
+  <text class="h" x="353" y="107">Typed envelope validation</text>
+  <text class="t" x="353" y="125">v2.2 schema + routing-stage provenance;</text>
+  <text class="t" x="353" y="139">idempotency ledger (task_id + key)</text>
+  <rect class="box" x="635" y="85" width="275" height="92"/>
+  <text class="h" x="653" y="107">Egress scanner</text>
+  <text class="t" x="653" y="125">fail-closed on secrets (block-only) and</text>
+  <text class="t" x="653" y="139">cloud-ineligible content; PII policy</text>
+  <rect class="box" x="935" y="85" width="270" height="92"/>
+  <text class="h" x="953" y="107">Env scrubber + worker path check</text>
+  <text class="t" x="953" y="125">minimum environment passed; worker itself</text>
+  <text class="t" x="953" y="139">rejects out-of-worktree paths (the belt)</text>
+
+  <rect class="zone z2" x="15" y="220" width="1210" height="190"/>
+  <text class="z" x="35" y="246" fill="#d97706">LAYER 2 — BRIDGE-LEVEL (proven, structural)</text>
+  <text class="lab" x="35" y="264">OS/sandbox mechanisms around the worker process; probed in the same profile as the real mission</text>
+  <rect class="box" x="35"  y="285" width="275" height="100"/>
+  <text class="h" x="53" y="307">Seatbelt (sbpl) containment</text>
+  <text class="t" x="53" y="325">file/network/credential denies probed</text>
+  <text class="t" x="53" y="339">structurally; canonical-path trap handled</text>
+  <text class="t" x="53" y="353">(/tmp AND /private/tmp denied)</text>
+  <rect class="box" x="335" y="285" width="275" height="100"/>
+  <text class="h" x="353" y="307">Deny-network worker + parent-proxy</text>
+  <text class="t" x="353" y="325">worker keeps deny network*; only cloud route</text>
+  <text class="t" x="353" y="339">is inherited fd-pipe to parent; key never</text>
+  <text class="t" x="353" y="353">forwarded (masked sha256_16 in evidence)</text>
+  <rect class="box" x="635" y="285" width="275" height="100"/>
+  <text class="h" x="653" y="307">Capability modes (Phase 70)</text>
+  <text class="t" x="653" y="325">bridge-level flag default-denies cloud egress;</text>
+  <text class="t" x="653" y="339">reject_direct_edit typed error before any</text>
+  <text class="t" x="653" y="353">worker launch</text>
+  <rect class="box" x="935" y="285" width="270" height="100"/>
+  <text class="h" x="953" y="307">Bounded retry + settle semantics</text>
+  <text class="t" x="953" y="325">capped in-worker retries; idempotent replay;</text>
+  <text class="t" x="953" y="339">agent_settled (not agent_end) is completion;</text>
+  <text class="t" x="953" y="353">rollback drill on a disposable copy: PROVEN</text>
+
+  <rect class="zone z3" x="15" y="430" width="1210" height="170"/>
+  <text class="z" x="35" y="456" fill="#e11d48">LAYER 3 — EXTERNAL, OPERATOR-OWNED (NOT yet provable from inside)</text>
+  <text class="lab" x="35" y="474">this Hermes version exposes no permissions/hooks config keys; do not claim structural zero-trust until an operator applies these</text>
+  <rect class="box" x="35"  y="495" width="380" height="80" stroke-dasharray="5 3"/>
+  <text class="h" x="53" y="517">Orchestrator tool removal (B6 remainder)</text>
+  <text class="t" x="53" y="535">remove Hermes' generic source-write and arbitrary-shell</text>
+  <text class="t" x="53" y="549">toolset from the production profile; repro commands in</text>
+  <text class="t" x="53" y="563">Phase 60 evidence</text>
+  <rect class="box" x="440" y="495" width="380" height="80" stroke-dasharray="5 3"/>
+  <text class="h" x="458" y="517">Bootstrap OS-account isolation</text>
+  <text class="t" x="458" y="535">dedicated standard (non-admin) macOS account without</text>
+  <text class="t" x="458" y="549">production repos, credentials or sensitive SSH material;</text>
+  <text class="t" x="458" y="563">a developer account is a trusted fallback, not zero-trust</text>
+  <rect class="box" x="845" y="495" width="360" height="80" stroke-dasharray="5 3"/>
+  <text class="h" x="863" y="517">Credential + secret custody</text>
+  <text class="t" x="863" y="535">OPENROUTER_API_KEY entered only through Hermes</text>
+  <text class="t" x="863" y="549">provider setup; never pasted into chat/docs/state;</text>
+  <text class="t" x="863" y="563">keychain/OS custody is operator-owned</text>
+
+  <rect class="box" x="15" y="622" width="1210" height="30"/>
+  <text class="lg" x="30" y="641">Solid zones = proven and testable from inside the system. Dashed rose zone = requires an operator action outside the running system before zero-trust can be claimed.</text>
+</svg>

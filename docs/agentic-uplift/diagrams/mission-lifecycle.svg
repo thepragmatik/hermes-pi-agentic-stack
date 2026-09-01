@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 360" role="img" aria-labelledby="t d" width="100%" style="color-scheme:light dark">
+  <title id="t">Mission lifecycle — phases 00–70 with adoption checkpoints A0/A–F</title>
+  <desc id="d">Eight ordered phases from 00 preflight through 70 upgrades and rollback. Each phase ends with persisted evidence, a boundary report and a fresh session before the next begins. Adoption checkpoints: A0 dogfood and A fresh session after phase 20 (blue), B shadow-only after phase 30 (blue), C is the phase 40 human authority gate (rose), D recreate workers after phase 50 (amber), E ordinary multi-role operation after phase 60 (emerald), F recurring maintenance cycle at phase 70. A panel below records the 2026-08-31 to 2026-09-01 mission outcome: 9 of 9 phases complete with persisted evidence, and human approval remains additive on mandatory P0 evidence, never a waiver.</desc>
+  <style>
+    .box{fill:#ffffff;stroke:#57606a;stroke-width:1.5;rx:10}
+    .bar{rx:2.5}
+    .h{font:600 13px system-ui,sans-serif}
+    .t{font:11px system-ui,sans-serif;opacity:.72}
+    .lab{font:italic 11px system-ui,sans-serif;opacity:.65}
+    .e{stroke:#57606a;stroke-width:1.5;fill:none;marker-end:url(#arw2)}
+    .mk{fill:#57606a}
+    .ck{font:600 11.5px system-ui,sans-serif}
+    .panel{fill:#059669;fill-opacity:.05;stroke:#059669;stroke-opacity:.45;stroke-dasharray:6 4;rx:12;stroke-width:1.2}
+    .bar-control{fill:#2563eb}.bar-pi{fill:#d97706}.bar-ev{fill:#059669}.bar-sec{fill:#e11d48}
+    @media (prefers-color-scheme: dark){
+      text{fill:#e6edf3}
+      .box{fill:#161b22;stroke:#8b949e}
+      .e{stroke:#8b949e}.mk{fill:#8b949e}
+      .panel{fill:#0a7d54;fill-opacity:.14;stroke:#4cbf94;stroke-opacity:.7}
+    }
+  </style>
+  <defs>
+    <marker id="arw2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path class="mk" d="M0,0 L8,4 L0,8 z"/></marker>
+  </defs>
+
+  <rect class="box" x="15"  y="60" width="130" height="72"/>
+  <rect class="bar bar-control" x="15" y="60" width="5" height="72" rx="2.5"/>
+  <text class="h" x="33" y="84">00 Preflight</text>
+  <text class="t" x="33" y="102">foundation truth,</text>
+  <text class="t" x="33" y="116">no mutation</text>
+  <rect class="box" x="170" y="60" width="130" height="72"/>
+  <rect class="bar bar-control" x="170" y="60" width="5" height="72" rx="2.5"/>
+  <text class="h" x="188" y="84">10 Baseline</text>
+  <text class="t" x="188" y="102">metrics + restore</text>
+  <text class="t" x="188" y="116">checkpoint</text>
+  <rect class="box" x="325" y="60" width="155" height="72"/>
+  <rect class="bar bar-control" x="325" y="60" width="5" height="72" rx="2.5"/>
+  <text class="h" x="343" y="84">20 Context+Skills</text>
+  <text class="t" x="343" y="102">prompt diet · sliced skills</text>
+  <text class="t" x="343" y="116">LCM + Mnemosyne</text>
+  <rect class="box" x="505" y="60" width="140" height="72"/>
+  <rect class="bar bar-control" x="505" y="60" width="5" height="72" rx="2.5"/>
+  <text class="h" x="523" y="84">30 Routing</text>
+  <text class="t" x="523" y="102">contracts · rules/state</text>
+  <text class="t" x="523" y="116">shadow bake-off</text>
+  <rect class="box" x="670" y="60" width="140" height="72"/>
+  <rect class="bar bar-sec" x="670" y="60" width="5" height="72" rx="2.5"/>
+  <text class="h" x="688" y="84">40 Security</text>
+  <text class="t" x="688" y="102">capability · egress</text>
+  <text class="t" x="688" y="116">secret/PII enforcement</text>
+  <rect class="box" x="835" y="60" width="140" height="72"/>
+  <rect class="bar bar-pi" x="835" y="60" width="5" height="72" rx="2.5"/>
+  <text class="h" x="853" y="84">50 Hermes→Pi</text>
+  <text class="t" x="853" y="102">typed boundary</text>
+  <text class="t" x="853" y="116">worktrees · LSP</text>
+  <rect class="box" x="1000" y="60" width="110" height="72"/>
+  <rect class="bar bar-ev" x="1000" y="60" width="5" height="72" rx="2.5"/>
+  <text class="h" x="1018" y="84">60 Eval</text>
+  <text class="t" x="1018" y="102">economic/security</text>
+  <text class="t" x="1018" y="116">bake-off · promotion</text>
+  <rect class="box" x="1135" y="60" width="90" height="72"/>
+  <rect class="bar bar-ev" x="1135" y="60" width="5" height="72" rx="2.5"/>
+  <text class="h" x="1153" y="84">70 Ops</text>
+  <text class="t" x="1153" y="102">canary</text>
+  <text class="t" x="1153" y="116">rollback</text>
+
+  <path class="e" d="M 145 96 L 170 96"/><path class="e" d="M 300 96 L 325 96"/>
+  <path class="e" d="M 480 96 L 505 96"/><path class="e" d="M 645 96 L 670 96"/>
+  <path class="e" d="M 810 96 L 835 96"/><path class="e" d="M 975 96 L 1000 96"/>
+  <path class="e" d="M 1110 96 L 1135 96"/>
+
+  <text class="ck" x="402" y="40" text-anchor="middle" fill="#2563eb">A0 dogfood · A fresh session</text>
+  <text class="ck" x="575" y="40" text-anchor="middle" fill="#2563eb">B shadow only</text>
+  <text class="ck" x="740" y="40" text-anchor="middle" fill="#e11d48">★ C human authority gate</text>
+  <text class="ck" x="905" y="40" text-anchor="middle" fill="#d97706">D recreate workers</text>
+  <text class="ck" x="1055" y="40" text-anchor="middle" fill="#059669">E ordinary operation</text>
+  <text class="ck" x="1180" y="40" text-anchor="middle" fill="#059669">F cycle</text>
+
+  <text class="lab" x="15" y="162">Every phase boundary: persist evidence + uplift-state → report boundary → fresh session / recreate → only then next phase.</text>
+
+  <rect class="panel" x="15" y="185" width="1210" height="155"/>
+  <text class="h" x="35" y="215">Mission outcome 2026-08-31 → 2026-09-01: 9/9 phases COMPLETE with persisted evidence.</text>
+  <text class="t" x="35" y="240">Proven: policy digest + env scrubbing + fail-closed egress scanner (B0–B1) · Seatbelt worker containment (B4) ·</text>
+  <text class="t" x="35" y="257">parent-proxy cloud canary with worker deny-network by construction (B5) · bridge-level direct-edit rejection + capability modes (B6, bridge-level) ·</text>
+  <text class="t" x="35" y="274">LCM + Mnemosyne live with offline proof · disposable-copy rollback drill · router smoke micro-F1 0.923, hard violations 0.</text>
+  <text class="t" x="35" y="300">Orchestrator-level tool removal remains EXTERNAL, operator-owned. Human approval is ADDITIVE on mandatory P0 evidence — never a waiver of a failed gate.</text>
+</svg>

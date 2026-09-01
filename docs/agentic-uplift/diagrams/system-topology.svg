@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 680" role="img" aria-labelledby="t d" width="100%" style="color-scheme:light dark">
+  <title id="t">System topology — Hermes control plane, Tier 0–4 routing, Pi bridge path, evidence gate</title>
+  <desc id="d">A user submits a mission to the Hermes control plane backed by LCM and Mnemosyne (violet, local memory). Deterministic eligibility (blue, Tier 0), mission profile (Tier 1), workflow selection (Tier 2), model optimization (Tier 3) and an OpenRouter-first gateway (Tier 4) form the cloud-eligible path to a physical provider (rose, external boundary). Coding stages instead cross the Pi bridge (amber) into a disposable worktree with a contained worker, and all outcomes pass the evidence and merge gates (emerald) before promotion. Outcome telemetry feeds an offline research plane.</desc>
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path class="mk" d="M0,0 L8,4 L0,8 z"/></marker>
+  </defs>
+  <style>
+    .zone{stroke-width:1.2;stroke-dasharray:6 4;rx:14}
+    .box{stroke-width:1.5;rx:10}
+    .bar{rx:2}
+    .h{font:600 13px system-ui,sans-serif}
+    .t{font:11px system-ui,sans-serif;opacity:.72}
+    .lab{font:italic 11px system-ui,sans-serif;opacity:.65}
+    .e{stroke-width:1.5;fill:none;marker-end:url(#arw)}
+    .lg{font:11px system-ui,sans-serif}
+    text{fill:#1f2328}
+    .zone-control{fill:#2563eb;fill-opacity:.045;stroke:#2563eb;stroke-opacity:.5}
+    .zone-pi{fill:#d97706;fill-opacity:.05;stroke:#d97706;stroke-opacity:.55}
+    .zone-ev{fill:#059669;fill-opacity:.045;stroke:#059669;stroke-opacity:.5}
+    .box{fill:#ffffff;stroke:#57606a}
+    .e{stroke:#57606a}
+    .bar-control{fill:#2563eb}.bar-pi{fill:#d97706}.bar-ev{fill:#059669}.bar-mem{fill:#7c3aed}.bar-sec{fill:#e11d48}
+    .dot{stroke:none}
+    .mk{fill:#57606a}
+    @media (prefers-color-scheme: dark){
+      .mk{fill:#8b949e}
+      text{fill:#e6edf3}
+      .box{fill:#161b22;stroke:#8b949e}
+      .e{stroke:#8b949e}
+      .zone-control{fill:#316dca;fill-opacity:.12;stroke:#6ea0f0}
+      .zone-pi{fill:#bd7907;fill-opacity:.12;stroke:#d9a04a}
+      .zone-ev{fill:#0a7d54;fill-opacity:.12;stroke:#4cbf94}
+    }
+  </style>
+
+  <!-- trust zones -->
+  <rect class="zone zone-control" x="15" y="90" width="1210" height="180"/>
+  <text class="lab" x="30" y="112">LOCAL CONTROL PLANE — deterministic authority (blue)</text>
+  <rect class="zone zone-pi" x="15" y="330" width="780" height="160"/>
+  <text class="lab" x="30" y="352">TYPED DELEGATION — Pi containment path (amber)</text>
+  <rect class="zone zone-ev" x="820" y="330" width="405" height="160"/>
+  <text class="lab" x="835" y="352">EVIDENCE &amp; PROMOTION (emerald)</text>
+
+  <!-- entry + memory -->
+  <rect class="box" x="20" y="15" width="170" height="52"/>
+  <rect class="bar bar-control" x="20" y="15" width="5" height="52" rx="2.5"/>
+  <text class="h" x="38" y="37">User / terminal</text>
+  <text class="t" x="38" y="54">manual bootstrap once</text>
+
+  <rect class="box" x="270" y="15" width="215" height="52"/>
+  <rect class="bar bar-control" x="270" y="15" width="5" height="52" rx="2.5"/>
+  <text class="h" x="288" y="37">Hermes control plane</text>
+  <text class="t" x="288" y="54">bounded planning · uplift-state = authority</text>
+
+  <rect class="box" x="560" y="15" width="215" height="52"/>
+  <rect class="bar bar-mem" x="560" y="15" width="5" height="52" rx="2.5"/>
+  <text class="h" x="578" y="37">LCM + Mnemosyne</text>
+  <text class="t" x="578" y="54">local context + durable memory · proven live</text>
+
+  <!-- tier chain -->
+  <rect class="box" x="30"  y="135" width="205" height="76"/>
+  <rect class="bar bar-sec" x="30" y="135" width="5" height="76" rx="2.5"/>
+  <text class="h" x="48" y="157">Tier 0 — deterministic</text>
+  <text class="t" x="48" y="175">privacy · LOCAL_ONLY · secrets/PII</text>
+  <text class="t" x="48" y="189">tools · modality · network · ZDR</text>
+  <rect class="box" x="265" y="135" width="215" height="76"/>
+  <rect class="bar bar-control" x="265" y="135" width="5" height="76" rx="2.5"/>
+  <text class="h" x="283" y="157">Tier 1 — mission profile</text>
+  <text class="t" x="283" y="175">multi-label task families</text>
+  <text class="t" x="283" y="189">phase · complexity · uncertainty</text>
+  <rect class="box" x="510" y="135" width="215" height="76"/>
+  <rect class="bar bar-control" x="510" y="135" width="5" height="76" rx="2.5"/>
+  <text class="h" x="528" y="157">Tier 2 — workflow</text>
+  <text class="t" x="528" y="175">Hermes · research executor ·</text>
+  <text class="t" x="528" y="189">Pi worker · review · abstain</text>
+  <rect class="box" x="755" y="135" width="215" height="76"/>
+  <rect class="bar bar-control" x="755" y="135" width="5" height="76" rx="2.5"/>
+  <text class="h" x="773" y="157">Tier 3 — model role</text>
+  <text class="t" x="773" y="175">quality · cost · latency</text>
+  <text class="t" x="773" y="189">cache affinity · switch cost</text>
+  <rect class="box" x="1000" y="135" width="210" height="76"/>
+  <rect class="bar bar-control" x="1000" y="135" width="5" height="76" rx="2.5"/>
+  <text class="h" x="1018" y="157">Tier 4 — gateway</text>
+  <text class="t" x="1018" y="175">OpenRouter-first provider</text>
+  <text class="t" x="1018" y="189">or qualified direct/local adapter</text>
+
+  <!-- cloud path -->
+  <rect class="box" x="1000" y="530" width="210" height="56" stroke-dasharray="5 3"/>
+  <rect class="bar bar-sec" x="1000" y="530" width="5" height="56" rx="2.5"/>
+  <text class="h" x="1018" y="552">Physical provider</text>
+  <text class="t" x="1018" y="570">EXTERNAL boundary · eligible endpoint</text>
+
+  <!-- pi path -->
+  <rect class="box" x="30" y="375" width="225" height="60"/>
+  <rect class="bar bar-pi" x="30" y="375" width="5" height="60" rx="2.5"/>
+  <text class="h" x="48" y="397">Pi bridge (typed)</text>
+  <text class="t" x="48" y="415">envelope + policy digest validated;</text>
+  <text class="t" x="48" y="429">direct-edit / bypass rejected</text>
+  <rect class="box" x="300" y="375" width="235" height="60"/>
+  <rect class="bar bar-pi" x="300" y="375" width="5" height="60" rx="2.5"/>
+  <text class="h" x="318" y="397">Disposable worktree + worker</text>
+  <text class="t" x="318" y="415">Seatbelt · deny network* · LSP;</text>
+  <text class="t" x="318" y="429">cannot merge or self-approve</text>
+  <rect class="box" x="580" y="375" width="200" height="60"/>
+  <rect class="bar bar-pi" x="580" y="375" width="5" height="60" rx="2.5"/>
+  <text class="h" x="598" y="397">Cloud via parent-proxy</text>
+  <text class="t" x="598" y="415">worker keeps deny network*;</text>
+  <text class="t" x="598" y="429">key stays in parent env</text>
+
+  <!-- evidence path -->
+  <rect class="box" x="835" y="375" width="175" height="60"/>
+  <rect class="bar bar-ev" x="835" y="375" width="5" height="60" rx="2.5"/>
+  <text class="h" x="853" y="397">Evidence gate</text>
+  <text class="t" x="853" y="415">tests · scans · review ·</text>
+  <text class="t" x="853" y="429">agent_settled</text>
+  <rect class="box" x="1035" y="375" width="180" height="60"/>
+  <rect class="bar bar-ev" x="1035" y="375" width="5" height="60" rx="2.5"/>
+  <text class="h" x="1053" y="397">Merge / human gate</text>
+  <text class="t" x="1053" y="415">promote only on</text>
+  <text class="t" x="1053" y="429">accepted evidence</text>
+
+  <!-- telemetry -->
+  <rect class="box" x="300" y="545" width="640" height="54"/>
+  <rect class="bar bar-ev" x="300" y="545" width="5" height="54" rx="2.5"/>
+  <text class="h" x="318" y="567">Outcome telemetry (privacy-minimized) → offline router research/training</text>
+  <text class="t" x="318" y="585">no raw-prompt retention by default</text>
+
+  <!-- edges -->
+  <path class="e" d="M 190 41 L 270 41"/>
+  <path class="e" d="M 485 41 L 560 41"/>
+  <path class="e" d="M 340 67 C 340 100 200 105 155 135"/>
+  <path class="e" d="M 235 173 L 265 173"/><path class="e" d="M 480 173 L 510 173"/>
+  <path class="e" d="M 725 173 L 755 173"/><path class="e" d="M 970 173 L 1000 173"/>
+  <path class="e" d="M 1105 211 C 1105 330 1105 420 1105 530"/>
+  <text class="lab" x="1095" y="330" text-anchor="end">policy-approved work only;</text>
+  <text class="lab" x="1095" y="344" text-anchor="end">unsupported hard requirements fail closed</text>
+  <path class="e" d="M 617 211 C 617 300 180 310 145 375"/>
+  <path class="e" d="M 255 405 L 300 405"/>
+  <path class="e" d="M 535 405 L 580 405"/>
+  <path class="e" d="M 780 405 L 835 405"/>
+  <path class="e" d="M 1010 405 L 1035 405"/>
+  <path class="e" d="M 1125 435 C 1125 510 1010 500 940 545"/>
+  <text class="lab" x="380" y="330">delegation path — worker containment is belt (worker check) + suspenders (Seatbelt)</text>
+
+  <!-- legend -->
+  <rect class="box" x="20" y="625" width="1210" height="40"/>
+  <circle class="dot bar-control" cx="45" cy="645" r="6"/><text class="lg" x="58" y="649">deterministic control</text>
+  <circle class="dot bar-sec" cx="220" cy="645" r="6"/><text class="lg" x="233" y="649">security / external</text>
+  <circle class="dot bar-pi" cx="385" cy="645" r="6"/><text class="lg" x="398" y="649">Pi delegation</text>
+  <circle class="dot bar-ev" cx="520" cy="645" r="6"/><text class="lg" x="533" y="649">evidence / telemetry</text>
+  <circle class="dot bar-mem" cx="705" cy="645" r="6"/><text class="lg" x="718" y="649">memory / context</text>
+  <text class="lg" x="890" y="649">dashed outline = external / operator-owned boundary</text>
+</svg>
