@@ -267,6 +267,16 @@ def diff_worktree(wt: Path) -> str:
 
 
 def cmd_run(args) -> int:
+    # Session Capability Modes (Phase 70, human-approved addendum): the bridge
+    # is the enforcement boundary this Hermes version can actually gate. The
+    # default mode is `restricted` (default-safe): cloud model egress via
+    # --model-proxy is denied unless the operator explicitly opts the session
+    # in with --capability-mode pi-coding. Structurally typed, not prompt text.
+    if args.model_proxy and args.capability_mode != "pi-coding":
+        raise BridgeError(
+            "capability_mode_denied: --model-proxy requires explicit session "
+            "opt-in --capability-mode pi-coding; default mode 'restricted' "
+            "denies cloud model egress")
     env_path = Path(args.envelope)
     live_digest = args.policy_digest
     envelope = load_and_validate_envelope(env_path, live_digest)
@@ -305,6 +315,7 @@ def cmd_run(args) -> int:
         "env_keys_forwarded": sorted(base_env),
         "env_secret_candidates_blocked": env_secret_candidates,
         "passthrough_env_keys": sorted(i.partition("=")[0] for i in args.passthrough_env),
+        "capability_mode": args.capability_mode,
     }
     # B5 proxied-model architecture: worker keeps deny network*; model egress
     # goes through the bridge parent over an inherited fd-pipe.
@@ -329,6 +340,7 @@ def cmd_run(args) -> int:
         proxy_fds = (req_w, resp_r)
         result["model_proxy"] = {
             "architecture": "parent-proxied (worker sandbox denies network*; only model egress via inherited fd-pipe to bridge parent)",
+            "capability_mode": "pi-coding",
             "provider": "openrouter", "model_pin": args.model_pin,
             "endpoint": OPENROUTER_ENDPOINT,
             "api_key_source_env": args.openrouter_key_env,
@@ -395,6 +407,11 @@ def main() -> int:
     r.add_argument("--offline", action="store_true")
     r.add_argument("--model-proxy", action="store_true",
                    help="B5: perform cloud-model egress in the bridge parent on the worker's behalf (worker stays deny-network)")
+    r.add_argument("--capability-mode", choices=("restricted", "pi-coding"),
+                   default="restricted",
+                   help="Session Capability Modes (Phase 70): 'restricted' (default) "
+                        "denies --model-proxy cloud egress; 'pi-coding' is the explicit "
+                        "session opt-in that enables it")
     r.add_argument("--model-pin", default="z-ai/glm-5.3-flash",
                    help="pinned provider/model id used through the proxy")
     r.add_argument("--openrouter-key-env", default="OPENROUTER_API_KEY")

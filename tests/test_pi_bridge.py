@@ -109,7 +109,9 @@ def write_sandbox_profile(tmp: Path, worktree: Path) -> Path:
 _run_seq = [0]
 
 def run_bridge(tmp: Path, repo: Path, envelope: Path, behavior: str,
-               sandbox: bool = True, timeout: float = 20.0, extra=None):
+               sandbox: bool = True, timeout: float = 20.0, extra=None,
+               expect_evidence: bool = True
+               ) -> "tuple[subprocess.CompletedProcess, dict | None, Path]":
     _run_seq[0] += 1
     n = _run_seq[0]
     wt = tmp / f"wt-{n}-{behavior}-{sandbox}"
@@ -122,13 +124,15 @@ def run_bridge(tmp: Path, repo: Path, envelope: Path, behavior: str,
            "--envelope", str(envelope), "--policy-digest", POLICY_SHA,
            "--repo", str(repo), "--worker-cmd", str(FAKE_PI),
            "--evidence-out", str(ev_path), "--workspace-dir", str(wt),
-           "--timeout", str(timeout), "--offline"] + passthrough_args
+           "--timeout", str(timeout), "--offline"] + passthrough_args + list(extra or [])
     if sandbox:
         cmd += ["--sandbox-profile", str(write_sandbox_profile(tmp, wt))]
     # bridge parent env carries a seeded fake secret: must be reported as
     # blocked, never forwarded to the worker
     e = dict(os.environ, FAKE_SECRET_KEY="sk-parent-env-fixture")
     r = subprocess.run(cmd, capture_output=True, text=True, env=e, timeout=90)
+    if not expect_evidence:
+        return r, None, wt
     assert ev_path.exists(), f"bridge produced no evidence: {r.stderr[-500:]}"
     ev = json.loads(ev_path.read_text())
     return r, ev, wt
@@ -144,6 +148,32 @@ def mod_tmp():
 @pytest.fixture(scope="module")
 def fixture_repo(mod_tmp):
     return make_repo(mod_tmp)
+
+
+# Phase 70 — Session Capability Modes: default-restricted state denies cloud
+# model egress structurally (before any worker launch / worktree creation)
+def test_capability_mode_restricted_denies_model_proxy(mod_tmp, fixture_repo):
+    r, _, wt = run_bridge(mod_tmp, fixture_repo,
+                          make_envelope(mod_tmp, fixture_repo), "happy",
+                          extra=["--model-proxy"], expect_evidence=False)
+    assert r.returncode == 3
+    out = json.loads(r.stdout)
+    assert out["result"] == "bridge_error"
+    assert "capability_mode_denied" in out["error"]
+    assert not wt.exists()  # no worktree created: denied before any side effect
+
+
+# Phase 70 — Session Capability Modes: explicit pi-coding opt-in state allows
+# the proxy path through (proven offline with the fixture worker; cloud call
+# itself is B5 territory and is not made here)
+def test_capability_mode_pi_coding_opt_in_allows_proxy(mod_tmp, fixture_repo):
+    r, ev, _ = run_bridge(mod_tmp, fixture_repo,
+                          make_envelope(mod_tmp, fixture_repo), "happy",
+                          extra=["--model-proxy", "--capability-mode", "pi-coding",
+                                 "--openrouter-key-env", "FAKE_SECRET_KEY"],
+                          expect_evidence=True)
+    assert ev["capability_mode"] == "pi-coding"
+    assert ev["model_proxy"]["capability_mode"] == "pi-coding"
 
 
 # 1. fake RPC protocol: agent_end alone must not complete; settled required

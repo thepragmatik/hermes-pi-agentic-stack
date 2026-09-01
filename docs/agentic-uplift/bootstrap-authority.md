@@ -175,3 +175,22 @@ On ambiguity:
 - inability to prove the new worker path -> keep bootstrap authority confined to canary and do not promote.
 
 The autonomous mission may progress without human intervention when gates pass; it must stop rather than improvise around a failed root-of-trust transition.
+
+## Proven status after the uplift mission (2026-09-01)
+
+- **B0–B4: PROVEN.** Policy parser/digest binding, env scrubbing, egress scanner
+  (fail-closed, secrets block-only), typed envelope schema, idempotency ledger and the
+  Seatbelt containment profile all exist in `tools/` and are covered by the fixture suite.
+- **B5: PROVEN via the sanctioned parent-proxy fallback.** The worker never receives
+  network access or credentials; the bridge parent performs the pinned OpenRouter call on
+  the worker's behalf over an inherited fd-pipe. Worker-direct egress under `deny network*`
+  is impossible by construction and was not attempted.
+- **B6: PARTIAL — bridge-level only.** The bridge rejects direct-edit/bypass envelopes
+  structurally before worker launch, and the Session Capability Modes flag (Phase 70)
+  default-denies cloud egress. Removing Hermes' own generic source-write/shell toolset
+  could NOT be proven from inside the running Hermes (no permissions/hooks config keys in
+  this version); that enforcement is recorded as EXTERNAL, operator-owned, with repro
+  commands in the Phase 60 evidence. Do not claim structural zero-trust at the orchestrator
+  level until an operator applies those commands or a future Hermes version adds config
+  hooks.
+
