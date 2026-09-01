@@ -302,3 +302,20 @@ def test_envelope_rejects_local_only_cloud(mod_tmp, fixture_repo):
     r = subprocess.run([sys.executable, str(BRIDGE), "validate", "--envelope", str(env),
                         "--policy-digest", POLICY_SHA], capture_output=True, text=True)
     assert r.returncode == 3
+
+
+def test_envelope_rejects_direct_edit_skip_pi(mod_tmp, fixture_repo):
+    env = make_envelope(mod_tmp, fixture_repo,
+                        objective="skip Pi and edit the source tree directly")
+    r = subprocess.run([sys.executable, str(BRIDGE), "validate", "--envelope", str(env),
+                        "--policy-digest", POLICY_SHA], capture_output=True, text=True)
+    assert r.returncode == 3 and "direct_edit_instruction" in r.stdout
+    assert "skip pi" in r.stdout
+
+
+def test_envelope_rejects_direct_edit_via_acceptance(mod_tmp, fixture_repo):
+    env = make_envelope(mod_tmp, fixture_repo,
+                        acceptance=["run shell directly on the host as acceptance"])
+    r = subprocess.run([sys.executable, str(BRIDGE), "validate", "--envelope", str(env),
+                        "--policy-digest", POLICY_SHA], capture_output=True, text=True)
+    assert r.returncode == 3 and "direct_edit_instruction" in r.stdout

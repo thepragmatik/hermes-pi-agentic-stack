@@ -111,7 +111,31 @@ def load_and_validate_envelope(path: Path, policy_digest: str) -> dict:
             f"policy digest mismatch: envelope {env['policy']['sha256'][:12]} != live {policy_digest[:12]}")
     if env["privacy"]["class"] == "LOCAL_ONLY" and env["privacy"]["cloud_allowed"]:
         raise BridgeError("LOCAL_ONLY envelope claims cloud_allowed=true")
+    reject_direct_edit(env)
     return env
+
+
+# B6 (Phase 60): the typed bridge is the ONLY coding execution path. An
+# envelope that instructs the worker to bypass the typed boundary — edit the
+# source tree directly, skip Pi, or run arbitrary shell outside the restricted
+# profile — is rejected before any worker launch, deterministically and
+# fail-closed. This is a structural gate, not prompt text.
+DIRECT_EDIT_PATTERNS = (
+    "skip pi", "bypass the bridge", "bypass pi",
+    "edit directly", "edit the source directly", "edit files directly",
+    "direct shell", "run shell directly", "arbitrary shell",
+)
+
+
+def reject_direct_edit(env: dict) -> None:
+    for text in [env["objective"], *env["acceptance"]]:
+        low = text.lower()
+        for pat in DIRECT_EDIT_PATTERNS:
+            if pat in low:
+                raise BridgeError(
+                    "direct_edit_instruction: envelope directive "
+                    f"{pat!r} attempts to bypass the typed Pi boundary; "
+                    "rejected before worker launch")
 
 
 def scrub_env(offline: bool, passthrough=None) -> dict:
