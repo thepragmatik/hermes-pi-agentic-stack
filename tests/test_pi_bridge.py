@@ -95,6 +95,8 @@ def write_sandbox_profile(tmp: Path, worktree: Path) -> Path:
         (deny file-write* (regex "^/(etc|usr|private/etc|private/usr)/"))
         (deny file-write* (subpath "{tmp_c}"))
         (deny file-write* (subpath "{tmp}"))
+        (deny file-write* (subpath "/private/tmp"))
+        (deny file-write* (subpath "/tmp"))
         (allow file-write* (subpath "{wt_c}"))
         (allow file-write* (subpath "{worktree}"))
         (deny file-read* (subpath "{home_c}/.ssh"))
