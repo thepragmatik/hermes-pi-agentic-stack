@@ -1,5 +1,7 @@
 # Hermes + Pi Staged Self-Uplift Mission
 
+> **Humans:** this file is the instruction set the *agent* follows. If you want to run the uplift yourself, start with the [Fresh Install & Manual Bootstrap guide](docs/agentic-uplift/fresh-install-bootstrap.md) instead.
+
 You are running the controlled Hermes + Pi uplift defined by this repository.
 
 ## Start/recovery contract

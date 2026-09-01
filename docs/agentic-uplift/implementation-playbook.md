@@ -10,6 +10,21 @@ This is the **single canonical execution lifecycle** for Hermes to uplift its st
 
 ![Mission lifecycle: phases 00–70 with adoption checkpoints A0/A–F](diagrams/mission-lifecycle.svg)
 
+**What each phase does, in plain terms:**
+
+| Phase | What it does |
+|---|---|
+| 00 | Preflight — verify the environment and tooling before anything changes |
+| 10 | Baseline — snapshot the current setup so everything is reversible |
+| 20 | Local context + memory — make the agent's memory survive restarts |
+| 30 | Router — teach a local classifier which model should handle which task |
+| 40 | Security — hard, code-enforced safety rules before anything reaches the cloud |
+| 50 | Pi sandbox — route all coding through the sandboxed worker |
+| 60 | Evaluation — measure the result and gate promotion on evidence |
+| 70 | Steady state — upgrades, rollback drills, and recurring canaries |
+
+Between phases are **dogfood gates** (checkpoints A0/A–F): we pause and use the newly built setup ourselves before building more on top of it.
+
 Presentation diagrams for the topology, Pi bridge flow and trust boundaries live in [`diagrams/`](diagrams/); the lifecycle text above remains canonical.
 
 Detailed research is supporting evidence, not another phase system. The conversation is not execution state.

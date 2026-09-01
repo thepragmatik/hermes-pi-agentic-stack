@@ -12,10 +12,12 @@ Presentation views:
 
 ## Components and trust boundaries
 
+Think of a request as passing through a series of gates, in order: *Is this allowed to leave the machine? What kind of task is it? Who should do it? Which model? Which provider?* Each tier below answers one of those questions; the detailed list is the authoritative version.
+
 1. **Terminal/User** performs the minimal manual bootstrap and submits the staged mission to Hermes.
 2. **Hermes control plane** owns bounded workflow planning, delegation and review. Temporary direct bootstrap authority is canary-scoped; steady-state orchestrator authority cannot bypass Pi for production coding.
-3. **LCM + Mnemosyne** provide local current-session context recovery and curated cross-session durable memory. Neither is execution/security authority.
-4. **Tier 0 deterministic eligibility/policy** decides privacy/cloud eligibility, secrets/PII policy, required capabilities/tools/modality/context, sandbox/network restrictions, approval/review requirements and other hard constraints before learned/model/provider routing.
+3. **LCM + Mnemosyne** provide local current-session context recovery and curated cross-session durable memory (LCM keeps the current session's context intact; Mnemosyne is a local long-term memory the agent can search across sessions). Neither is execution/security authority.
+4. **Tier 0 deterministic eligibility/policy** decides privacy/cloud eligibility, secrets/PII policy, required capabilities/tools/modality/context, sandbox/network restrictions, approval/review requirements and other hard constraints before learned/model/provider routing. This is the hard safety layer: rules enforced by code, not by prompt instructions a model could ignore.
 5. **Tier 1 mission-profile inference** infers multi-label task families, domain, workflow phase, complexity, uncertainty and reasoning/tool intensity. Research and coding are first-class task families, not the complete ontology.
 6. **Tier 2 workflow/agent selector** chooses a bounded execution path such as Hermes-only, research executor, Pi worker, review worker, local tool runner, multi-stage workflow or abstain/escalate. Ordered stages replace a crude `hybrid` class when the mission transitions between capabilities.
 7. **Tier 3 model optimizer/binder** filters versioned model roles/models by capabilities/quality floor and scores eligible candidates using measured quality, cost, latency, reliability, context/cache affinity and switching cost.

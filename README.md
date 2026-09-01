@@ -1,6 +1,8 @@
 # Hermes + Pi Agentic Stack
 
-A local-first, production-oriented control repository for uplifting **NousResearch/hermes-agent** into a slim orchestrator and **earendil-works/pi** into its constrained coding-worker path.
+AI coding assistants are powerful but hard to trust with real work: they can leak secrets, take shortcuts, and quietly edit production code. This project fixes that with two roles. **Hermes** ([NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)) is the boss: a local orchestrator that plans, routes, and checks. **Pi** ([earendil-works/pi](https://github.com/earendil-works/pi)) is the hands: a sandboxed coding worker that can't reach the network, can only write inside a disposable copy of the repo, and returns every change through a review gate. Every request passes checked, deterministic safety rules *before* any cloud model ever sees it — and all of it runs on your own machine first.
+
+This repository is the control blueprint for that stack: how to install it, how each piece is verified, and the evidence that it works.
 
 Target workstation: Apple Silicon / MacBook Pro M3 Max 128 GB while preserving headroom for normal browser/build/LSP/container work.
 
@@ -8,11 +10,11 @@ Target workstation: Apple Silicon / MacBook Pro M3 Max 128 GB while preserving h
 
 > **Status: uplift mission COMPLETE.** All 9 phases (00–70) executed **2026-08-31 → 2026-09-01** with persisted evidence: **9/9 COMPLETE**. What was proven end-to-end:
 >
-> - **Pi bridge** (typed v2.2 envelopes, policy-digest binding, idempotent replay, `agent_settled` completion) and **Seatbelt worker containment** (deny network*, worktree-only writes, canonical-path-hardened).
+> - **Sandboxed coding worker** — every coding task is handed to Pi as a signed, replay-safe request; on macOS it runs under Seatbelt with the network denied and writes confined to a disposable copy of the repo (typed v2.2 envelopes, policy-digest binding, `agent_settled` completion).
 > - **Fail-closed egress scanner** — secrets/PII/cloud-ineligible content is blocked, never dropped silently; worker-direct egress impossible by construction (parent-proxy is the only cloud path).
-> - **Bridge-level capability modes** (Phase 70) — direct-edit/bypass envelopes structurally rejected; cloud egress default-denied.
-> - **Disposable-copy rollback drill PROVEN**; LCM + Mnemosyne live with offline proof.
-> - **Router baseline:** rules smoke micro-F1 **0.923**, hard violations **0**; **26/26 tests green**; probe wall time **−46.2%** vs baseline.
+> - **Bypass attempts structurally rejected** (Phase 70) — direct-edit/bypass envelopes are rejected by code before a worker even starts; cloud egress default-denied.
+> - **Proven rollback drill** (restored from a disposable copy); LCM (local context memory) + Mnemosyne (long-term memory) live with an offline proof.
+> - **Router baseline:** rules smoke micro-F1 **0.923**, hard violations **0**; **26/26 tests green**; routine capability probes **46% faster** than baseline.
 >
 > Honest boundary: orchestrator-level removal of Hermes' own generic tools remains **EXTERNAL, operator-owned** (this Hermes version exposes no permissions/hooks config keys) — see [`docs/agentic-uplift/bootstrap-authority.md`](docs/agentic-uplift/bootstrap-authority.md).
 
@@ -20,8 +22,8 @@ Target workstation: Apple Silicon / MacBook Pro M3 Max 128 GB while preserving h
 
 ## Quick start
 
-- **For humans:** start at [`docs/agentic-uplift/fresh-install-bootstrap.md`](docs/agentic-uplift/fresh-install-bootstrap.md), then run the mission with `uplift chat --query-file UPLIFT_MISSION.md`.
-- **For agents:** start at [`UPLIFT_MISSION.md`](UPLIFT_MISSION.md), load only the current slice from [`skills/hermes-stack-uplift/SKILL.md`](skills/hermes-stack-uplift/SKILL.md), and honor the durable-state contract in [`docs/agentic-uplift/agent-execution-contract.md`](docs/agentic-uplift/agent-execution-contract.md). Re-executing the uplift starts from Phase 00 against your own environment; this repository is the blueprint, not your mission state.
+- **For humans:** start at [`docs/agentic-uplift/fresh-install-bootstrap.md`](docs/agentic-uplift/fresh-install-bootstrap.md) (a step-by-step install guide), then run the pre-written uplift mission — a build script the agent executes phase by phase — with `uplift chat --query-file UPLIFT_MISSION.md`.
+- **For agents:** start at [`UPLIFT_MISSION.md`](UPLIFT_MISSION.md) — the instruction set the agent follows (humans: read the Fresh Install guide instead) — load only the current slice from [`skills/hermes-stack-uplift/SKILL.md`](skills/hermes-stack-uplift/SKILL.md), and honor the durable-state contract in [`docs/agentic-uplift/agent-execution-contract.md`](docs/agentic-uplift/agent-execution-contract.md). Re-executing the uplift starts from Phase 00 against your own environment; this repository is the blueprint, not your mission state.
 
 ## Architecture at a glance
 
@@ -33,7 +35,7 @@ Hermes control plane + local LCM/Mnemosyne
         |
         v
 Tier 0 — deterministic eligibility/security
-privacy | LOCAL_ONLY | PII/secrets | tools | modality | context | network/sandbox | ZDR/review
+privacy | LOCAL_ONLY | PII/secrets | tools | modality | context | network/sandbox | ZDR (Zero Data Retention — provider keeps nothing) | review
         |
         v
 Tier 1 — multi-label mission profile

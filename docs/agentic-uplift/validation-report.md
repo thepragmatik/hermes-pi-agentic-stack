@@ -2,6 +2,10 @@
 
 Snapshot: 2026-08-31.
 
+## What was validated (human summary)
+
+The uplift ran 9/9 phases to completion with persisted evidence: a sandboxed coding worker proven end-to-end, hard security gates that block secrets/PII from ever leaving the machine, a local router with measured accuracy (micro-F1 0.923, zero hard violations), a proven rollback drill, and 26/26 tests green. Below the fold is the detailed audit trail — it is a changelog for reviewers, not required reading for newcomers.
+
 ## Maturity vocabulary
 
 Use the repository's canonical maturity labels without collapsing them:
@@ -10,7 +14,7 @@ Use the repository's canonical maturity labels without collapsing them:
 
 A schema/config/research note is not a runtime implementation; a CI smoke is not representative target-Mac evidence; shadow recommendations have no production authority.
 
-## Final pre-launch remediation
+## Detailed remediation log (for reviewers)
 
 A release-readiness audit after the routing refactor found several concrete drift/implementation defects. They were corrected before launch rather than accepted as documentation debt:
 
