@@ -33,5 +33,12 @@ class DiagramTests(unittest.TestCase):
         self.assertIn("research/routing.html", bs.DIAGRAMS)
 
 
+class ValidatorTests(unittest.TestCase):
+    def test_validator_checks_svgs_and_tables(self):
+        src = (bs.ROOT / "tools/site/validate_site.py").read_text()
+        self.assertIn('glob("*.svg")', src)
+        self.assertIn("raw table dump present", src)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

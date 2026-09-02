@@ -121,6 +121,15 @@ def main():
     for token in ["Tier 0 eligibility","Tier 1 mission","Tier 2 workflow","Tier 3 model","Tier 4 gateway","OpenRouter"]:
         if token not in arch:errors.append(f"architecture missing {token}")
 
+    import xml.etree.ElementTree as ET
+    for d in sorted((ROOT/"docs/agentic-uplift/diagrams").glob("*.svg")):
+        try: ET.parse(d)
+        except Exception as exc: errors.append(f"{d}: invalid XML: {exc}")
+    for page_html in ["index.html","research/routing.html"]:
+        p=root/page_html
+        if p.exists() and '<pre class="md-table">' in p.read_text(encoding="utf-8"):
+            errors.append(f"{page_html}: raw table dump present")
+
     llms=(root/"llms.txt").read_text(encoding="utf-8") if (root/"llms.txt").exists() else ""
     for token in ["agent/UPLIFT_MISSION.md","routing-mission.schema.json","routing-decision.schema.json","local-routing-models.md","openrouter-routing.md","Router bake-off"]:
         if token not in llms:errors.append(f"llms.txt missing {token}")
