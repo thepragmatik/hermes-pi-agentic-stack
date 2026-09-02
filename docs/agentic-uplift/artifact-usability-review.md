@@ -25,7 +25,7 @@ The routing redesign improves the operating manual without changing that boundar
 | OpenRouter Auto | bounded shadow/teacher/bootstrap/fallback comparator | privacy/security authority | researched/designed shadow use |
 | sliced uplift skill | progressive-disclosure 00–70 procedure | security boundary | **executed end-to-end** |
 | OpenRouter routing design/config | gateway/model/provider ownership | proven provider/privacy behaviour | parent-proxy canary PROVEN; gateway policy surface designed |
-| LCM + Mnemosyne baseline | selected local context/memory path | installed target-Mac subsystem | **live with offline proof**; first natural compaction observed |
+| LCM + Mnemosyne baseline | selected local context/memory path | installed host subsystem | **live with offline proof**; first natural compaction observed |
 | disposable-copy rollback drill | reversible checkpoint/restore discipline | continuous DR | **PROVEN** (Phase 70) |
 | Pages site | public human/agent operating manual | secret-bearing runtime store | deployed/validated surface |
 
@@ -40,9 +40,9 @@ The routing redesign improves the operating manual without changing that boundar
 7. **OpenRouter effective-policy evidence:** test provider requirements, model/provider fallback, data/ZDR behavior and any required session affinity through the actual installed Hermes/gateway path; unsupported raw OpenRouter fields must not be assumed enforced.
 8. **Typed Pi integration:** implement bridge, v2.2 routing provenance, current RPC completion semantics, idempotency, containment and evidence collection.
 9. **Durable state persistence:** atomically persist/recover uplift-state v1.1 across planned fresh sessions and crashes.
-10. **LCM + Mnemosyne target-Mac qualification:** exact recovery, recall quality, local-only operation, backup/restore, resource and poisoning tests.
+10. **LCM + Mnemosyne host qualification:** exact recovery, recall quality, local-only operation, backup/restore, resource and poisoning tests.
 11. **Pi/LSP supply-chain/compatibility:** pinned/audited extensions and language fixtures under external containment.
-12. **Target-Mac whole-system evidence:** realistic workstation pressure, failure injection and end-to-end rollback.
+12. **Host whole-system evidence:** realistic workstation pressure, failure injection and end-to-end rollback.
 
 ## Routing correction now embodied in the repo
 

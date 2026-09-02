@@ -316,4 +316,4 @@ A candidate progresses:
 researched -> designed -> prototype -> smoke-tested -> shadow -> canary -> production-approved
 ```
 
-Production promotion occurs no earlier than Phase 60 and requires target-Mac operational evidence plus representative matched outcomes.
+Production promotion occurs no earlier than Phase 60 and requires host operational evidence plus representative matched outcomes.

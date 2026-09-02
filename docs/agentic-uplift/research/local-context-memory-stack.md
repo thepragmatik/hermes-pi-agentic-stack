@@ -44,7 +44,7 @@ Initial stable qualification pins from this research snapshot:
 
 Re-verify current stable releases and security notes during Phase 00/20. New stable releases are canary-upgraded; upstream `main`, LCM release candidates and Mnemosyne betas are not silently selected.
 
-A stable pin is not proof of fitness. The target-Mac qualification still decides whether the baseline may be production-promoted.
+A stable pin is not proof of fitness. The host qualification still decides whether the baseline may be production-promoted.
 
 ## LCM ownership and configuration
 
@@ -250,7 +250,7 @@ Record on representative long-horizon missions:
 - backup/restore outcome;
 - offline/no-network outcome.
 
-The baseline may be production-promoted only when these gates are acceptable on the target Mac. The architecture decision is fixed; runtime qualification is not assumed.
+The baseline may be production-promoted only when these gates are acceptable on the host. The architecture decision is fixed; runtime qualification is not assumed.
 
 ## Alternatives retained for contingency research
 

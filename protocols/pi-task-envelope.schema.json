@@ -23,7 +23,7 @@
         "workflow":{"enum":["pi_worker","review_worker","multi_stage"]},
         "decision_sha256":{"type":"string","pattern":"^[a-f0-9]{64}$"},
         "router_engine":{"type":"string"},
-        "router_maturity":{"enum":["researched","designed","prototype","smoke-tested","target-Mac-validated","shadow","canary","production-approved"]}
+        "router_maturity":{"enum":["researched","designed","prototype","smoke-tested","host-validated","shadow","canary","production-approved"]}
       }
     },
     "objective": {"type": "string","minLength": 10,"maxLength": 8000},

@@ -110,7 +110,7 @@ Use `PI_OFFLINE=1` where appropriate to suppress Pi startup network activity dur
 
 Pi does not provide a built-in permission system for filesystem/process/network/credential restriction. The final worker boundary must therefore be supplied externally.
 
-Qualify one pinned containment implementation suitable for the target Mac/workflow. Candidates may include a reviewed Pi sandbox extension using OS-level sandboxing, a container/micro-VM pattern, or another operator-owned capability broker.
+Qualify one pinned containment implementation suitable for the host/workflow. Candidates may include a reviewed Pi sandbox extension using OS-level sandboxing, a container/micro-VM pattern, or another operator-owned capability broker.
 
 The containment test must prove denied filesystem/network/credential actions fail structurally even when the model explicitly requests them.
 

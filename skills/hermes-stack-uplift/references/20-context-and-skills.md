@@ -69,7 +69,7 @@ Validate Micro/Patch, Lite, Standard and High-Assurance profiles. Generated spec
 
 ## Acceptance
 
-Require non-inferior accepted-task quality, materially smaller hot context, initial >=30% lower skill-related input on skill-heavy representative missions, bounded T1 (normally <=8K), reliable exact recovery, low-noise durable recall, no unexpected context/memory network dependency, verified backups and acceptable target-Mac resource behaviour before production promotion.
+Require non-inferior accepted-task quality, materially smaller hot context, initial >=30% lower skill-related input on skill-heavy representative missions, bounded T1 (normally <=8K), reliable exact recovery, low-noise durable recall, no unexpected context/memory network dependency, verified backups and acceptable host resource behaviour before production promotion.
 
 Dogfood Gate A0 evidence must show that the prompt/skill improvement itself helped before LCM/Mnemosyne and Spec Kit were added. This preserves causal attribution and keeps the self-uplift incremental.
 

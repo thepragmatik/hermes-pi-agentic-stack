@@ -6,7 +6,7 @@ This is the compact architecture/control document. Detailed execution lives in `
 
 ## Mission
 
-Build an upgrade-safe Apple-Silicon development stack where:
+Build an upgrade-safe local-first development stack where:
 
 - Hermes is the mission/control plane;
 - LCM + Mnemosyne is the fixed local context/memory baseline;
@@ -185,7 +185,7 @@ Pi has no assumed built-in permission boundary. Pi task envelope **v2.2** binds 
 
 Use only:
 
-`researched -> designed -> prototype -> smoke-tested -> target-Mac-validated -> shadow -> canary -> production-approved`
+`researched -> designed -> prototype -> smoke-tested -> host-validated -> shadow -> canary -> production-approved`
 
 Current routing state: contracts/design + benchmark prototype + deterministic rules smoke; advanced candidates researched/designed, not production-approved.
 

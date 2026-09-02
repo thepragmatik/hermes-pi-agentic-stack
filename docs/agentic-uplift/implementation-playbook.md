@@ -485,7 +485,7 @@ Use consistently:
 - `designed` — coherent contract/config/evaluation plan exists;
 - `prototype` — runnable implementation exists;
 - `smoke-tested` — narrow deterministic fixture passed;
-- `target-Mac validated` — representative target-workstation evidence exists;
+- `host-validated` — representative host-workstation evidence exists;
 - `shadow` — observes/recommends without authority;
 - `canary` — bounded real authority/workload;
 - `production-approved` — mandatory outcome/security/rollback gates passed and any required human approval was granted afterward.

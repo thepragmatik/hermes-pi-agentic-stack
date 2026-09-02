@@ -12,7 +12,7 @@ import tempfile
 ROOT=Path(__file__).resolve().parents[2]
 PHASES=["00-preflight","10-baseline-and-backup","20-context-and-skills","30-router","40-security-and-policy","50-pi-and-lsp","60-evaluation-and-promotion","70-upgrades-and-rollback"]
 TASKS={"research","synthesis","architecture_design","planning_decomposition","coding_implementation","debugging_diagnosis","refactoring","testing","code_review","security_review","devops_configuration","data_analysis","document_generation_transformation","retrieval_memory","agent_supervision_orchestration","long_running_tool_execution","multimodal_analysis","verification_fact_check","other"}
-MATURITY={"researched","designed","prototype","smoke-tested","target-Mac-validated","shadow","canary","production-approved"}
+MATURITY={"researched","designed","prototype","smoke-tested","host-validated","shadow","canary","production-approved"}
 REQUIRED=[
  "index.html","architecture.html","fresh-install.html","start-uplift.html","playbook.html","execution-contract.html","bootstrap.html","context-memory-setup.html","skills.html","routing-openrouter.html","research/routing.html","research/router-training.html","research/context.html","research/mission-context.html","research/legacy-state.html","research/local-context-memory.html","research/spec-kit.html","research/savings.html","pi-lsp.html","security.html","adversarial-review.html","artifact-review.html","validation.html","upgrade-rollback.html","publishing.html","sources.html",
  "llms.txt","agents.txt","agent/START.md","agent/UPLIFT_MISSION.md","agent/manifest.json","agent/architecture.graph.json",

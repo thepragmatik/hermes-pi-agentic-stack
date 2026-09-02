@@ -10,9 +10,9 @@ The uplift ran 9/9 phases to completion with persisted evidence: a sandboxed cod
 
 Use the repository's canonical maturity labels without collapsing them:
 
-`researched -> designed -> prototype -> smoke-tested -> target-Mac-validated -> shadow -> canary -> production-approved`
+`researched -> designed -> prototype -> smoke-tested -> host-validated -> shadow -> canary -> production-approved`
 
-A schema/config/research note is not a runtime implementation; a CI smoke is not representative target-Mac evidence; shadow recommendations have no production authority.
+A schema/config/research note is not a runtime implementation; a CI smoke is not representative host evidence; shadow recommendations have no production authority.
 
 ## Detailed remediation log (for reviewers)
 
@@ -21,7 +21,7 @@ A release-readiness audit after the routing refactor found several concrete drif
 - removed legacy `routing.hybrid_enabled` policy intent and retained capability/workflow-first routing;
 - replaced stale T1 `research|coding|hybrid|local_only` lane projection with workflow/stage/task-family/model-role routing state;
 - corrected LCM + Mnemosyne qualification failures to block/rollback **Phase 20**, not Phase 30;
-- aligned routing-decision, Pi task and uplift-state maturity vocabulary with `target-Mac-validated`;
+- aligned routing-decision, Pi task and uplift-state maturity vocabulary with `host-validated`;
 - made uplift-state structurally enforce exactly one ordered `00 -> 70` phase sequence;
 - added first-class `dogfood-A0` checkpoint state and example evidence;
 - initialized the optional embedding router's `embedding_floor` correctly;
@@ -97,7 +97,7 @@ This keeps Hermes/Pi semantics replaceable across rules, Aurelio, vLLM Semantic 
 | Candidate | Intended role | Current evidence |
 |---|---|---|
 | deterministic eligibility + rules/state + abstention | initial Phase-30 baseline | **prototype / smoke-tested on 32-mission fixture** |
-| minimal embedding prototype | small semantic challenger | designed/prototype path; target-Mac bake-off pending |
+| minimal embedding prototype | small semantic challenger | designed/prototype path; host bake-off pending |
 | Aurelio Semantic Router | lightweight local Tier-1 semantic component | researched/designed adapter; bake-off pending |
 | vLLM Semantic Router | richer signal/session/model-routing candidate | **researched/designed; strongest medium-term adoption candidate; no authority yet** |
 | LLMRouter algorithms | research/training/evaluation laboratory | researched/designed research-plane integration |
@@ -168,16 +168,16 @@ Phase 20 contains Dogfood Gate A0 for prompt/skill slimming before LCM/Mnemosyne
 
 Architecture status: **selected baseline**.
 
-Evidence status: **researched + config/repository/site validated; not yet target-Mac validated.** Phase 20 must still prove exact LCM recovery, Mnemosyne relevance/admission, offline operation after provisioning, independent backup/restore, resource use and poisoning/contradiction behavior on the target Mac.
+Evidence status: **researched + config/repository/site validated; not yet host-validated.** Phase 20 must still prove exact LCM recovery, Mnemosyne relevance/admission, offline operation after provisioning, independent backup/restore, resource use and poisoning/contradiction behavior on the host.
 
-## Remaining target-machine / production P0 evidence
+## Remaining hosthine / production P0 evidence
 
 Unattended production authority still requires:
 
-- actual fresh-install/manual-bootstrap rehearsal on the target Mac;
-- Phase-20 Dogfood Gate A0 + full LCM/Mnemosyne target-Mac qualification;
+- actual fresh-install/manual-bootstrap rehearsal on the host;
+- Phase-20 Dogfood Gate A0 + full LCM/Mnemosyne host qualification;
 - representative redacted/deduplicated routing corpus with temporal holdout and real outcome joins;
-- target-Mac bake-off of rules, minimal embeddings, Aurelio, vLLM Semantic Router and technically feasible research candidates;
+- host bake-off of rules, minimal embeddings, Aurelio, vLLM Semantic Router and technically feasible research candidates;
 - Phase-30 shadow evidence including abstention/OOD, capability/workflow failures, router RSS/latency, switching/cache behavior and accepted-mission regret;
 - real OpenRouter model/provider results including effective ZDR/data/provider/fallback/session semantics through the actual integration path;
 - external capability/sandbox/network/credential enforcement;

@@ -30,6 +30,17 @@ Symptom: `remote: Permission to <owner>/<repo>.git denied to <owner>` / 403 on p
 
 Diagnosis chain that resolved it: `gh auth status` (token type — `github_pat_` prefix = fine-grained) → `ssh -T git@github.com` (SSH auth works) → fine-grained PATs need **Contents: Read and write** repo permission for git push; metadata-only grants pass REST reads but fail push. Two fixes: `git remote set-url origin git@github.com:<owner>/<repo>.git` (SSH, instant), or regenerate the PAT with Contents read/write. Never log or persist the token value.
 
+## Site-generator pages: fix the renderer, not the content (DRY)
+
+When the artefact set renders through a custom static-site generator (e.g. a stdlib `build_site.py`), audit the RENDERER first: the 2026-09-02 "ugly tables" complaint traced to the generator emitting pipe-tables as escaped `<pre>` text dumps. One TDD'd `render_table()` function (test scaffold asserting `<th>`/`<td>` output, red→green) fixed every affected page at once. Unit tests for a generator: import the module and call `render_md(md_string, page)` directly with small markdown fixtures.
+
+- f-string CSS trap: layout templates are often one big f-string; inserted CSS must DOUBLE its braces (`{{color:#fff}}`) or Python evaluates them as expressions. Symptom: Pyright flags `overflow`/`padding` as undefined variables on the template line.
+- Inlined-SVG grep trap: once a builder INLINES an SVG into HTML, the file's filename string no longer appears in the output — verify injection by grepping the `<title id>` value, never the filename.
+- Heading-marker injection: mapping `page -> (heading_text, svg_fn)` and replacing `<h1>{marker}</h1>` works, but confirm the rendered heading level first and add a built-output assertion test, or a marker drift silently skips injection.
+- Mermaid vs hand SVG for offline/zero-dependency sites: vendored `mermaid.min.js` (~1.2 MB) breaks a stdlib-only builder and CDN scripts fail offline — hand-authored SVG in the house palette is the default; treat live-Mermaid as a user-request follow-up only.
+- Build outputs are often gitignored (GitHub Pages builds at deploy): check `git ls-files _site | head -1` BEFORE planning a commit of generated pages.
+- Harden the site validator alongside: SVG XML parse over `diagrams/*.svg` + "no raw table dump" page checks become permanent regression gates (TDD these too).
+
 ## Commit layering for reviewable handoffs
 
 Split doc uplift into logical commits — (1) surgical doc fixes, (2) diagrams, (3) README uplift — so the human can review each layer before merging. Orchestrator never merges/tags/pushes; hand exact commands to the user at the boundary.

@@ -80,6 +80,6 @@ Deterministic/runtime-derived facts include privacy class, `LOCAL_ONLY`, cloud e
 
 ## Maturity
 
-**Post-mission (2026-09-01):** the controlled uplift executed end-to-end (9/9 phases). PROVEN: Pi bridge + Seatbelt containment, fail-closed egress scanning, bridge-level capability modes, parent-proxy cloud canary, disposable-copy rollback drill, LCM+Mnemosyne live. Still NOT production-approved: orchestrator-level tool removal (external, operator-owned), representative routing evidence for advanced routers, and whole-system target-Mac production qualification. Routing contracts and benchmark are smoke-tested; all advanced router candidates remain researched/designed or future shadow candidates.
+**Post-mission (2026-09-01):** the controlled uplift executed end-to-end (9/9 phases). PROVEN: Pi bridge + Seatbelt containment, fail-closed egress scanning, bridge-level capability modes, parent-proxy cloud canary, disposable-copy rollback drill, LCM+Mnemosyne live. Still NOT production-approved: orchestrator-level tool removal (external, operator-owned), representative routing evidence for advanced routers, and whole-system host-production qualification. Routing contracts and benchmark are smoke-tested; all advanced router candidates remain researched/designed or future shadow candidates.
 
-Use only the maturity labels defined in the canonical playbook: `researched`, `designed`, `prototype`, `smoke-tested`, `target-Mac-validated`, `shadow`, `canary`, `production-approved`.
+Use only the maturity labels defined in the canonical playbook: `researched`, `designed`, `prototype`, `smoke-tested`, `host-validated`, `shadow`, `canary`, `production-approved`.

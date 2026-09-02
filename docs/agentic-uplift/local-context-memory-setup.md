@@ -75,7 +75,7 @@ Baseline intent:
 - optional slash command disabled;
 - profile-scoped default database path (`$HERMES_HOME/lcm.db`).
 
-These are a deterministic starting point, not universal optimums. Tune threshold/fresh tail only after target-Mac evidence shows a better accepted-task/token/TTFT tradeoff.
+These are a deterministic starting point, not universal optimums. Tune threshold/fresh tail only after host evidence shows a better accepted-task/token/TTFT tradeoff.
 
 Do not enable LCM semantic/proactive/cross-session memory features while Mnemosyne owns durable memory. If those features are researched later, treat that as a new architecture experiment rather than silently widening the baseline.
 
@@ -282,7 +282,7 @@ For every LCM/Mnemosyne stable upgrade:
 6. rerun durable-memory precision/staleness/poisoning tests;
 7. rerun offline/no-network proof;
 8. rerun backup/restore;
-9. compare prompt/tool-schema tokens and target-Mac RSS/swap;
+9. compare prompt/tool-schema tokens and host RSS/swap;
 10. promote only after every mandatory gate passes.
 
 Never upgrade production first and validate afterward.
@@ -301,7 +301,7 @@ LCM + Mnemosyne is qualified as the baseline only when all are true:
 - local-only context/memory still works under enforced outbound-network denial;
 - Tool Search keeps added plugin/provider schema cost bounded;
 - both SQLite stores have verified backup/restore procedures;
-- target-Mac RSS/memory pressure and accepted-task quality remain acceptable;
+- host RSS/memory pressure and accepted-task quality remain acceptable;
 - rollback to the last known-good control profile is rehearsed.
 
 Until then, the architecture decision is fixed but the production promotion state remains **not qualified**.

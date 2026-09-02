@@ -4,7 +4,7 @@ AI coding assistants are powerful but hard to trust with real work: they can lea
 
 This repository is the control blueprint for that stack: how to install it, how each piece is verified, and the evidence that it works.
 
-Target workstation: Apple Silicon / MacBook Pro M3 Max 128 GB while preserving headroom for normal browser/build/LSP/container work.
+Target environment: a capable local workstation (sufficient RAM/headroom for browser, build, LSP and container work alongside the stack); macOS with Seatbelt is the reference containment path, other containment paths must be qualified per `docs/agentic-uplift/bootstrap-authority.md`.
 
 ![System topology: Hermes control plane, Tier 0–4 routing, Pi bridge path, evidence gate](docs/agentic-uplift/diagrams/system-topology.svg)
 

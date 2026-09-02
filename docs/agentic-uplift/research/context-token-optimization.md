@@ -62,7 +62,7 @@ A nominally cheaper endpoint can be more expensive if it destroys a warm prefix 
 
 ## Local model caching
 
-MLX-LM remains a sensible Apple-Silicon local-serving challenger where local model/reviewer use earns its memory footprint. Validate prompt/KV cache, quantization and persistence against the exact deployed version.
+MLX-LM remains a sensible local-serving challenger where local model/reviewer use earns its memory footprint. Validate prompt/KV cache, quantization and persistence against the exact deployed version.
 
 Do not assume standard CUDA-vLLM runtime behavior on macOS; vLLM Semantic Router as a routing control-plane candidate is a separate evaluation from local vLLM inference serving.
 

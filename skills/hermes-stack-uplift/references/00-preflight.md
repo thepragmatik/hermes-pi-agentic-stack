@@ -2,7 +2,7 @@
 
 Confirm the human foundation from `docs/agentic-uplift/fresh-install-bootstrap.md` before changing behaviour.
 
-Verify target machine, free disk/memory pressure, Git status, exact repository commit, current Hermes profile/home/version, bootstrap isolation mode, policy SHA-256, rollback/evidence directory and current Pi version if installed.
+Verify host machine, free disk/memory pressure, Git status, exact repository commit, current Hermes profile/home/version, bootstrap isolation mode, policy SHA-256, rollback/evidence directory and current Pi version if installed.
 
 Verify effective OpenRouter provider + exact single bootstrap model ID with current Hermes config/status tools **without printing the API key**. The research snapshot GLM-5.3-Flash ID is not a substitute for live verification. Confirm no direct-provider credential is required yet and no legacy Hermes/LCM/Mnemosyne DB is attached to the clean profile.
 

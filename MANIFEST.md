@@ -171,4 +171,4 @@ python3 tools/router-bench/router_bench.py \
   --pretty
 ```
 
-A CI pass is smoke/config evidence, not target-Mac or production routing evidence. Do not commit API keys, raw PII corpora, model conversations, Hermes/LCM/Mnemosyne databases or unredacted telemetry.
+A CI pass is smoke/config evidence, not host or production routing evidence. Do not commit API keys, raw PII corpora, model conversations, Hermes/LCM/Mnemosyne databases or unredacted telemetry.

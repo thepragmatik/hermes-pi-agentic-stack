@@ -343,7 +343,7 @@ Current hypothesis:
 
 > **our thin contract + deterministic Tier 0 + vLLM Semantic Router (configured/upstream, not forked) for richer Tier 1/3 signals + Hermes-owned bounded workflow semantics + OpenRouter Tier 4**
 
-This is a hypothesis to prove against the simpler baseline. If vLLM Semantic Router does not earn its runtime/operational footprint on the target Mac, use the smaller rules/embedding/Aurelio path instead.
+This is a hypothesis to prove against the simpler baseline. If vLLM Semantic Router does not earn its runtime/operational footprint on the host, use the smaller rules/embedding/Aurelio path instead.
 
 ---
 

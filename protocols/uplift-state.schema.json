@@ -8,7 +8,7 @@
   "$defs": {
     "phaseId": {"enum":["00-preflight","10-baseline-and-backup","20-context-and-skills","30-router","40-security-and-policy","50-pi-and-lsp","60-evaluation-and-promotion","70-upgrades-and-rollback"]},
     "phaseStatus": {"enum":["PENDING","EXECUTING","BLOCKED","ROLLBACK","COMPLETE"]},
-    "maturity": {"enum":["researched","designed","prototype","smoke-tested","target-Mac-validated","shadow","canary","production-approved"]},
+    "maturity": {"enum":["researched","designed","prototype","smoke-tested","host-validated","shadow","canary","production-approved"]},
     "boundaryReport": {
       "type":"object","additionalProperties":false,
       "required":["what_changed","gates_passed","failures_warnings","token_context_cost_impact","security_impact","usable_now","hermes_action","pi_action","remaining_phases","next_phase","human_approval_required","adoption_state"],
