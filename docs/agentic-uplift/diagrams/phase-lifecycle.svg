@@ -1,0 +1,20 @@
+<svg viewBox="0 0 1280 170" role="img" aria-labelledby="lc-title lc-desc" xmlns="http://www.w3.org/2000/svg"><title id="lc-title">Uplift phase lifecycle 00 to 70</title><desc id="lc-desc">Eight ordered phases: 00 preflight, 10 baseline, 20 context and memory (first self-benefit boundary), 30 router (shadow only), 40 security (human authority gate), 50 Pi sandbox, 60 evaluation and promotion, 70 steady state. Adoption checkpoints A through F fall after the marked phases.</desc><defs><marker id="la" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs><style>.b{fill:#fffaf3;stroke:#5b4636;stroke-width:1.6}.n{font:bold 14px system-ui;fill:#2d2419}.t{font:11px system-ui;fill:#5b4636}.e{stroke:#5b4636;stroke-width:2;marker-end:url(#la)}.cp{font:bold 11px system-ui;fill:#a16207}.gate{stroke:#be123c;stroke-width:2.4}.amb{stroke:#a16207;stroke-width:2.4}.tag{font:10px system-ui;fill:#be123c}@media(prefers-color-scheme:dark){.b{fill:#29241e;stroke:#e8dccf}.n{fill:#e8dccf}.t{fill:#a89784}.e{stroke:#e8dccf}.cp{fill:#d4a843}.gate{stroke:#f2789f}.amb{stroke:#d4a843}.tag{fill:#f2789f}}</style>
+<rect class="b" x="15" y="35" width="125" height="60" rx="8"/><text class="n" x="77" y="60" text-anchor="middle">00</text><text class="t" x="77" y="78" text-anchor="middle">Preflight</text>
+<line class="e" x1="140" y1="65" x2="164" y2="65"/>
+<rect class="b" x="165" y="35" width="125" height="60" rx="8"/><text class="n" x="227" y="60" text-anchor="middle">10</text><text class="t" x="227" y="78" text-anchor="middle">Baseline</text>
+<line class="e" x1="290" y1="65" x2="314" y2="65"/>
+<rect class="b amb" x="315" y="35" width="125" height="60" rx="8"/><text class="n" x="377" y="60" text-anchor="middle">20</text><text class="t" x="377" y="78" text-anchor="middle">Context+Memory</text><text class="cp" x="377" y="110" text-anchor="middle">A</text>
+<line class="e" x1="440" y1="65" x2="464" y2="65"/>
+<rect class="b" x="465" y="35" width="125" height="60" rx="8"/><text class="n" x="527" y="60" text-anchor="middle">30</text><text class="t" x="527" y="78" text-anchor="middle">Router</text><text class="cp" x="577" y="110" text-anchor="middle">B</text>
+<line class="e" x1="590" y1="65" x2="614" y2="65"/>
+<rect class="b gate" x="615" y="35" width="125" height="60" rx="8"/><text class="n" x="677" y="60" text-anchor="middle">40</text><text class="t" x="677" y="78" text-anchor="middle">Security</text><text class="cp" x="727" y="110" text-anchor="middle">C</text>
+<line class="e" x1="740" y1="65" x2="764" y2="65"/>
+<rect class="b" x="765" y="35" width="125" height="60" rx="8"/><text class="n" x="827" y="60" text-anchor="middle">50</text><text class="t" x="827" y="78" text-anchor="middle">Pi sandbox</text><text class="cp" x="877" y="110" text-anchor="middle">D</text>
+<line class="e" x1="890" y1="65" x2="914" y2="65"/>
+<rect class="b" x="915" y="35" width="125" height="60" rx="8"/><text class="n" x="977" y="60" text-anchor="middle">60</text><text class="t" x="977" y="78" text-anchor="middle">Evaluation</text><text class="cp" x="1027" y="110" text-anchor="middle">E</text>
+<line class="e" x1="1040" y1="65" x2="1064" y2="65"/>
+<rect class="b" x="1065" y="35" width="125" height="60" rx="8"/><text class="n" x="1127" y="60" text-anchor="middle">70</text><text class="t" x="1127" y="78" text-anchor="middle">Steady state</text><text class="cp" x="1127" y="110" text-anchor="middle">F</text>
+<text class="tag" x="377" y="24" text-anchor="middle">first self-benefit boundary</text>
+<text class="tag" x="677" y="24" text-anchor="middle">human authority gate</text>
+<text class="t" x="640" y="148" text-anchor="middle">A0 (dogfood slimming) sits inside Phase 20 · checkpoints A–F = fresh-session / approval / canary boundaries</text>
+</svg>

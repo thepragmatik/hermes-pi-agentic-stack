@@ -64,6 +64,7 @@ PUBLIC_FILES = [
     "docs/agentic-uplift/diagrams/system-topology.svg", "docs/agentic-uplift/diagrams/mission-lifecycle.svg",
     "docs/agentic-uplift/diagrams/pi-bridge-flow.svg", "docs/agentic-uplift/diagrams/trust-boundaries.svg",
     "docs/agentic-uplift/diagrams/routing-tiers.svg",
+    "docs/agentic-uplift/diagrams/phase-lifecycle.svg",
     "skills/hermes-stack-uplift/SKILL.md",
     "skills/hermes-stack-uplift/references/00-preflight.md", "skills/hermes-stack-uplift/references/10-baseline-and-backup.md",
     "skills/hermes-stack-uplift/references/20-context-and-skills.md", "skills/hermes-stack-uplift/references/30-router.md",
