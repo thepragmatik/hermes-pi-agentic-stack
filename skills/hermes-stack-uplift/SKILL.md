@@ -35,6 +35,12 @@ Use this skill for installing, uplifting, validating or upgrading the stack defi
 
 At session/recovery start: read durable state, identify the current phase, load that slice, then load only evidence necessary to resolve its gates. If required state/evidence is missing, mark `BLOCKED` rather than guessing.
 
+## Companion slices (load on demand, not by default)
+
+- `hermes-stack-uplift-lessons` — host-verified execution notes from real phase runs (macOS sandbox pitfalls, delegation patterns, telemetry gotchas). Load when executing a phase on this host.
+- `context-management-execution` — the context-management mission's benchmark recipe (isolated child-run harness, flag-matrix drivers, adversarial scoring). Load when running CM-mission phases or any LCM flag benchmark.
+- `blueprint-doc-uplift` — repo documentation/site uplift workflow with SVG diagrams and push handoffs. Load when improving this repo's docs or site.
+
 ## Phase-boundary report
 
 After every phase persist state/evidence first, then report:
