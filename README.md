@@ -51,51 +51,7 @@ Two missions have run against this blueprint, and both published their evidence 
 
 ![Architecture at a glance](docs/agentic-uplift/diagrams/routing-tiers.svg)
 
-```text
-MISSION + durable state
-        |
-        v
-Hermes control plane + local LCM/Mnemosyne
-        |
-        v
-Tier 0 — deterministic eligibility/security
-privacy | LOCAL_ONLY | PII/secrets | tools | modality | context | network/sandbox | ZDR (Zero Data Retention — provider keeps nothing) | review
-        |
-        v
-Tier 1 — multi-label mission profile
-tasks | domain | phase | complexity | uncertainty | reasoning/tool intensity
-        |
-        v
-Tier 2 — bounded workflow / agent
-Hermes | research executor | Pi worker | review worker | local tools | multi-stage | abstain
-        |
-        v
-Tier 3 — eligible model-role / model optimization
-quality | cost | latency | reliability | cache affinity | switch cost
-        |
-        v
-Tier 4 — OpenRouter-first gateway
-        |
-        v
-eligible physical provider / qualified direct or local adapter
-        |
-        +--> information / synthesis / reasoning / review stage
-        `--> typed Hermes -> Pi -> disposable worktree / sandbox / LSP
-                                      |
-                                      v
-                               tests / scans / review / merge gate
-        |
-        v
-privacy-minimized outcome telemetry -> offline router research/training
-```
-
-**Research and coding are first-class task families, not the routing ontology.** A mission such as:
-
-```text
-research -> architecture/design -> implementation -> tests -> security review
-```
-
-is represented as ordered stages instead of one `hybrid` label.
+**Research and coding are first-class task families, not the routing ontology.** A mission such as `research -> architecture/design -> implementation -> tests -> security review` is represented as ordered stages instead of one `hybrid` label.
 
 The stable seams are [`protocols/routing-mission.schema.json`](protocols/routing-mission.schema.json) and [`protocols/routing-decision.schema.json`](protocols/routing-decision.schema.json). Hermes/Pi/OpenRouter semantics do not depend directly on a particular router framework.
 
@@ -164,9 +120,7 @@ Choose OpenRouter, enter its API key only through Hermes' provider setup, select
 
 Preferred initial external credential footprint:
 
-```text
-OPENROUTER_API_KEY
-```
+`OPENROUTER_API_KEY`
 
 Do not add direct-provider credentials yet.
 
@@ -239,25 +193,12 @@ Then Phase 30 begins in another fresh optimized session.
 
 The fresh bootstrap does **not** depend on a sophisticated router.
 
-```text
-Phases 00-20: one explicit bootstrap model via OpenRouter
-        |
-Phase 30: deterministic eligibility + rules/state + abstain
-        |
-shadow challengers:
-  minimal embeddings
-  Aurelio Semantic Router
-  vLLM Semantic Router
-  LLMRouter research algorithms
-  RouteLLM-style Tier-3 scoring
-  OpenRouter Auto sanitized shadow
-        |
-collect real Hermes/Pi outcomes
-        |
-Phase 60: promote only what improves accepted-mission economics/security
-        |
-later ModernBERT multi-head model only if data/evidence earns it
-```
+1. Phases 00-20: one explicit bootstrap model via OpenRouter
+2. Phase 30: deterministic eligibility + rules/state + abstain
+3. Shadow challengers: minimal embeddings, Aurelio Semantic Router, vLLM Semantic Router, LLMRouter research algorithms, RouteLLM-style Tier-3 scoring, OpenRouter Auto sanitized shadow
+4. Collect real Hermes/Pi outcomes
+5. Phase 60: promote only what improves accepted-mission economics/security
+6. Later ModernBERT multi-head model only if data/evidence earns it
 
 ### Current framework assessment
 
@@ -287,9 +228,7 @@ If simpler routing captures most economic benefit, keep it simple.
 
 Our stack chooses:
 
-```text
-hard eligibility -> workflow -> model role -> model -> abstract provider requirements
-```
+`hard eligibility -> workflow -> model role -> model -> abstract provider requirements`
 
 OpenRouter normally handles physical-provider routing/failover for that eligible model. Its raw API can provide provider allow/deny/order, parameter/data/ZDR filters, price/latency/throughput preferences, model fallbacks and session/provider stickiness. The installed Hermes client currently exposes only a subset, so unsupported hard requirements must be enforced by account policy/a thin audited adapter or fail closed—not silently discarded.
 
@@ -313,9 +252,7 @@ It separates:
 
 Primary system metric is much closer to:
 
-```text
-cost per accepted mission
-```
+`cost per accepted mission`
 
 including retries, latency, capability failures, switching/cache effects and human override.
 
@@ -325,17 +262,14 @@ Privacy-minimized future telemetry may record mission/profile hashes/features, r
 
 # Context, memory and security ownership
 
-```text
-LCM             = current-session exact context + compaction recovery
-Mnemosyne       = curated cross-session durable memory
-state.db        = raw Hermes history / forensic search
-uplift-state    = deterministic mission authority
-routing-mission = framework-neutral routing input
-routing-decision= framework-neutral routing output
-T2 artifacts    = raw logs/diffs/benchmarks/test evidence
-Git/ADR/spec    = project truth
-Kanban          = optional operational projection
-```
+- **LCM** — current-session exact context + compaction recovery
+- **Mnemosyne** — curated cross-session durable memory
+- **state.db** — raw Hermes history / forensic search
+- **uplift-state** — deterministic mission authority
+- **routing-mission / routing-decision** — framework-neutral routing input/output
+- **T2 artifacts** — raw logs/diffs/benchmarks/test evidence
+- **Git/ADR/spec** — project truth
+- **Kanban** — optional operational projection
 
 Security-critical controls live outside prompts/context/memory/learned routing/OpenRouter. The 2026-08-31 → 2026-09-01 mission proved the bridge-level and containment layers (egress fail-closed, Seatbelt, capability modes, rollback drill); orchestrator-level tool removal and OS-account isolation remain external, operator-owned steps.
 
