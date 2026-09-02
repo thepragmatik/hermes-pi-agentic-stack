@@ -25,6 +25,28 @@ Target workstation: Apple Silicon / MacBook Pro M3 Max 128 GB while preserving h
 - **For humans:** start at [`docs/agentic-uplift/fresh-install-bootstrap.md`](docs/agentic-uplift/fresh-install-bootstrap.md) (a step-by-step install guide), then run the pre-written uplift mission — a build script the agent executes phase by phase — with `uplift chat --query-file UPLIFT_MISSION.md`.
 - **For agents:** start at [`UPLIFT_MISSION.md`](UPLIFT_MISSION.md) — the instruction set the agent follows (humans: read the Fresh Install guide instead) — load only the current slice from [`skills/hermes-stack-uplift/SKILL.md`](skills/hermes-stack-uplift/SKILL.md), and honor the durable-state contract in [`docs/agentic-uplift/agent-execution-contract.md`](docs/agentic-uplift/agent-execution-contract.md). Re-executing the uplift starts from Phase 00 against your own environment; this repository is the blueprint, not your mission state.
 
+## What the uplift proved (and keeps proving)
+
+Two missions have run against this blueprint, and both published their evidence here:
+
+1. **Stack uplift (2026-08-31 → 2026-09-01, 9/9 phases).** Installed, verified and
+   promoted the whole stack you see described in this README — sandboxed Pi workers,
+   fail-closed egress scanning, tiered routing, local memory. See the mission-lifecycle
+   diagram above and `docs/agentic-uplift/validation-report.md`.
+2. **Context-management uplift (2026-09-01 → 2026-09-02, CM-00..CM-80).** Asked: *can the
+   agent's own memory stay cheap, fast, and honest as conversations grow?* Answer: yes —
+   with two settings promoted after a clean 9-run bake-off showed no quality loss and no
+   stalls. The reusable pieces for future engineers: the execution skill
+   ([`skills/hermes-stack-uplift/context-management-execution/SKILL.md`](skills/hermes-stack-uplift/context-management-execution/SKILL.md)),
+   the benchmark corpus pattern
+   ([`skills/hermes-stack-uplift/hermes-stack-uplift-lessons/references/context-management-corpus.md`](skills/hermes-stack-uplift/hermes-stack-uplift-lessons/references/context-management-corpus.md)),
+   and the host lessons file
+   ([`skills/hermes-stack-uplift/hermes-stack-uplift-lessons/SKILL.md`](skills/hermes-stack-uplift/hermes-stack-uplift-lessons/SKILL.md)).
+
+> A note on the word *evidence*: throughout this repo, "evidence" means a file produced
+> by a real command run — a test result, a measurement, a log — that anyone can re-run to
+> check the claim. Claims without an evidence file are treated as unproven.
+
 ## Architecture at a glance
 
 ```text
