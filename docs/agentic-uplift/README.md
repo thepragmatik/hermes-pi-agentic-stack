@@ -23,15 +23,13 @@ This directory is the canonical research/design source behind the human Pages ma
 
 ## Executive topology
 
-```text
-mission + durable state
- -> Tier 0 deterministic eligibility/security
- -> Tier 1 multi-label mission profile
- -> Tier 2 bounded workflow/agent selection
- -> Tier 3 model-role/model optimization
- -> Tier 4 OpenRouter-first provider execution
- -> evidence/outcomes -> offline router research/training
-```
+1. mission + durable state
+2. Tier 0 — deterministic eligibility/security
+3. Tier 1 — multi-label mission profile
+4. Tier 2 — bounded workflow/agent selection
+5. Tier 3 — model-role/model optimization
+6. Tier 4 — OpenRouter-first provider execution
+7. evidence/outcomes → offline router research/training
 
 Research and coding are important first-class task families, not the complete routing ontology. A mission such as `research -> architecture_design -> coding_implementation -> testing -> review` remains an ordered workflow instead of becoming `hybrid`.
 
@@ -53,16 +51,16 @@ Prefer upstream/config/adapters over a fork. A fork requires a materially valuab
 
 ## One lifecycle and adoption checkpoints
 
-```text
-00 preflight
-10 baseline + backup
-20 context + skills + LCM/Mnemosyne -> A0 dogfood + A fresh optimized session
-30 routing contracts/simple router/bake-off -> B shadow only
-40 security/policy enforcement             -> C human authority gate
-50 Hermes->Pi + LSP + routing provenance   -> D recreate workers
-60 evaluation/promotion                    -> E ordinary multi-role/workflow operation
-70 upgrades/rollback                       -> F recurring canary cycle
-```
+| Phase | Content | Checkpoint |
+|---|---|---|
+| 00 | preflight | — |
+| 10 | baseline + backup | — |
+| 20 | context + skills + LCM/Mnemosyne | A0 dogfood + A fresh optimized session |
+| 30 | routing contracts/simple router/bake-off | B shadow only |
+| 40 | security/policy enforcement | C human authority gate |
+| 50 | Hermes->Pi + LSP + routing provenance | D recreate workers |
+| 60 | evaluation/promotion | E ordinary multi-role/workflow operation |
+| 70 | upgrades/rollback | F recurring canary cycle |
 
 Phase 20 remains the first self-benefit boundary. Phase 30 does not block the uplift on advanced routing infrastructure.
 
@@ -72,15 +70,13 @@ Deterministic/runtime-derived facts include privacy class, `LOCAL_ONLY`, cloud e
 
 ## Context/memory ownership
 
-```text
-LCM          = current-session exact context / compaction recovery
-Mnemosyne    = curated cross-session durable memory
-state.db     = raw Hermes session history / forensic search
-uplift-state = deterministic mission authority
-T2 artifacts = raw logs/diffs/benchmarks/test evidence
-Git/ADR/spec = project truth
-Kanban       = optional operational projection
-```
+- **LCM** — current-session exact context / compaction recovery
+- **Mnemosyne** — curated cross-session durable memory
+- **state.db** — raw Hermes session history / forensic search
+- **uplift-state** — deterministic mission authority
+- **T2 artifacts** — raw logs/diffs/benchmarks/test evidence
+- **Git/ADR/spec** — project truth
+- **Kanban** — optional operational projection
 
 ## Maturity
 

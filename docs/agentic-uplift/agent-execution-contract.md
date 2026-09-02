@@ -23,16 +23,7 @@ Persist state conforming to `protocols/uplift-state.schema.json` v1.1. Persist w
 
 The only canonical phase IDs are:
 
-```text
-00-preflight
-10-baseline-and-backup
-20-context-and-skills
-30-router
-40-security-and-policy
-50-pi-and-lsp
-60-evaluation-and-promotion
-70-upgrades-and-rollback
-```
+`00-preflight`, `10-baseline-and-backup`, `20-context-and-skills`, `30-router`, `40-security-and-policy`, `50-pi-and-lsp`, `60-evaluation-and-promotion`, `70-upgrades-and-rollback`.
 
 ## Mandatory invariants
 

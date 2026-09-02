@@ -50,13 +50,11 @@ The previous architecture implicitly treated routing as a classifier over `resea
 
 The canonical routing ownership is now:
 
-```text
-Tier 0 deterministic eligibility / policy
- -> Tier 1 multi-label mission/capability profile
- -> Tier 2 bounded workflow + agent selection
- -> Tier 3 model-role/model economic optimization
- -> Tier 4 OpenRouter-first provider execution
-```
+1. Tier 0 deterministic eligibility / policy
+2. Tier 1 multi-label mission/capability profile
+3. Tier 2 bounded workflow + agent selection
+4. Tier 3 model-role/model economic optimization
+5. Tier 4 OpenRouter-first provider execution
 
 Research and coding remain important task families. Multi-stage work is represented explicitly, e.g. `research -> architecture_design -> coding_implementation -> testing -> security_review`, instead of collapsing to `hybrid`.
 

@@ -34,64 +34,35 @@ Think of a request as passing through a series of gates, in order: *Is this allo
 
 The stable internal seam is framework-neutral:
 
-```text
-protocols/routing-mission.schema.json
-   mission profile + deterministic requirements + session + optimization
-                       |
-                       v
-           replaceable routing engine(s)
-                       |
-                       v
-protocols/routing-decision.schema.json
-   workflow stages + model role/model + gateway/provider requirements
-```
+1. [`protocols/routing-mission.schema.json`](protocols/routing-mission.schema.json) — mission profile + deterministic requirements + session + optimization
+2. replaceable routing engine(s)
+3. [`protocols/routing-decision.schema.json`](protocols/routing-decision.schema.json) — workflow stages + model role/model + gateway/provider requirements
 
 Hermes/Pi/OpenRouter integration must not depend directly on Aurelio Semantic Router, vLLM Semantic Router, RouteLLM, LLMRouter or a future ModernBERT implementation.
 
 ## Core data flow
 
-```text
-MISSION + durable state
- -> Tier 0 deterministic eligibility/security
- -> Tier 1 mission-profile inference
- -> Tier 2 workflow/agent selection
- -> Tier 3 model-role/model optimization
- -> Tier 4 OpenRouter/direct/local gateway adapter
- -> policy-compatible physical execution
- -> evidence/review/merge gate
- -> privacy-minimized outcome telemetry
-```
+1. MISSION + durable state
+2. Tier 0 — deterministic eligibility/security
+3. Tier 1 — mission-profile inference
+4. Tier 2 — workflow/agent selection
+5. Tier 3 — model-role/model optimization
+6. Tier 4 — OpenRouter/direct/local gateway adapter
+7. policy-compatible physical execution
+8. evidence/review/merge gate
+9. privacy-minimized outcome telemetry
 
 `LOCAL_ONLY` exits the cloud path at Tier 0. No later classifier/model/gateway can restore cloud eligibility.
 
 ## Multi-stage example
 
-```text
-research
-  -> architecture_design
-  -> coding_implementation
-  -> testing
-  -> security_review
-```
-
-This is represented as ordered stages with appropriate agents/model roles. It is not reduced to a single `hybrid` label.
+A mission such as `research -> architecture_design -> coding_implementation -> testing -> security_review` is represented as ordered stages with appropriate agents/model roles. It is not reduced to a single `hybrid` label.
 
 ## Router research vs production hot path
 
-```text
-RESEARCH/TRAINING PLANE
-  LLMRouter / RouteLLM experiments / notebooks
-  OpenRouter Auto shadow comparisons
-  vLLM Semantic Router simulation/config experiments
-  ModernBERT fitting/fine-tuning
-             |
-             | exports versioned artifacts/config
-             v
-PRODUCTION HOT PATH
-  deterministic Tier 0
-  + smallest measured Tier 1/2/3 engine that earns promotion
-  + stable routing contracts
-```
+**Research/training plane:** LLMRouter / RouteLLM experiments and notebooks; OpenRouter Auto shadow comparisons; vLLM Semantic Router simulation/config experiments; ModernBERT fitting/fine-tuning. It exports versioned artifacts/config to:
+
+**Production hot path:** deterministic Tier 0; the smallest measured Tier 1/2/3 engine that earns promotion; stable routing contracts.
 
 The research plane may be heavy. The production hot path must remain local-before-cloud, bounded, auditable, abstention-safe and easy to roll back.
 
@@ -107,13 +78,8 @@ The research plane may be heavy. The production hot path must remain local-befor
 
 ## OpenRouter boundary
 
-```text
-our stack chooses:
-  eligibility -> workflow -> model role -> model -> abstract provider requirements
-
-OpenRouter normally chooses:
-  eligible physical provider / provider failover
-```
+- **Our stack chooses:** `eligibility -> workflow -> model role -> model -> abstract provider requirements`.
+- **OpenRouter normally chooses:** eligible physical provider / provider failover.
 
 Raw OpenRouter provider capabilities are broader than current Hermes `provider_routing`. The gateway adapter must enforce required ZDR/session-affinity/performance semantics or fail closed; it may not silently discard a hard requirement because Hermes lacks a current config key.
 
@@ -121,38 +87,29 @@ OpenRouter Auto cannot override Tier 0 or replace our bounded workflow semantics
 
 ## Bootstrap data flow
 
-```text
-clean narrow Hermes
- -> OpenRouter
- -> one verified GLM-Flash-class bootstrap model
- -> 00 preflight
- -> 10 baseline
- -> 20 context/skills + LCM/Mnemosyne
- -> fresh session (Checkpoint A)
- -> 30 rules/state router + semantic/vLLM/Auto shadow bake-off
- -> 40 security authority gate
- -> 50 typed Pi/LSP workers
- -> 60 outcome/economic evaluation + router/model promotion
- -> 70 recurring upgrades/rollback
-```
+1. Clean narrow Hermes → OpenRouter → one verified bootstrap-class model
+2. 00 preflight → 10 baseline
+3. 20 context/skills + LCM/Mnemosyne → fresh session (Checkpoint A)
+4. 30 rules/state router + semantic/vLLM/Auto shadow bake-off
+5. 40 security authority gate
+6. 50 typed Pi/LSP workers
+7. 60 outcome/economic evaluation + router/model promotion
+8. 70 recurring upgrades/rollback
 
 The advanced router does not block early uplift.
 
 ## Context and state ownership
 
-```text
-T0 stable prefix = identity/invariants/small skill+tool catalogue
-T1 mission capsule = current bounded phase/objective/constraints/evidence pointers
-T2 artifacts = full logs/diffs/research/specs/benchmarks/RPC, fetched on demand
-LCM = current-session exact context/compaction recovery
-Mnemosyne = curated cross-session durable memory
-state.db = raw Hermes session history/forensic search
-uplift-state = deterministic mission authority
-routing-mission = current framework-neutral route input
-routing-decision = current framework-neutral route output
-Git/ADR/spec = project truth
-Kanban = optional operational projection
-```
+- **T0 stable prefix** — identity/invariants/small skill+tool catalogue
+- **T1 mission capsule** — current bounded phase/objective/constraints/evidence pointers
+- **T2 artifacts** — full logs/diffs/research/specs/benchmarks/RPC, fetched on demand
+- **LCM** — current-session exact context/compaction recovery
+- **Mnemosyne** — curated cross-session durable memory
+- **state.db** — raw Hermes session history/forensic search
+- **uplift-state** — deterministic mission authority
+- **routing-mission / routing-decision** — current framework-neutral route input/output
+- **Git/ADR/spec** — project truth
+- **Kanban** — optional operational projection
 
 Stable prompt prefix, workflow stage and model/provider should remain sticky within a phase/session when that improves cache continuity and behavioural consistency. Switching is a measured economic decision, not a default reaction to every short turn.
 

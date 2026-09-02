@@ -154,11 +154,9 @@ It is **not** the authoritative security/execution state. The versioned `uplift-
 
 Recommended relationship:
 
-```text
-uplift-state.json / schema   = execution authority
-Kanban task/card             = operational projection / human supervision
-immutable evidence files     = proof
-```
+- `uplift-state.json` / schema = **execution authority**
+- Kanban task/card = operational projection / human supervision
+- immutable evidence files = proof
 
 Do not load the Kanban toolset into ordinary profiles merely for observability; current Hermes keeps its schema footprint at zero unless the profile/task explicitly enables the toolset.
 
