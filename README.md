@@ -49,6 +49,8 @@ Two missions have run against this blueprint, and both published their evidence 
 
 ## Architecture at a glance
 
+![Architecture at a glance](docs/agentic-uplift/diagrams/routing-tiers.svg)
+
 ```text
 MISSION + durable state
         |
@@ -207,6 +209,8 @@ uplift chat --query-file UPLIFT_MISSION.md
 [`UPLIFT_MISSION.md`](UPLIFT_MISSION.md) requires Hermes to read durable state/contract first, load only the current skill slice, execute one bounded phase, persist evidence, report the boundary and stop.
 
 ## Iterative lifecycle
+
+![Phase lifecycle](docs/agentic-uplift/diagrams/phase-lifecycle.svg)
 
 | Phase | Bounded objective | Adoption boundary |
 |---|---|---|
