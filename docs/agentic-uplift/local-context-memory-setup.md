@@ -6,14 +6,12 @@ Snapshot: 2026-08-31.
 
 The clean uplift profile uses **LCM + Mnemosyne as the required local context/memory baseline**:
 
-```text
-LCM          = current-session exact context, bounded assembly, compaction recovery
-Mnemosyne    = curated cross-session durable semantic memory
-state.db     = raw Hermes session history / forensic session_search
-uplift-state = deterministic mission/attempt/policy/blocker authority
-T2 artifacts = logs, diffs, Pi RPC, benchmark/test evidence
-Git/ADR/spec = authoritative project truth
-```
+- **LCM** — current-session exact context, bounded assembly, compaction recovery
+- **Mnemosyne** — curated cross-session durable semantic memory
+- **state.db** — raw Hermes session history / forensic session_search
+- **uplift-state** — deterministic mission/attempt/policy/blocker authority
+- **T2 artifacts** — logs, diffs, Pi RPC, benchmark/test evidence
+- **Git/ADR/spec** — authoritative project truth
 
 This is no longer an architecture-selection bake-off. The built-in Hermes compressor/no-external-memory configuration is retained only as a **diagnostic control and rollback profile**. If LCM or Mnemosyne cannot pass a mandatory compatibility, correctness, privacy, offline, backup or recovery gate, mark Phase 20 `BLOCKED`/`ROLLBACK`; do not silently substitute a different production memory architecture.
 
@@ -108,16 +106,14 @@ Merge `configs/hermes-local-context-memory.example.yaml` into the clean canary c
 
 Required effective state:
 
-```text
-plugins.enabled includes hermes-lcm
-context.engine = lcm
-compression.enabled = true
-memory.provider = mnemosyne
-memory.memory_enabled = false
-memory.user_profile_enabled = false
-memory.write_approval = false
-Tool Search = on
-```
+- `plugins.enabled` includes `hermes-lcm`
+- `context.engine = lcm`
+- `compression.enabled = true`
+- `memory.provider = mnemosyne`
+- `memory.memory_enabled = false`
+- `memory.user_profile_enabled = false`
+- `memory.write_approval = false`
+- Tool Search = on
 
 Why built-in MEMORY/USER are off: Hermes' external memory provider is independent of those built-in stores. Disabling both removes the built-in memory tool/guidance while leaving Mnemosyne active, preventing a second durable-memory authority and reducing prompt/schema duplication.
 
@@ -159,17 +155,7 @@ Upgrade qualification must verify the **effective** configuration, not merely co
 
 Allow only the curation/inspection tools required for ordinary autonomous operation:
 
-```text
-mnemosyne_remember
-mnemosyne_recall
-mnemosyne_remember_canonical
-mnemosyne_recall_canonical
-mnemosyne_forget_canonical
-mnemosyne_get
-mnemosyne_update
-mnemosyne_invalidate
-mnemosyne_stats
-mnemosyne_diagnose
+`mnemosyne_remember`, `mnemosyne_recall`, `mnemosyne_remember_canonical`, `mnemosyne_recall_canonical`, `mnemosyne_forget_canonical`, `mnemosyne_get`, `mnemosyne_update`, `mnemosyne_invalidate`, `mnemosyne_stats`, `mnemosyne_diagnose`
 ```
 
 Do not expose hard-delete, remote sync, shared-bank, graph, persona, scratchpad, import/export or sleep/consolidation tools to the ordinary orchestrator profile. Operator maintenance can use the local CLI outside the model-facing tool surface.
@@ -276,11 +262,9 @@ LCM and Mnemosyne must be independently reversible.
 
 Rollback profile:
 
-```text
-context.engine -> built-in compressor
-memory.provider -> off / no external provider
-built-in MEMORY/USER remain disabled unless explicitly restoring the old control profile
-```
+- `context.engine` -> built-in compressor
+- `memory.provider` -> off / no external provider
+- built-in MEMORY/USER remain disabled unless explicitly restoring the old control profile
 
 Do not delete the failed LCM/Mnemosyne databases during rollback. Freeze/checksum them as diagnostic evidence, restore the prior known-good config/package pins, restart the profile, and prove session/mission recovery from authoritative uplift-state + evidence.
 

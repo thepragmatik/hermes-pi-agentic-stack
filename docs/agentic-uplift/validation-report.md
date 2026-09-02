@@ -73,15 +73,7 @@ These routing numbers are intentionally **smoke evidence only**. The broader fix
 
 Canonical responsibility chain:
 
-```text
-MISSION + durable state
- -> Tier 0 deterministic eligibility/security
- -> Tier 1 multi-label mission/capability profile
- -> Tier 2 bounded workflow/agent selection
- -> Tier 3 model-role/model economic optimization
- -> Tier 4 OpenRouter-first gateway/provider execution
- -> outcomes -> offline research/training plane
-```
+`MISSION + durable state -> Tier 0 deterministic eligibility/security -> Tier 1 multi-label mission/capability profile -> Tier 2 bounded workflow/agent selection -> Tier 3 model-role/model economic optimization -> Tier 4 OpenRouter-first gateway/provider execution -> outcomes -> offline research/training plane`.
 
 Research and coding remain first-class task families; they are not the complete ontology. Multi-stage missions remain ordered stages rather than a `hybrid` label.
 
@@ -154,15 +146,13 @@ OpenRouter Auto cannot decide privacy/cloud eligibility and is not final workflo
 
 Future router learning should use privacy-minimized joins such as:
 
-```text
-mission/profile digest
- -> workflow/stage/router recommendation
- -> model role/model/provider where observable
- -> fresh/cached/output tokens + TTFT/wall time
- -> tool calls/failures + retries + workflow/model/provider switches
- -> tests/review/human override
- -> accepted/rejected + failure reason + actual/estimated cost
-```
+1. mission/profile digest
+2. workflow/stage/router recommendation
+3. model role/model/provider where observable
+4. fresh/cached/output tokens + TTFT/wall time
+5. tool calls/failures + retries + workflow/model/provider switches
+6. tests/review/human override
+7. accepted/rejected + failure reason + actual/estimated cost
 
 The target is: **which eligible workflow/model maximizes probability of accepted completion under this mission's constraints and budget?** Raw sensitive prompts are not routine telemetry.
 
@@ -170,11 +160,7 @@ The target is: **which eligible workflow/model maximizes probability of accepted
 
 The manual-to-autonomous handoff remains:
 
-```text
-clean Hermes bootstrap + one verified OpenRouter model
- -> uplift chat --query-file UPLIFT_MISSION.md
- -> one observable 00-70 phase at a time
-```
+`clean Hermes bootstrap + one verified OpenRouter model -> uplift chat --query-file UPLIFT_MISSION.md -> one observable 00-70 phase at a time`.
 
 Phase 20 contains Dogfood Gate A0 for prompt/skill slimming before LCM/Mnemosyne/Spec Kit layering. Checkpoint A starts Phase 30 in a fresh optimized session. Phase 30's advanced candidates remain shadow-only. At Checkpoint C all mandatory P0 security gates pass **before** required human approval may authorize stronger authority. Pi workers begin behind typed containment in Phase 50; routing/model/provider promotion is Phase 60 and follows the same evidence-first approval ordering.
 

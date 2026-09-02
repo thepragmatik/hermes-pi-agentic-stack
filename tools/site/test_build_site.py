@@ -49,6 +49,14 @@ class DarkModeCssTests(unittest.TestCase):
         self.assertIn("tbody tr:nth-child(even)", dark)
 
 
+class OrderedTests(unittest.TestCase):
+    def test_ordered_list_becomes_ol(self):
+        md = "1. one\n2. two\n"
+        html_out = bs.render_md(md, "index.html")
+        self.assertIn("<ol>", html_out)
+        self.assertIn("<li>two</li>", html_out)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
 

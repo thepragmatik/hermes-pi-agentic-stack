@@ -115,9 +115,10 @@ def render_table(rows: list[str], page: str) -> str:
     return "\n".join(out)
 
 def render_md(text: str, page: str) -> str:
-    out=[];code=[];in_code=False;list_open=False;table=[]
+    out=[];code=[];in_code=False;list_open=False;ol_open=False;table=[]
     def close_list():
-        nonlocal list_open
+        nonlocal list_open, ol_open
+        if ol_open:out.append("</ol>");ol_open=False
         if list_open:out.append("</ul>");list_open=False
     def close_table():
         nonlocal table
@@ -137,7 +138,9 @@ def render_md(text: str, page: str) -> str:
         elif line.startswith("- "):
             if not list_open:out.append("<ul>");list_open=True
             out.append("<li>"+inline(line[2:].strip(),page)+"</li>")
-        elif re.match(r"^\d+\. ",line):close_list();out.append("<p>"+inline(line,page)+"</p>")
+        elif re.match(r"^\d+\. ",line):
+            if not ol_open:close_list();out.append("<ol>");ol_open=True
+            m=re.match(r"^\d+\. (.*)",line);out.append("<li>"+inline(m.group(1),page)+"</li>")
         elif line.startswith("> "):close_list();out.append("<blockquote>"+inline(line[2:].strip(),page)+"</blockquote>")
         else:out.append("<p>"+inline(line,page)+"</p>")
     close_list();close_table()

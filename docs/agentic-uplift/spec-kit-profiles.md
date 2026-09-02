@@ -65,9 +65,7 @@ Use for:
 
 Run:
 
-```text
-specify -> clarify (if needed) -> plan -> tasks -> analyze -> implement -> converge
-```
+`specify -> clarify (if needed) -> plan -> tasks -> analyze -> implement -> converge`
 
 Use checklists selectively. Preserve durable architecture decisions as ADRs.
 

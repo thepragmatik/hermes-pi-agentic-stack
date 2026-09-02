@@ -4,9 +4,7 @@ Snapshot: 2026-08-31. Mission outcome 2026-08-31 → 2026-09-01: 9/9 phases COMP
 
 This is the **single canonical execution lifecycle** for Hermes to uplift its stack. The only phase sequence is:
 
-```text
-00 -> 10 -> 20 -> 30 -> 40 -> 50 -> 60 -> 70
-```
+`00 -> 10 -> 20 -> 30 -> 40 -> 50 -> 60 -> 70`
 
 ![Mission lifecycle: phases 00–70 with adoption checkpoints A0/A–F](diagrams/mission-lifecycle.svg)
 
@@ -48,16 +46,14 @@ Use with:
 
 Every phase follows:
 
-```text
-small reversible change
- -> deterministic + representative tests
- -> adversarial challenge
- -> compare with baseline
- -> persist evidence/state
- -> report boundary
- -> fresh session/reload/recreate if required
- -> only then next phase
-```
+1. small reversible change
+2. deterministic + representative tests
+3. adversarial challenge
+4. compare with baseline
+5. persist evidence/state
+6. report boundary
+7. fresh session/reload/recreate if required
+8. only then next phase
 
 Hermes returns control at every phase boundary. A phase may contain a smaller mid-phase dogfood gate when that gives a cleaner causal measurement.
 
@@ -81,14 +77,12 @@ Hermes returns control at every phase boundary. A phase may contain a smaller mi
 
 ## Routing ownership
 
-```text
-MISSION + durable state
-  -> Tier 0 deterministic eligibility/security
-  -> Tier 1 multi-label mission-profile inference
-  -> Tier 2 bounded workflow/agent selection
-  -> Tier 3 model-role/model economic optimization
-  -> Tier 4 OpenRouter-first gateway/provider execution
-```
+1. MISSION + durable state
+2. Tier 0 — deterministic eligibility/security
+3. Tier 1 — multi-label mission-profile inference
+4. Tier 2 — bounded workflow/agent selection
+5. Tier 3 — model-role/model economic optimization
+6. Tier 4 — OpenRouter-first gateway/provider execution
 
 OpenRouter Auto is a sanitized shadow/bootstrap/fallback/teacher signal only. It cannot restore cloud eligibility, grant tools, select Pi authority or replace our workflow semantics.
 
@@ -96,20 +90,18 @@ OpenRouter Auto is a sanitized shadow/bootstrap/fallback/teacher signal only. It
 
 # Required phase-boundary report
 
-```text
-Phase completed:
-What changed:
-Evidence/gates passed:
-Failures/warnings:
-Token/context/cost impact observed:
-Security impact:
-What is now usable:
-Does Hermes need a fresh session/restart?:
-Does Pi need to be recreated/restarted?:
-Remaining phases:
-Next phase:
-Human approval required before continuing?: yes/no
-```
+- **Phase completed:** …
+- **What changed:** …
+- **Evidence/gates passed:** …
+- **Failures/warnings:** …
+- **Token/context/cost impact observed:** …
+- **Security impact:** …
+- **What is now usable:** …
+- **Does Hermes need a fresh session/restart?:** …
+- **Does Pi need to be recreated/restarted?:** …
+- **Remaining phases:** …
+- **Next phase:** …
+- **Human approval required before continuing?:** yes/no
 
 Persist the machine-readable equivalent in uplift-state first.
 
@@ -172,17 +164,13 @@ Measure then remove/deduplicate repeated identity/project prose, irrelevant skil
 
 Preserve:
 
-```text
-T0 = byte-stable identity/invariants/small catalog
-T1 = bounded current mission/phase capsule
-T2 = logs/diffs/research/spec/evidence loaded only when required
-```
+- **T0** — byte-stable identity/invariants/small catalog
+- **T1** — bounded current mission/phase capsule
+- **T2** — logs/diffs/research/spec/evidence loaded only when required
 
 Use:
 
-```text
-small eligible catalog -> parent SKILL.md -> one current phase slice -> support artifact on demand
-```
+`small eligible catalog -> parent SKILL.md -> one current phase slice -> support artifact on demand`
 
 Measure fixed/hot context, skill/tool-schema input, cached input, wrong/missed loads and accepted-task quality.
 
@@ -202,14 +190,12 @@ Otherwise repair/rollback slimming first.
 
 Follow `local-context-memory-setup.md`:
 
-```text
-LCM          = current-session exact context / compaction recovery
-Mnemosyne    = curated cross-session durable memory
-state.db     = raw Hermes history / forensic search
-uplift-state = deterministic mission authority
-T2 evidence  = large/raw artifacts
-Git/ADR/spec = project truth
-```
+- **LCM** — current-session exact context / compaction recovery
+- **Mnemosyne** — curated cross-session durable memory
+- **state.db** — raw Hermes history / forensic search
+- **uplift-state** — deterministic mission authority
+- **T2 evidence** — large/raw artifacts
+- **Git/ADR/spec** — project truth
 
 Prove pinned/effective config, repeated compaction drill-down, restart recovery, curated Mnemosyne lifecycle, low stale recall, no transcript duplication, Tool Search schema control, independent backup/restore and local-only operation with outbound network denied after provisioning.
 
@@ -248,12 +234,10 @@ A route decision returns bounded workflow stages + agents + model roles/models +
 
 Start with the smallest useful local router:
 
-```text
-Tier 0 deterministic eligibility
- + deterministic workflow/state gates
- + simple multi-label task-family rules
- + safe abstention
-```
+- Tier 0 deterministic eligibility
+- deterministic workflow/state gates
+- simple multi-label task-family rules
+- safe abstention
 
 It must work without Torch/Transformers/Envoy/cloud dependencies and establish latency/RSS/security/economic controls.
 
@@ -397,16 +381,14 @@ Run matched/adversarial missions across:
 
 Use the same versioned mission corpus and mission/repo/session/time cohort splits for:
 
-```text
-A rules/state
-B minimal embeddings
-C Aurelio Semantic Router
-D vLLM Semantic Router
-E ModernBERT only if data gate passed
-F relevant LLMRouter algorithms
-G RouteLLM-style Tier-3 scoring
-H OpenRouter Auto sanitized shadow
-```
+- **A** rules/state
+- **B** minimal embeddings
+- **C** Aurelio Semantic Router
+- **D** vLLM Semantic Router
+- **E** ModernBERT only if data gate passed
+- **F** relevant LLMRouter algorithms
+- **G** RouteLLM-style Tier-3 scoring
+- **H** OpenRouter Auto sanitized shadow
 
 Do not pretend every research candidate is directly comparable on every metric. Evaluate task/profile inference, deterministic eligibility, workflow/model economics and runtime operations separately, then compare end-to-end accepted-mission outcomes where feasible.
 
@@ -439,12 +421,11 @@ Prefer vLLM Semantic Router configuration/adapters/upstream contribution. Mainta
 
 Only successful Phase-60 evidence can promote ordinary routing authority/multi-role operation:
 
-```text
-Tier 0 deterministic eligibility
- -> promoted Tier 1/2/3 router implementation
- -> selected workflow/model role/model
- -> OpenRouter-first Tier 4
- -> eligible physical provider
+1. Tier 0 deterministic eligibility
+2. promoted Tier 1/2/3 router implementation
+3. selected workflow/model role/model
+4. OpenRouter-first Tier 4
+5. eligible physical provider
 ```
 
 Record exact Hermes/Pi/LCM/Mnemosyne/router/contracts/models/gateway policy pins. If readiness policy requires human production approval, request it **only after all mandatory promotion gates pass**; approval cannot waive failed or missing evidence. Then start the fresh ordinary session on the exact evidence-qualified, approved configuration.

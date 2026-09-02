@@ -93,9 +93,7 @@ Research snapshot on 2026-08-30: `z-ai/glm-5.3-flash`. Do **not** blindly paste 
 
 Hermes stores provider secrets in the profile's secret environment rather than in this repository. Preferred initial external inference credential footprint is only:
 
-```text
-OPENROUTER_API_KEY
-```
+`OPENROUTER_API_KEY`
 
 Do not add direct Z.ai/DeepSeek keys yet.
 
@@ -147,9 +145,7 @@ shasum -a 256 "$STACK_REPO/configs/policy.example.yaml" \
 
 The authoritative mutable execution state should live at:
 
-```text
-$PROFILE_HOME/uplift/uplift-state.json
-```
+`$PROFILE_HOME/uplift/uplift-state.json`
 
 and conform to `protocols/uplift-state.schema.json`. Evidence paths/hashes are referenced from that state; they are not replaced by chat memory.
 
@@ -194,13 +190,12 @@ Current Hermes documents `--query-file` as a normal first-turn query: file conte
 
 ## Manual setup -> Hermes takeover
 
-```text
-human creates isolated bootstrap account/profile
-  -> installs/configures clean Hermes
-  -> OpenRouter + one GLM-Flash-class bootstrap model
-  -> clones repo + exposes one uplift skill
-  -> records health/version/checkpoint evidence
-  -> `uplift chat --query-file UPLIFT_MISSION.md`
+- human creates isolated bootstrap account/profile
+- installs/configures clean Hermes
+- OpenRouter + one GLM-Flash-class bootstrap model
+- clones repo + exposes one uplift skill
+- records health/version/checkpoint evidence
+- `uplift chat --query-file UPLIFT_MISSION.md`
   -> Hermes executes Phase 00 and reports
   -> human continues phase-by-phase
 ```
