@@ -2,21 +2,22 @@
   <title id="t">Mission lifecycle — phases 00–70 with adoption checkpoints A0/A–F</title>
   <desc id="d">Eight ordered phases from 00 preflight through 70 upgrades and rollback. Each phase ends with persisted evidence, a boundary report and a fresh session before the next begins. Adoption checkpoints: A0 dogfood and A fresh session after phase 20 (blue), B shadow-only after phase 30 (blue), C is the phase 40 human authority gate (rose), D recreate workers after phase 50 (amber), E ordinary multi-role operation after phase 60 (emerald), F recurring maintenance cycle at phase 70. A panel below records the 2026-08-31 to 2026-09-01 mission outcome: 9 of 9 phases complete with persisted evidence, and human approval remains additive on mandatory P0 evidence, never a waiver.</desc>
   <style>
-    .box{fill:#ffffff;stroke:#57606a;stroke-width:1.5;rx:10}
+    .box{fill:#fffaf3;stroke:#5b4636;stroke-width:1.5;rx:10}
     .bar{rx:2.5}
     .h{font:600 13px system-ui,sans-serif}
     .t{font:11px system-ui,sans-serif;opacity:.72}
     .lab{font:italic 11px system-ui,sans-serif;opacity:.65}
-    .e{stroke:#57606a;stroke-width:1.5;fill:none;marker-end:url(#arw2)}
-    .mk{fill:#57606a}
+    .e{stroke:#5b4636;stroke-width:1.5;fill:none;marker-end:url(#arw2)}
+    .mk{fill:#5b4636}
     .ck{font:600 11.5px system-ui,sans-serif}
-    .panel{fill:#059669;fill-opacity:.05;stroke:#059669;stroke-opacity:.45;stroke-dasharray:6 4;rx:12;stroke-width:1.2}
-    .bar-control{fill:#2563eb}.bar-pi{fill:#d97706}.bar-ev{fill:#059669}.bar-sec{fill:#e11d48}
+    .panel{fill:#a16207;fill-opacity:.05;stroke:#a16207;stroke-opacity:.45;stroke-dasharray:6 4;rx:12;stroke-width:1.2}
+    .bar-control{fill:#1d4ed8}.bar-pi{fill:#b45309}.bar-ev{fill:#4d7c0f}.bar-sec{fill:#be123c}
     @media (prefers-color-scheme: dark){
-      text{fill:#e6edf3}
-      .box{fill:#161b22;stroke:#8b949e}
-      .e{stroke:#8b949e}.mk{fill:#8b949e}
-      .panel{fill:#0a7d54;fill-opacity:.14;stroke:#4cbf94;stroke-opacity:.7}
+      text{fill:#e8dccf}
+      .box{fill:#29241e;stroke:#a89784}
+      .e{stroke:#a89784}.mk{fill:#a89784}
+      .panel{fill:#a16207;fill-opacity:.14;stroke:#d4a843;stroke-opacity:.7}
+      .t,.lab{opacity:.88}
     }
   </style>
   <defs>
@@ -69,12 +70,12 @@
   <path class="e" d="M 810 96 L 835 96"/><path class="e" d="M 975 96 L 1000 96"/>
   <path class="e" d="M 1110 96 L 1135 96"/>
 
-  <text class="ck" x="402" y="40" text-anchor="middle" fill="#2563eb">A0 dogfood · A fresh session</text>
-  <text class="ck" x="575" y="40" text-anchor="middle" fill="#2563eb">B shadow only</text>
-  <text class="ck" x="740" y="40" text-anchor="middle" fill="#e11d48">★ C human authority gate</text>
-  <text class="ck" x="905" y="40" text-anchor="middle" fill="#d97706">D recreate workers</text>
-  <text class="ck" x="1055" y="40" text-anchor="middle" fill="#059669">E ordinary operation</text>
-  <text class="ck" x="1180" y="40" text-anchor="middle" fill="#059669">F cycle</text>
+  <text class="ck" x="402" y="40" text-anchor="middle" fill="#1d4ed8">A0 dogfood · A fresh session</text>
+  <text class="ck" x="575" y="40" text-anchor="middle" fill="#1d4ed8">B shadow only</text>
+  <text class="ck" x="740" y="40" text-anchor="middle" fill="#be123c">★ C human authority gate</text>
+  <text class="ck" x="905" y="40" text-anchor="middle" fill="#b45309">D recreate workers</text>
+  <text class="ck" x="1055" y="40" text-anchor="middle" fill="#4d7c0f">E ordinary operation</text>
+  <text class="ck" x="1180" y="40" text-anchor="middle" fill="#4d7c0f">F cycle</text>
 
   <text class="lab" x="15" y="162">Every phase boundary: persist evidence + uplift-state → report boundary → fresh session / recreate → only then next phase.</text>
 

@@ -2,25 +2,26 @@
   <title id="t">Pi bridge request flow — envelope validation through evidence, with fail-closed gates</title>
   <desc id="d">A coding delegation enters the Pi bridge as a typed envelope. The bridge validates schema and policy digest, enforces the session capability mode and structurally rejects direct-edit or bypass attempts before any worker launch. It creates a disposable worktree and launches a Pi worker under Seatbelt containment with network denied. Cloud model calls are proxied by the bridge parent over an inherited fd-pipe; the API key never reaches the worker. On agent_settled the bridge runs egress scans, collects compact evidence and validates durable state. Secrets, PII, LOCAL_ONLY and direct-edit requests fail closed at the rose gates.</desc>
   <style>
-    .box{fill:#ffffff;stroke:#57606a;stroke-width:1.5;rx:10}
+    .box{fill:#fffaf3;stroke:#5b4636;stroke-width:1.5;rx:10}
     .bar{rx:2.5}
     .h{font:600 13px system-ui,sans-serif}
     .t{font:11px system-ui,sans-serif;opacity:.72}
     .lab{font:italic 11px system-ui,sans-serif;opacity:.65}
-    .e{stroke:#57606a;stroke-width:1.5;fill:none;marker-end:url(#arw3)}
-    .x{stroke:#e11d48;stroke-width:1.4;fill:none;stroke-dasharray:5 3;marker-end:url(#x3)}
-    .xk{fill:#e11d48}
-    .mk{fill:#57606a}
-    .gate{fill:#e11d48;fill-opacity:.05;stroke:#e11d48;stroke-opacity:.55;stroke-dasharray:5 3;rx:10;stroke-width:1.3}
-    .bar-pi{fill:#d97706}.bar-sec{fill:#e11d48}.bar-ev{fill:#059669}.bar-control{fill:#2563eb}
+    .e{stroke:#5b4636;stroke-width:1.5;fill:none;marker-end:url(#arw3)}
+    .x{stroke:#be123c;stroke-width:1.4;fill:none;stroke-dasharray:5 3;marker-end:url(#x3)}
+    .xk{fill:#be123c}
+    .mk{fill:#5b4636}
+    .gate{fill:#be123c;fill-opacity:.05;stroke:#be123c;stroke-opacity:.55;stroke-dasharray:5 3;rx:10;stroke-width:1.3}
+    .bar-pi{fill:#b45309}.bar-sec{fill:#be123c}.bar-ev{fill:#4d7c0f}.bar-control{fill:#1d4ed8}
     .lg{font:11px system-ui,sans-serif}
-    text{fill:#1f2328}
+    text{fill:#2d2419}
     @media (prefers-color-scheme: dark){
-      text{fill:#e6edf3}
-      .box{fill:#161b22;stroke:#8b949e}
-      .e{stroke:#8b949e}.mk{fill:#8b949e}
+      text{fill:#e8dccf}
+      .box{fill:#29241e;stroke:#a89784}
+      .e{stroke:#a89784}.mk{fill:#a89784}
       .gate{fill:#be123c;fill-opacity:.16;stroke:#f08495;stroke-opacity:.75}
       .x{stroke:#f08495}.xk{fill:#f08495}
+      .t,.lab{opacity:.88}
     }
   </style>
   <defs>
@@ -106,9 +107,9 @@
   <text class="t" x="330" y="320">“skip Pi, edit directly”</text>
 
   <rect class="box" x="20" y="660" width="1210" height="34"/>
-  <circle cx="45" cy="677" r="6" fill="#e11d48"/><text class="lg" x="58" y="681">rose = fail-closed security gate</text>
-  <circle cx="270" cy="677" r="6" fill="#d97706"/><text class="lg" x="283" y="681">amber = Pi delegation path</text>
-  <circle cx="490" cy="677" r="6" fill="#2563eb"/><text class="lg" x="503" y="681">blue = sanctioned cloud proxy</text>
-  <circle cx="700" cy="677" r="6" fill="#059669"/><text class="lg" x="713" y="681">emerald = evidence</text>
+  <circle cx="45" cy="677" r="6" fill="#be123c"/><text class="lg" x="58" y="681">rose = fail-closed security gate</text>
+  <circle cx="270" cy="677" r="6" fill="#b45309"/><text class="lg" x="283" y="681">amber = Pi delegation path</text>
+  <circle cx="490" cy="677" r="6" fill="#1d4ed8"/><text class="lg" x="503" y="681">blue = sanctioned cloud proxy</text>
+  <circle cx="700" cy="677" r="6" fill="#4d7c0f"/><text class="lg" x="713" y="681">emerald = evidence</text>
   <text class="lg" x="850" y="681">dashed rose = structural rejection</text>
 </svg>
