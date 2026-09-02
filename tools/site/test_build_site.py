@@ -40,5 +40,20 @@ class ValidatorTests(unittest.TestCase):
         self.assertIn("raw table dump present", src)
 
 
+class DarkModeCssTests(unittest.TestCase):
+    def test_tables_styled_in_dark_mode(self):
+        css = bs.layout("t", "x", "p", "r.md")
+        dark = css.split("prefers-color-scheme:dark")[1]
+        self.assertIn("th{", dark)
+        self.assertIn("td{", dark)
+        self.assertIn("tbody tr:nth-child(even)", dark)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
+
+
