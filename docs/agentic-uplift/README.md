@@ -16,10 +16,11 @@ This directory is the canonical research/design source behind the human Pages ma
 8. `../../protocols/routing-mission.schema.json` + `routing-decision.schema.json` — stable internal routing interface.
 9. `research/local-routing-models.md` — broad routing/framework assessment and bake-off.
 10. `research/router-training-control.md` — outcome learning and ModernBERT graduation rules.
-11. `research/openrouter-routing.md` — gateway/provider ownership and effective-policy requirements.
-12. `local-context-memory-setup.md` — fixed LCM + Mnemosyne setup/verification/backup/rollback.
-13. `artifact-usability-review.md`, `adversarial-review.md`, `validation-report.md` — readiness, failure catalogue and executed evidence.
-14. `SOURCES.md` — current primary/upstream sources.
+11. `evidence-sync.md` — how/when private evidence milestones enter these public docs.
+12. `research/openrouter-routing.md` — gateway/provider ownership and effective-policy requirements.
+13. `local-context-memory-setup.md` — fixed LCM + Mnemosyne setup/verification/backup/rollback.
+14. `artifact-usability-review.md`, `adversarial-review.md`, `validation-report.md` — readiness, failure catalogue and executed evidence.
+15. `SOURCES.md` — current primary/upstream sources.
 
 ## Executive topology
 
@@ -38,6 +39,8 @@ Research and coding are important first-class task families, not the complete ro
 ## Router progression
 
 Bootstrap avoids the router paradox: a clean narrow Hermes profile uses one verified OpenRouter model through Phases 00–20. Phase 30 first builds **rules + explicit state + abstention** and uses that only in shadow. Then the common benchmark may shadow minimal embeddings, Aurelio Semantic Router, vLLM Semantic Router, LLMRouter experiments, RouteLLM-style Tier-3 scoring and OpenRouter Auto. ModernBERT remains deferred until representative redacted outcomes justify it.
+
+**Milestone (2026-09-04, private evidence bundle, routing track):** a trained matrix-factorization router (small-embedding text tower + 52K-parameter head, CPU-trained) passed its preregistered gate (APGR 0.6528 vs gate 0.55). A deployment threshold of 0.30 is picked from a validation-only sweep: ~56% projected cost savings vs always-strong while retaining ~99% of the strong model's accuracy gain. ModernBERT graduation remains governed by `research/router-training-control.md`.
 
 Current strategic posture:
 
