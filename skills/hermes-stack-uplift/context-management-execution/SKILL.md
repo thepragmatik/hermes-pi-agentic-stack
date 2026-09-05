@@ -191,3 +191,15 @@ just took extra tool calls).
   when judging sweep output, or phrase rules without the literal path.
 - mnemosyne_remember_canonical(category='task:progress', name='cm-mission') is the
   cross-session checkpoint; update at every phase boundary (owner uplift).
+
+## Measurement-tail closeout (verified 2026-09-02)
+
+Item 1 PASS (compaction-pressure drill), item 2 PARTIAL-PASS (economics), item 3 PASS
+(rotate eval), item 5 PASS (multi-hop recall), item 6 close. Item 4 (ADV-6 retention
+variant) DEFERRED — needs a fresh child session. See
+`references/measurement-tail-closeout.md` for: state.db `session_model_usage` billing
+fields, OpenRouter /credits + /generation?id= reconciliation recipe (inference key works;
+/activity needs a provisioning key; gen ids unlogged -> per-turn UNKNOWN), multi-hop
+recall test recipe (control query first; FTS/keyword-driven, dense 0.0 on nonce terms),
+and the lcm.db integrity battery (copies only + plugin test_lcm_rotate.py suite).
+Headline: mission economics reconcile within 3.1% of provider actual.
